@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="EdgeKeeper" basedir="." default="build">
+	<property name="version.num" value="0.01"/>
+	<buildnumber file="build.num"/>
+	
+    <property name="version.code" value="0.01_build${build.number}" />
+	
+    <property name="source.dir"     value="src"/>
+    <property name="lib.dir"        value="lib"/>
+    <property name="build.dir"      value="bin"/>
+    <property name="jar.dir"        value="jar"/>
+	<property name="doc.dir"        value="doc"/>
+	<property name="server.main.class"     value="edu.tamu.cse.lenss.edgeKeeper.server.EKMainLinux"/>
+	<property name="server.jar.name"     value="${ant.project.name}-Linux.jar"/>
+	<property name="server.tar.name"     value="${ant.project.name}-Linux.tar.gz"/>
+	<property name="cli.main.class"     value="edu.tamu.cse.lenss.edgeKeeper.client.EKCli"/>
+	<property name="cli.jar.name"     value="${ant.project.name}-cli.jar"/>
+    <property name="android.jar.name"     value="${ant.project.name}-android.jar"/>
+	<property name="client.jar.name"     value="${ant.project.name}-client.jar"/>
+		
+
+    <path id="libraries.path">
+        <fileset dir="${lib.dir}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <target name="clean" description="delete old files">
+        <delete dir="${build.dir}"/>
+        <delete dir="${jar.dir}"/>
+    </target>
+
+	<!--Compile the entire project with Debug enabled.-->
+    <target name="compile" description="build class files" depends="clean">
+        <mkdir dir="${build.dir}"/>
+    	<mkdir dir="${jar.dir}"/>
+    	<javac srcdir="${source.dir}" 
+    		destdir="${build.dir}" 
+    		debug="true"
+    		debuglevel="lines,vars,source">
+            <classpath refid="libraries.path"/>
+        </javac>
+    </target>
+
+	<!-- Build the Jar files-->
+	<target name="jar" depends="compile" description="Build all jar files">
+		<!--Prepare the Dependency Jar-->
+		<jar destfile="${jar.dir}/dependencies.jar">
+	        <zipgroupfileset dir="${lib.dir}" includes="*.jar" excludes= "android*"/>
+	    </jar>
+		
+		<!--Prepare the jar to be run on Linux-->
+		<jar destfile="${jar.dir}/${server.jar.name}" filesetmanifest="mergewithoutmain">
+        	<manifest>
+                <attribute name="Main-Class" value="${server.main.class}"/>
+                <attribute name="Class-Path" value="."/>
+        		<attribute name="Built-By" value="${user.name}"/>
+        		<attribute name="Build-Version" value="${version.code}" />
+        	</manifest>
+        	<fileset dir="${build.dir}"/>
+        	<zipfileset excludes="META-INF/*.SF" src="${jar.dir}/dependencies.jar"/>
+       	</jar>
+		<!--Prepare the command line Interpreter-->
+    	<jar destfile="${jar.dir}/${cli.jar.name}" filesetmanifest="mergewithoutmain">
+	    	<manifest>
+	            <attribute name="Main-Class" value="${cli.main.class}"/>
+	            <attribute name="Class-Path" value="."/>
+	    		<attribute name="Built-By" value="${user.name}"/>
+	    		<attribute name="Build-Version" value="${version.code}" />
+	    	</manifest>
+	    	<fileset dir="${build.dir}"/>
+    		<zipfileset excludes="META-INF/*.SF" src="${jar.dir}/dependencies.jar"/>
+		</jar>
+		<delete file="${jar.dir}/dependencies.jar"/>
+		<!--Prepare the jar that will be included in Client applications. It will exclude the ZooKeeper code
+		as this code section includes some Lambda function which is unsupported in Java 7-->
+    	<jar destfile="${jar.dir}/${client.jar.name}" filesetmanifest="mergewithoutmain">
+    		<manifest>
+	            <attribute name="Built-By" value="${user.name}"/>
+    			<attribute name="Build-Version" value="${version.code}" />
+    		</manifest>
+    			<fileset dir="${build.dir}">
+    				<exclude name="edu/tamu/cse/lenss/edgeKeeper/zk/*.*"/>
+    			</fileset>
+    	</jar>
+		<!--Prepare the jar to be included in Android counterpart of EdgeKeeper. This will have all functions-->
+    	<jar destfile="${jar.dir}/${android.jar.name}" basedir="${build.dir}" filesetmanifest="mergewithoutmain">
+    		<manifest>
+	            <attribute name="Built-By" value="${user.name}"/>
+    			<attribute name="Build-Version" value="${version.code}" />
+    		</manifest>
+    	</jar>
+    	<!-- now copy the jarfile to Android-->
+    	<copy file="${jar.dir}/${android.jar.name}" todir="../EdgeKeeperAndroid/app/libs"/>
+		<copy file="${jar.dir}/${client.jar.name}" todir="../EdgeKeeperCommandLine/libs"/>
+    </target>
+	  <!-- Generate javadocs for current project into ${doc.dir} -->
+	  <target name="doc" depends="compile" description="generate documentation">
+	  	<delete dir="${doc.dir}"/>
+	    <javadoc 
+	    	sourcepath="${source.dir}" 
+	    	destdir="${doc.dir}"
+	    	classpathref="libraries.path"
+	    	access="public"
+	    />
+	  </target>
+	<target name="tar" depends="jar" description="build the deployable tar by Suman">
+		<delete file="deployable/${server.tar.name}"/>
+		<tar destfile="deployable/${server.tar.name}" compression="gzip">
+			<tarfileset dir=".">
+				<include name="*.properties"/>
+				<include name="README.md"/>
+			</tarfileset>
+			<tarfileset file="${jar.dir}/${server.jar.name}"/>
+			<tarfileset dir="bashScript" mode="775" >
+				<include name="*.sh"/>
+			</tarfileset>
+		</tar>
+	</target>
+  <target name="build" depends="jar,tar" />
+</project>

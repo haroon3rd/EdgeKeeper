@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="log_levels">
+        <item>ALL"</item>
+        <item>"DEBUG"</item>
+        <item>"INFO"</item>
+        <item>"WARN"</item>
+        <item>"ERROR"</item>
+        <item>"FATAL"</item>
+        <item>"OFF"</item>
+    </array>array>S
+</resources>

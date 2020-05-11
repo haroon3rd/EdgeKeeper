@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-160.jar"/>
+	<classpathentry kind="lib" path="lib/bcprov-debug-jdk15on-160.jar"/>
+	<classpathentry kind="lib" path="lib/commons-codec-1.11.jar"/>
+	<classpathentry kind="lib" path="lib/dnsjava-2.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/gnsclient-1.19.15.jar"/>
+	<classpathentry kind="lib" path="lib/gson-2.8.5.jar"/>
+	<classpathentry kind="lib" path="lib/guava-28.0-jre.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.7.28.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-simple-1.7.28.jar"/>
+	<classpathentry kind="lib" path="lib/xmlrpc-client-3.1.3.jar"/>
+	<classpathentry kind="lib" path="lib/xmlrpc-server-3.1.3.jar"/>
+	<classpathentry kind="lib" path="lib/zookeeper-3.4.6.jar"/>
+	<classpathentry kind="lib" path="lib/android-all-7.1.0_r7-robolectric-0.jar"/>
+	<classpathentry kind="lib" path="lib/jgrapht-bundle-1.3.0.jar"/>
+	<classpathentry kind="lib" path="lib/curator-client-4.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/curator-framework-4.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/curator-recipes-4.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/curator-test-4.2.0.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

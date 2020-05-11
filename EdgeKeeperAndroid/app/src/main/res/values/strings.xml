@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">EdgeKeeper</string>
+    <string name="gns_log_in_button_text"> Log In </string>
+    <string name="main_menu_help"> Help </string>
+    <string name="main_menu_logger"> Edit logger File </string>
+    <string name="main_menu_gns_address"> GNS server address </string>
+    <string name="main_menu_choose_certificate"> Choose P12 Certificate </string>
+    <string name="main_menu_setting"> Setting </string>
+    <string name="cancel"> Cancel </string>
+
+    <!-- Strings for Setting Activity-->
+    <string name="action_settings">Settings</string>
+
+    <string name="serve_master_key"></string>
+
+
+    <string name="restartservice">RESTART_EK_SERVICE_BROADCAST</string>
+
+    <string name="enable_perpetual_run">ENABLE_PERPETUAL_RUN</string>
+
+    <string name="log_file_name_default">edge_keeper.log</string>
+    <string name="log_file_name_key">log_file_name</string>
+    <string name="log_file_name_title">Log file name</string>
+    <string name="olsr_json_interval_key">OLSR_JSON_INTERVAL</string>
+    <string name="gns_address_default">192.168.1.131</string>
+    <string name="gns_server_address_key">GNS_SERVER_ADDRESS</string>
+    <string name="edge_keeper_master_address_default">192.168.1.131</string>
+    <string name="edge_keeper_master_address_key">EDGE_KEEPER_MASTER_ADDRESS</string>
+
+
+</resources>

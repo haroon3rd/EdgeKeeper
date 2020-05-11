@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceScreen
+        android:key="P12_FILE_PATH"
+        android:title="Choose certificate"
+        android:onClick="startFileChooser"
+        />
+
+    <EditTextPreference
+        android:inputType="textPassword"
+        android:key="P12_FILE_PASSWORD"
+        android:title="Certificate Password"
+        android:defaultValue="atakatak"
+        android:password="true"/>
+
+    <EditTextPreference
+        android:defaultValue="@string/log_file_name_default"
+        android:key="log_file_name_key"
+        android:title="@string/log_file_name_title"
+        />
+
+    <ListPreference
+        android:defaultValue="ALL"
+        android:entries="@array/log_levels"
+        android:entryValues="@array/log_levels"
+        android:key="logging_level_key"
+        android:title="Logging level"
+        />
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="@string/enable_perpetual_run"
+        android:summaryOff="Running all the time"
+        android:summaryOn="Running only with Activity"
+        android:title="Run perpetually?"/>
+
+
+    <!--android:dependency="DB_default"-->
+    <EditTextPreference
+        android:defaultValue="18.189.77.68"
+        android:key="GNS_SERVER_ADDRESS"
+        android:title="GNS server address"/>
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="ENABLE_MASTER"
+        android:summaryOff="Dummy EK slave"
+        android:summaryOn="Potential candidate for EK master"
+        android:title="Serve as EdgeKeeper Master?"/>
+
+    <EditTextPreference
+        android:defaultValue="1"
+        android:key="NUMBER_OF_REPLICA"
+        android:title="Number of ZK replicas"/>
+
+    <EditTextPreference
+        android:defaultValue="auto"
+        android:key="EDGE_KEEPER_MASTER"
+        android:title="EdgeKeeper masster IP"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <EditTextPreference
+        android:defaultValue="auto"
+        android:key="NEIGHBOR_IPS"
+        android:title="IPs of neighbor EK masters"/>
+
+    <EditTextPreference
+        android:defaultValue="30000"
+        android:key="DEVICE_STATUS_INTERVAL"
+        android:title="Device status reporting interval"
+        android:inputType="number"/>
+
+    <EditTextPreference
+        android:defaultValue="10000"
+        android:key="TOPOLOGY_INTERVAL"
+        android:title="Topology ping interval"
+        android:inputType="number"/>
+
+    <EditTextPreference
+        android:defaultValue="4"
+        android:key="TOPOLOGY_CLEANUP_ITERATION"
+        android:title="Topology cleanup iteration"
+        android:inputType="number"/>
+
+    <EditTextPreference
+        android:defaultValue="30000"
+        android:key="MERGE_GUID_INTERVAL"
+        android:title="Merge interval for name record"
+        android:inputType="number"/>
+
+    <EditTextPreference
+        android:defaultValue="60000"
+        android:key="MERGE_MDFS_INTERVAL"
+        android:title="Merge interval for MDFS directory"
+        android:inputType="number"/>
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="ENABLE_REAL_IP_REPORTING"
+        android:summaryOff="Does not report the real IP"
+        android:summaryOn="Report the real IP"
+        android:title="Should report the Real IP to EdgeKeeper?"/>
+
+    <EditTextPreference
+        android:defaultValue="2000"
+        android:key="tickTime"
+        android:title="Zookeeper ticktime"/>
+    <EditTextPreference
+        android:defaultValue="10"
+        android:key="initLimit"
+        android:title="Zookeeper initlimit"/>
+    <EditTextPreference
+        android:defaultValue="5"
+        android:key="syncLimit"
+        android:title="Zookeeper SyncLimit"/>
+
+    <EditTextPreference
+        android:defaultValue="/storage/emulated/0/distressnet/edge_keeper/tmp"
+        android:key="dataDir"
+        android:title="Zookeeper Data directory"/>
+
+    <EditTextPreference
+        android:defaultValue="2181"
+        android:key="clientPort"
+        android:title="Zookeeper client port"/>
+
+</PreferenceScreen>

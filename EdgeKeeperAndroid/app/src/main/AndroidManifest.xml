@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="edu.tamu.cse.lenss.edgeKeeper.android">
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name= "android.permission.CHANGE_NETWORK_STATE" />
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACTION_OPEN_DOCUMENT" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+<!--
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+-->
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".MainActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait"
+            >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_OPEN_DOCUMENT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/action_settings"
+            android:parentActivityName=".MainActivity"
+            android:screenOrientation="portrait"
+            >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity"/>
+        </activity>
+        <receiver android:name=".Autostart">
+            <intent-filter>
+<!--                <action android:name="android.intent.action.BOOT_COMPLETED" />-->
+                <action android:name="@string/restartservice" />
+                <action android:name="restartservice" />
+            </intent-filter>
+        </receiver>
+<!--android:process=":EKService"
+android:directBootAware="true"
+-->
+        <service
+            android:name=".EKService"
+            android:enabled="true"
+            android:stopWithTask="true"
+            >
+            <intent-filter>
+                <action android:name=".home.START_GNSSERVICE" />
+                <action android:name=".home.STOP_GNSSERVICE" />
+            </intent-filter>
+        </service>
+    </application>
+
+
+
+</manifest>

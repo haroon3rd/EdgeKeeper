@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project EdgeKeeperCommandLine">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <!--define folder properties-->
+    <property name="dir.buildfile" value="."/>
+    <property name="dir.workspace" value="/home/sbhunia/eclipse-workspace"/>
+    <property name="dir.jarfile" value="${dir.buildfile}/deployable"/>
+    <target name="create_run_jar">
+        <jar destfile="${dir.jarfile}/EKCommandLine.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="edu.tamu.cse.lenss.ek.commandLine.CLITerminal"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="${dir.buildfile}/bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/libs/jline-3.12.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/libs/picocli-shell-jline3-4.0.4.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/libs/picocli-4.0.4.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/libs/guava-28.1-jre.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/libs/EdgeKeeper-client.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/libs/log4j-1.2.17.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/libs/java-json.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/libs/jgrapht-bundle-1.3.0.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/libs/gson-2.8.5.jar"/>
+        </jar>
+    </target>
+</project>

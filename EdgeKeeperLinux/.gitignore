@@ -1,0 +1,26 @@
+bin/
+build/
+tmp/
+logs/
+
+cert_files
+clientKeyDB*/
+clientCert/
+
+.idea/
+.settings/
+
+*.tmp
+*.bak
+*.swp
+*.out
+
+# certificate files
+*.pem
+*.p12
+*.cert
+*.jks
+*.log                           
+
+
+graph.png

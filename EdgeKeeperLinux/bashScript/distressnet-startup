@@ -1,0 +1,62 @@
+#!/bin/bash
+# /etc/init.d/distressnet-startup
+
+
+#==============================================================
+# Distressnet-NG startup scrip prepared by Suman.
+# This script should be stored inside /etc/init.d directory with execute permission.
+# Edit this file to locate all the startup scripts for different services.
+# To add this startup script to the boot sequence, run the command below:
+# sudo update-rc.d distressnet-startup defaults 
+#==============================================================
+
+
+
+# Some things that run always
+touch /var/lock/distressnet
+
+DISTRESSNET_DIR="/home/sbhunia/virtualBoxShare/"
+
+#Here store the location of the scrip files you will call.
+declare -a script_list=(
+	$DISTRESSNET_DIR"GNS-server-deployable/bin/gns-server.sh"
+	$DISTRESSNET_DIR"GnsServiceDesktop/gns_service.sh"
+	$DISTRESSNET_DIR"madoop-server-with-gns/madoop_startup.sh"
+)
+
+declare -a script_list_reverse=(
+	$DISTRESSNET_DIR"madoop-server-with-gns/madoop_startup.sh"
+	$DISTRESSNET_DIR"GnsServiceDesktop/gns_service.sh"
+	$DISTRESSNET_DIR"GNS-server-deployable/bin/gns-server.sh"		
+)
+
+
+# Carry out specific functions when asked to by the system
+case "$1" in
+  start)
+    echo "Executing the following scripts for Distresnet\n" $script_list
+    #run all the script with start
+    for script in "${script_list[@]}"
+	do
+	   "$script" start
+	   sleep 10
+	done
+    ;;
+  stop)
+    #run all the script with start
+    for script in "${script_list_reverse[@]}"
+    do
+      echo $script
+	"$script" stop
+	sleep 5
+    done
+    ;;
+  *)
+    echo "Usage: /etc/init.d/gns-service {start|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0
+
+

@@ -1,0 +1,12 @@
+.DS_Store
+build.number
+/build/
+/dist/
+/derby.log
+/paxos_logs/
+/reconfiguration_DB/
+/nbproject/
+/nbbuild.xml
+/jars/
+.idea/*
+*.iml

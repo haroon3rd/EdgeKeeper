@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project GnsServiceDesktop">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <!--define folder properties-->
+    <property name="dir.buildfile" value="."/>
+    <property name="dir.workspace" value="/home/sbhunia/eclipse-workspace"/>
+    <property name="dir.jarfile" value="${dir.buildfile}/jar2"/>
+    <target name="create_run_jar">
+        <jar destfile="${dir.jarfile}/GNSService-server.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="edu.tamu.cse.lenss.gnsService.server.GnsServiceDesktop"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="${dir.buildfile}/bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/dnsjava-2.0.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/commons-codec-1.11.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/bcpkix-jdk15on-160.jar"/>
+            <!--<fileset dir="${dir.buildfile}/lib"/>-->
+            <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/gnsclient-1.19.15.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/log4j-1.2.17.jar"/>
+        </jar>
+    </target>
+</project>
