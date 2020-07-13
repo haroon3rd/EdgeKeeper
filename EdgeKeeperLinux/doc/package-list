@@ -7,3 +7,5 @@ edu.tamu.cse.lenss.edgeKeeper.server
 edu.tamu.cse.lenss.edgeKeeper.topology
 edu.tamu.cse.lenss.edgeKeeper.utils
 edu.tamu.cse.lenss.edgeKeeper.zk
+fi.iki.elonen
+fi.iki.elonen.util
