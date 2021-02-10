@@ -185,9 +185,9 @@ public class EdgeStatus {
 			for(String ip: node.ipMaps.keySet()) {
 //				if(node.ipMaps.get(ip)==NetworkInterfaceType.ETHERNET 
 //						|| node.ipMaps.get(ip)==NetworkInterfaceType.WIFI) {
-				if(node.ipMaps.get(ip)!=NetworkInterfaceType.MOBILE) {
+				//if(node.ipMaps.get(ip)!=NetworkInterfaceType.MOBILE) {
 					ipSet.add(ip);
-				}
+				//}
 			}
 		}
 		return ipSet;

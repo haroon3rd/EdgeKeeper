@@ -149,14 +149,15 @@ public class ZKServerHandler implements Terminable{
 
 				if (ownServerIP != null) {
 					// need to change this
-					Thread.sleep(1000);
+					// Radu: commented out
+					// Thread.sleep(1000);
 					logger.info("Trying to start new Zookeeper server");
 					rz = new ZKServWorker(zkProp, eventHandler, ownServerIP);
 					rz.run();
 				} else {
 					logger.info("This node not acting as EK master. Working in client mode");
 				}
-			} catch (NullPointerException | IOException | InterruptedException e) {
+			} catch (NullPointerException | IOException /*| InterruptedException */ e) {
 				logger.fatal("Problem in preparing Zookeeper configuration", e);
 			}
 		}

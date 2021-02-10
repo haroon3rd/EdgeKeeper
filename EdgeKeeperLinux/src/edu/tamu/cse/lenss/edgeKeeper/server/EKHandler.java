@@ -148,11 +148,12 @@ public class EKHandler extends Thread implements Terminable{
 		ekProperties.setGUID(ownGUID);
 		ekRecord.updateField(EKRecord.ACCOUNTNAME_FIELD, ekProperties.getAccountName());
 
-		try {
-			sleep(2000); // This sleep is necessary to ensure that all the terminable tasks are properly terminated during restart
-		} catch (InterruptedException e1) {
-			logger.error("Sleep interrupted",e1);
-		}
+		// Radu: commented out
+		// try {
+			// sleep(2000); // This sleep is necessary to ensure that all the terminable tasks are properly terminated during restart
+		//} catch (InterruptedException e1) {
+		//	logger.error("Sleep interrupted",e1);
+		//}
 		
 		edgeStatus = new EdgeStatus();
 		
@@ -276,11 +277,12 @@ public class EKHandler extends Thread implements Terminable{
     public void restart() {
     	logger.info("Restarting EdgeKeeper");
     	this.terminate();
-    	try {
-			sleep(1000);
-		} catch (InterruptedException e) {
-			logger.error("Problem in sleep",e);;
-		}
+		// Radu: commented out
+    	// try {
+			// sleep(1000);
+		// } catch (InterruptedException e) {
+		// 	logger.error("Problem in sleep",e);;
+		// }
     	this.start();
     }
     
