@@ -1,6 +1,7 @@
 package edu.tamu.cse.lenss.edgeKeeper.android;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -9,7 +10,6 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.IBinder;
@@ -24,7 +24,6 @@ import android.widget.Toast;
 
 import org.apache.log4j.Logger;
 
-import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
 import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
@@ -88,7 +87,7 @@ public class EKService extends Service {
 
         Toast.makeText(this, "EK Service is starting", Toast.LENGTH_SHORT).show();
         logger.info("EK Service is starting. ");
-        showNotification("Starting");
+        showNotification("Starting", false);
 
         ekProperties.load(PreferenceManager.getDefaultSharedPreferences(this));
         logger.info("Loaded config: "+ ekProperties.toString());
@@ -131,13 +130,13 @@ public class EKService extends Service {
 
                 @Override
                 public void onError(String string) {
-                    showNotification(string);
+                    showNotification(string, true);
 
                 }
 
 
                 void putNotice(){
-                    showNotification("GNS:"+gnsState+", ZKClient:"+zkClientState+", ZKServer:"+zkServerState);
+                    showNotification("GNS:"+gnsState+", ZKClient:"+zkClientState+", ZKServer:"+zkServerState, false);
                 }
 
 
@@ -152,7 +151,13 @@ public class EKService extends Service {
         return START_NOT_STICKY;
     }
 
-    private void showNotification(String message) {
+    //this function
+    private void updateGridView(){
+
+    }
+
+
+    private void showNotification(String message, boolean error) {
         String input = intent.getStringExtra("inputExtra");
         createNotificationChannel();
         Intent notificationIntent = new Intent(this, MainActivity.class);
@@ -175,7 +180,51 @@ public class EKService extends Service {
             this.onDestroy();
         }
 
+        System.out.println("xyz notification called!");
+        processEdgeReplicaInfo(message, error);
+
     }
+
+
+    //puts current cloud and zkClient status into the GridViewStore class for MainActivity to consume.
+    private void processEdgeReplicaInfo(String message, boolean error) {
+
+        try {
+
+            //Create Wrapper object with default value
+            Wrapper wrap = new Wrapper(false, false);
+
+            //parse GNS/cloud information
+            if(!error && message!=null && message.contains("GNS")){
+
+                //get GNS/Cloud status
+                String[] tokens = message.split(", ");
+                String GNS_status = tokens[0].split(":")[1];
+                if(GNS_status.equals("CONNECTED") || GNS_status.equals("RECONNECTED") ){
+                    System.out.println("xyz GNS is TRUE");
+                    wrap.cloudConnected = true;
+                }
+
+
+                //get zkClient status
+                String zkclient_status = tokens[1].split(":")[1];
+                if(zkclient_status.equals("CONNECTED") || zkclient_status.equals("RECONNECTED")) {
+                    System.out.println("xyz ZKClient is TRUE");
+                    wrap.zkClientConnected = true;
+                }
+
+            }
+
+
+            GridViewStore.GNS_status.set(wrap.cloudConnected);
+            GridViewStore.EKClient_status.set(wrap.zkClientConnected);
+
+        }catch (Exception e){
+            System.out.println("xyz EXCEPTION in EKService processEdgeReplicaInfo(): " + e);
+        }
+
+    }
+
     private void createNotificationChannel() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
