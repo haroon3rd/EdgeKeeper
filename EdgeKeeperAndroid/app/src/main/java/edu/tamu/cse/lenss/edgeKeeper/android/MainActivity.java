@@ -22,6 +22,7 @@ import android.widget.*;
 import android.view.*;
 import android.content.Context;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -35,6 +36,7 @@ import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
 import edu.tamu.cse.lenss.edgeKeeper.server.EdgeStatus;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtilsAndroid;
+import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -240,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //a child clss that will run a thread that will periodically update gridview
-    class UpdateGridView implements Runnable{
+    class UpdateGridView implements Runnable {
 
         Context context;
         Activity activity;
@@ -254,7 +256,6 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void run() {
-            System.out.println("xyz I should be printed only once!");
             try {
 
                 ArrayList<GVItem> pinned;
@@ -277,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
 
                     }else{
 
-                        //there was a valid item found in Queue
+                        //there was a valid item found in Queue that is false
                         cloud.add(new GVItem(false, "Cloud", true, getApplicationContext(), findViewById(android.R.id.content).getRootView()));
                     }
 
@@ -332,7 +333,7 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             }
                         } catch (Exception e) {
-                            System.out.println("XYZ exception is processing edge replica information");
+                            System.out.println("Exception is processing edge replica information");
                             e.printStackTrace();
                         }
 
@@ -345,7 +346,7 @@ public class MainActivity extends AppCompatActivity {
                                 //iterate over each IP
                                 for (String ip : ips) {
 
-                                    System.out.println("XYZ network info (ip): " + ips);
+                                    System.out.println("network info (ip): " + ips);
 
                                     //get all names for this IP
                                     List<String> names = EKClient.getAccountNamebyIP(ip);
@@ -369,13 +370,11 @@ public class MainActivity extends AppCompatActivity {
                                             //add name into temp list
                                             temp.add(name);
                                         }
-                                    } else {
-                                        System.out.println("XYZ ip to name conversion failed!");
                                     }
                                 }
                             }
                         } catch (Exception e) {
-                            System.out.println("XYZ exception is processing topology information");
+                            logger.log(Level.ALL, "Exception is processing topology information");
                             e.printStackTrace();
                         }
                     }
@@ -433,7 +432,7 @@ public class MainActivity extends AppCompatActivity {
 
 
             }catch (Exception e){
-                System.out.println("XYZ EXCEPTION in mainActivity" + e);
+                logger.log(Level.ALL, "EXCEPTION in mainActivityin UpdateGridView class" + e);
                 e.printStackTrace();
             }
         }

@@ -195,8 +195,18 @@ public class GVAdapter extends ArrayAdapter<GVItem> {
     }
 
     //shoes a snackbar on android activity main
+    //public static void snackbar(String message, View view){
+    //    Snackbar.make(view, message, Snackbar.LENGTH_SHORT).show();
+    //}
+
+
     public static void snackbar(String message, View view){
-        Snackbar.make(view, message, Snackbar.LENGTH_SHORT).show();
+        Snackbar snackbar = Snackbar.make(view, message, Snackbar.LENGTH_SHORT);
+        View snackbarView = snackbar.getView();
+        TextView textView = (TextView) snackbarView.findViewById(android.support.design.R.id.snackbar_text);
+        textView.setMaxLines(3);
+        snackbar.show();
+
     }
 
 }

@@ -22,6 +22,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
@@ -180,7 +181,6 @@ public class EKService extends Service {
             this.onDestroy();
         }
 
-        System.out.println("xyz notification called!");
         processEdgeReplicaInfo(message, error);
 
     }
@@ -201,7 +201,6 @@ public class EKService extends Service {
                 String[] tokens = message.split(", ");
                 String GNS_status = tokens[0].split(":")[1];
                 if(GNS_status.equals("CONNECTED") || GNS_status.equals("RECONNECTED") ){
-                    System.out.println("xyz GNS is TRUE");
                     wrap.cloudConnected = true;
                 }
 
@@ -209,7 +208,6 @@ public class EKService extends Service {
                 //get zkClient status
                 String zkclient_status = tokens[1].split(":")[1];
                 if(zkclient_status.equals("CONNECTED") || zkclient_status.equals("RECONNECTED")) {
-                    System.out.println("xyz ZKClient is TRUE");
                     wrap.zkClientConnected = true;
                 }
 
@@ -220,7 +218,7 @@ public class EKService extends Service {
             GridViewStore.EKClient_status.set(wrap.zkClientConnected);
 
         }catch (Exception e){
-            System.out.println("xyz EXCEPTION in EKService processEdgeReplicaInfo(): " + e);
+            logger.log(Level.ALL, "EXCEPTION in EKService processEdgeReplicaInfo(): " + e);
         }
 
     }
