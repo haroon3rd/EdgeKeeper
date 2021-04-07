@@ -1,7 +1,6 @@
 package edu.tamu.cse.lenss.edgeKeeper.android;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
@@ -11,10 +10,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import java.util.ArrayList;
@@ -136,10 +133,10 @@ public class GVAdapter extends ArrayAdapter<GVItem> {
 
             vibrator(10, input.getContext());
 
-            if (GridViewStore.pinnedItems.contains(input.getNAME())) {
+            if (ValueStore.pinnedItems.contains(input.getNAME())) {
 
                 //unpin this item from pinnedItems list
-                GridViewStore.pinnedItems.remove(input.getNAME());
+                ValueStore.pinnedItems.remove(input.getNAME());
 
                 //update visual
                 pin.setVisibility(View.GONE);
@@ -148,7 +145,7 @@ public class GVAdapter extends ArrayAdapter<GVItem> {
             } else {
 
                 //pin this item into pinnedIntems list
-                GridViewStore.pinnedItems.add(input.getNAME());
+                ValueStore.pinnedItems.add(input.getNAME());
 
                 //update visual
                 pin.setVisibility(View.VISIBLE);

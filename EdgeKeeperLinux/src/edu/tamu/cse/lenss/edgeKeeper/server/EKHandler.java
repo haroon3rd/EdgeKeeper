@@ -1,8 +1,10 @@
 package edu.tamu.cse.lenss.edgeKeeper.server;
 
 
+//import javax.jmdns.*;
 
 import org.apache.curator.framework.CuratorFramework;
+
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent.Type;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.log4j.Level;
@@ -14,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
@@ -49,6 +52,7 @@ public class EKHandler extends Thread implements Terminable{
 
 	
 	boolean isTerminated;
+	///JmDNS jmdns;
 
 	static GNSClientHandler gnsClientHandler;
 	static EKUtils ekUtils;
@@ -202,6 +206,15 @@ public class EKHandler extends Thread implements Terminable{
     		this.healthWebView = new HealthWebView();
     		this.terminableTasks.add(healthWebView);
 
+    		//TODO: start new services from here
+    		//register JMDNS service
+    		 /*jmdns = JmDNS.create(InetAddress.getLocalHost());
+             ServiceInfo serviceInfo = ServiceInfo.create("_http._tcp.local.", "example", 1234, "path=index.html");
+             jmdns.registerService(serviceInfo);*/
+
+    		
+    		
+    		
 		} catch (IOException e) {
 			logger.fatal("Problem in creating one of the server thread"+e);
     		ekUtils.onError("Could not start server port for clients"+e.getStackTrace());
@@ -214,6 +227,26 @@ public class EKHandler extends Thread implements Terminable{
 			executorService.submit(task);
 		logger.info("EdgeKeeper all tasks started");
     }
+    
+    
+    /*//JMDNS stuff
+	@Override
+	public void serviceAdded(ServiceEvent event) {
+        System.out.println("SSS Service added: " + event.getInfo());		
+	}
+
+	@Override
+	public void serviceRemoved(ServiceEvent event) {
+        System.out.println("SSS Service removed: " + event.getInfo());		
+	}
+
+	@Override
+	public void serviceResolved(ServiceEvent event) {
+        System.out.println("Service resolved: " + event.getInfo());	
+
+	}*/
+	
+	
 
     /**
      * This function updates the current host IP in the GNS server
@@ -263,6 +296,12 @@ public class EKHandler extends Thread implements Terminable{
 			this.terminated=true;
 			this.interrupt();
 			logger.info("Terminated"+this.getClass().getName());
+			/*try {
+				jmdns.unregisterAllServices();
+	            jmdns.close();
+			}catch(Exception e) {
+				e.printStackTrace();
+			}*/
 		}
     }
     
@@ -408,4 +447,5 @@ public class EKHandler extends Thread implements Terminable{
 		}
 		
 	}
+	
 }

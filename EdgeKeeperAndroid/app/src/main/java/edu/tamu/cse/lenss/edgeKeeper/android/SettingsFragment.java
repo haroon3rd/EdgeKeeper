@@ -19,6 +19,12 @@ import android.widget.Toast;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import java.sql.SQLOutput;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
 
 /**
@@ -27,9 +33,12 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
 
 public class SettingsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceChangeListener {
     Logger logger = Logger.getLogger(this.getClass());
+    boolean serviceRestart = false;
+    Map<String, String> tempPref = new HashMap<>();
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+
         addPreferencesFromResource(R.xml.settings_pref);
 
         SharedPreferences sharedPreferences = getPreferenceScreen().getSharedPreferences();
@@ -40,38 +49,31 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         // Go through all of the preferences, and set up their preference summary.
         for (int i = 0; i < count; i++) {
             Preference p = prefScreen.getPreference(i);
-            // You don't need to set up preference summaries for checkbox preferences because
-            // they are already set up in xml using summaryOff and summary On
-            if (!((p instanceof CheckBoxPreference) || (p.getKey().equals(EKProperties.p12pass)))) {
+
+            if (! ( (p instanceof CheckBoxPreference) || (p.getKey().equals(EKProperties.p12pass))   ) ) {
+                //handle non-check box items
                 String value = sharedPreferences.getString(p.getKey(), "");
-                //setPreferenceSummary(p, value);
                 p.setSummary(value);
+                tempPref.put(p.getKey(), value.toString());
                 logger.log(Level.ALL,"Preference screen setting summary for "+p.getKey()+" "+value);
+            }else{
+                //handle check box items
+                CheckBoxPreference mCheckBoxPreference = (CheckBoxPreference) getPreferenceScreen()
+                        .findPreference(p.getKey());
+                if (mCheckBoxPreference.isChecked()) {
+                    tempPref.put(p.getKey(), "true");
+                }else{
+                    tempPref.put(p.getKey(), "false");
+                }
             }
             p.setOnPreferenceChangeListener(this);
         }
-
-        //This will trigger onchange listener for any field
-        //prefScreen.setOnPreferenceChangeListener(this);
-
-
-        //Preference preference = findPreference(getString(R.string.pref_size_key));
-        //preference.setOnPreferenceChangeListener(this);
-
-        Preference dialogPreference = findPreference(EKProperties.p12Path);
-        dialogPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            public boolean onPreferenceClick(Preference preference) {
-                logger.info("User is trying to choose p12 file");
-                fileChooser();
-                return true;
-            }
-        });
-
     }
 
+
+    ///when user presses on a setting item and presses OK (regardless of changing value), this function is called
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
-
         logger.debug("In onPreferenceChange "+preference.getKey());
 
         if(EKProperties.validateField( preference.getKey(), newValue ))
@@ -84,35 +86,54 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         }
     }
 
+    //when user presses on a setting button, change the previous value, and presses OK, this function is called.
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+
         // Figure out which preference was changed
         Preference preference = findPreference(key);
         if (null != preference) {
+
             // Updates the summary for the preference
             if (!(preference instanceof CheckBoxPreference)) {
                 String value = sharedPreferences.getString(preference.getKey(), "");
-                //setPreferenceSummary(preference, value);
                 preference.setSummary(value);
+
+                //check if the old value and new value same or diff
+                if(tempPref.get(preference.getKey())!= null) {
+                    //if new value is different, restart needed
+                    if (!tempPref.get(preference.getKey()).equals(value)) {
+                        serviceRestart = true;
+                    }else{
+                        //new value is not different, no restart needed
+                        serviceRestart = false;
+                    }
+                }
+            }else{
+                CheckBoxPreference mCheckBoxPreference = (CheckBoxPreference) getPreferenceScreen()
+                        .findPreference(preference.getKey());
+                if (key.equals("ENABLE_MASTER")  || key.equals("ENABLE_REAL_IP_REPORTING" )){
+
+                    //checkbox has been checked/unchecked
+                    boolean checked = false;
+                    if(mCheckBoxPreference.isChecked()) {
+                        checked = true;
+                    }
+
+                    //at this point boolean "checked" denotes to current status of the checkbox
+                    //check if checkbox changed since last time
+                    if(tempPref.get(preference.getKey()).equals("true") && checked){
+                        serviceRestart = false;
+                    }else if(tempPref.get(preference.getKey()).equals("false") && !checked){
+                        serviceRestart = false;
+                    }else{
+                        serviceRestart = true;
+                    }
+                }
             }
-            //String value = sharedPreferences.getString(preference.getKey(), "");
+
 
             logger.info("Preference change "+preference.getKey()+" " + preference.getClass().getName());
-        }
-    }
-
-    private void setPreferenceSummary(Preference preference, String value) {
-        if (preference instanceof ListPreference) {
-            // For list preferences, figure out the label of the selected value
-            ListPreference listPreference = (ListPreference) preference;
-            int prefIndex = listPreference.findIndexOfValue(value);
-            if (prefIndex >= 0) {
-                // Set the summary to that label
-                listPreference.setSummary(listPreference.getEntries()[prefIndex]);
-            }
-        } else if (preference instanceof EditTextPreference) {
-            // For EditTextPreferences, set the summary to the value's simple string representation.
-            preference.setSummary(value);
         }
     }
 
@@ -128,39 +149,20 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         super.onDestroy();
         getPreferenceScreen().getSharedPreferences()
                 .unregisterOnSharedPreferenceChangeListener(this);
+
+        //decide whether require service restart or nah
+        if(serviceRestart){
+            //Value has been changed for one or many items in Settings
+            ValueStore.restart.set(true);
+        }else{
+            //Value has not been changed for any items in Settings
+            ValueStore.restart.set(false);
+        }
+
     }
 
-
-    /*public void startFileChooser(MenuItem i){
-        // Start the file chooser here
-
-        logger.info("User is trying to choose a new p12 file");
-    }*/
 
     private static final int READ_REQUEST_CODE = 42;
-    /**
-     * Fires an intent to spin up the "file chooser" UI and select an image.
-     */
-    public void fileChooser() {
-        logger.info("Starting the file chooser");
-        // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
-        // browser.
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-
-        // Filter to only show results that can be "opened", such as a
-        // file (as opposed to a list of contacts or timezones)
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-
-        // Filter to show only images, using the image MIME data type.
-        // If one wanted to search for ogg vorbis files, the type would be "audio/ogg".
-        // To search for all documents available via installed storage providers,
-        // it would be "*/*".
-        intent.setType("*/*");
-
-        startActivityForResult(intent, READ_REQUEST_CODE);
-
-    }
-
 
     @Override
     public void onActivityResult(int requestCode, int resultCode,
@@ -194,8 +196,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                     SharedPreferences.Editor prefEditor = getPreferenceScreen().getSharedPreferences().edit();
                     prefEditor.putString(EKProperties.p12Path, p12FilePath);
                     prefEditor.apply();
-
-
 
                 }
                 else{

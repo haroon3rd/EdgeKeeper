@@ -16,24 +16,25 @@ import org.json.JSONObject;
 //if this class is used for file metadata, then getFileConstructor() is used.
 //if this class is used for directory metadata, then getDirectory() is used.
 //if this class is used for storing directory mergeData, then getMergeDataInode() is used.
+//UUID and inodeUUID are synonymous.
 public class MDFSMetadata {
 
 	public static final Logger logger = Logger.getLogger(MDFSMetadata.class);
 
 	//mdfs file/directory variables
-	private String fileID;										//fileID
+	private String fileID;										//fileID: always unique | Replacement of fileName so that we can handle two files of same name;
 	private long fileSize;										//size of the entire file
 	private String fileCreatorGUID;								//GUID of device who is putting the file in MDFS
-	private String requestorGUID;								//the GUID who is sending a request
-	private String filePathMDFS;  								//like linux directory..last entry is filename
+	private String requestorGUID;								//the GUID who is sending a request (currently unused field)
+	private String filePathMDFS;  								//like linux directory..last entry is filename (ex: /sdcard/distressnet/file.txt)
 	private boolean isGlobal;									//is this metadata global
 	private List<Pair> files;									//list of UUIDs of files (if this class object is a directory)
 	private List<Pair> folders;									//list of UUIDs of folders(if this class object is a directory))
 	private List<MDFSMetadataBlock> blocks;						//list of File blocks (if this class object is for File)
-	private String inodeUUID;									//requestID for file/directory creation | different entity that fileID
-	private METADATA_TYPE metadataType;							//type of metadata object (file or directory)
-	private int n2;
-	private int k2;
+	private String inodeUUID;									//inodeUUID: always unique | the name by which this inode will be stored at zookeeper | totally different entity than fileID
+	private METADATA_TYPE metadataType;							//type of metadata object (file or directory or mergedata)
+	private int n2;												//Reed-Solomon parameter
+	private int k2;												//Reed-Solomon parameter
 	private String mergeData;                                   //reason to use String instead of JSONObject is due to GSON conflicts with JSONObject.
 
 	//enum for type of object

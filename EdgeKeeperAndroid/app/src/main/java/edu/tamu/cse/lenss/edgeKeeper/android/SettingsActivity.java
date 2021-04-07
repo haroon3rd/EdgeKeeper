@@ -8,14 +8,13 @@ import android.view.MenuItem;
 
 import org.apache.log4j.Logger;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import edu.tamu.cse.lenss.edgeKeeper.android.R;
 
-/**
- * https://github.com/bhavyakaria/Android.git
- */
+
 public class SettingsActivity extends AppCompatActivity {
     Logger logger = Logger.getLogger(this.getClass());
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +44,10 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         logger.debug("Exiting from Setting view. Restarting the EK Service");
-        Autostart.restartEKService(this.getApplication().getApplicationContext());
+
+        //decie whether service requires restart or nah
+        if(ValueStore.restart.get()) {
+            Autostart.restartEKService(this.getApplication().getApplicationContext());
+        }
     }
 }

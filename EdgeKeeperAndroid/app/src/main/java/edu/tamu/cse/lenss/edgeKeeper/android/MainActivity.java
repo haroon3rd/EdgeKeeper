@@ -2,18 +2,18 @@ package edu.tamu.cse.lenss.edgeKeeper.android;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.Build;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.net.wifi.WifiManager;
 import android.os.IBinder;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
 import android.preference.PreferenceManager;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -26,17 +26,16 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import edu.tamu.cse.lenss.edgeKeeper.client.EKClient;
 import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
 import edu.tamu.cse.lenss.edgeKeeper.server.EdgeStatus;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtilsAndroid;
-import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -80,14 +79,15 @@ public class MainActivity extends AppCompatActivity {
         this.context = getApplicationContext();
 
         this.getActionBar();
+
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         checkPermissions();
 
     }
 
+
     //initializes gridview.
-    //must be called from onCreate()
     private void setupGridView() {
 
         //init gridview object pointing to the right resource at xml
@@ -157,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         if( sharedPreferences.getString(EKProperties.p12Path, null) == null)
-            showSetting();
+            showAccount();
         else if(Autostart.isEKServiceRunning(this)){
             logger.info(EKService.class.getSimpleName()+" is already running. So, not starting service");
             //return;
@@ -191,13 +191,32 @@ public class MainActivity extends AppCompatActivity {
             case R.id.menu_setting:
                 showSetting();
                 return true;
+            case R.id.menu_account:
+                showAccount();
+                return true;
+            case R.id.menu_debug:
+                showDebug();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
+    private void showDebug() {
+        String data = "from the other side";
+        Intent intent = new Intent(MainActivity.this,
+                DebugActivity.class);
+        intent.putExtra("hello", data);
+        startActivity(intent);
+    }
+
     private void showSetting() {
         Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+        startActivity(intent);
+    }
+
+    public void showAccount(){
+        Intent intent = new Intent(MainActivity.this, AccountActivity.class);
         startActivity(intent);
     }
 
@@ -206,8 +225,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkPermissions() {
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             logger.warn("Permission not granted for Writing to external storage");
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 
@@ -219,7 +237,9 @@ public class MainActivity extends AppCompatActivity {
         }
         else
             initializeApp();
-   }
+    }
+
+
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 
@@ -271,7 +291,7 @@ public class MainActivity extends AppCompatActivity {
                     cloud = new ArrayList<>();
 
                     //HANDLE GNS/CLOUD INFORMATION HERE
-                    if(GridViewStore.GNS_status!=null && GridViewStore.GNS_status.get()){
+                    if(ValueStore.GNS_status!=null && ValueStore.GNS_status.get()==0){
 
                         //cloud is always pinned
                         cloud.add(new GVItem(true, "Cloud", true, getApplicationContext(), findViewById(android.R.id.content).getRootView()));
@@ -284,11 +304,11 @@ public class MainActivity extends AppCompatActivity {
 
 
                     //we fetch edge replica and topology information only if EKClient is connected
-                    if(GridViewStore.EKClient_status!=null && GridViewStore.EKClient_status.get()) {
+                    if(ValueStore.ZKClient_status!=null && ValueStore.ZKClient_status.get()==0) {
 
                         //get my name from EKClient
-                        if(GridViewStore.myName==null) {
-                            GridViewStore.myName = EKClient.getOwnAccountName();
+                        if(ValueStore.myName==null) {
+                            ValueStore.myName = EKClient.getOwnAccountName();
                         }
 
                         //HANDLE EDGE REPLICA STATUS INFORMATION HERE
@@ -317,7 +337,7 @@ public class MainActivity extends AppCompatActivity {
                                         if (!temp.contains(name)) {
 
                                             //add this name to res
-                                            if (GridViewStore.pinnedItems.contains(name)) {
+                                            if (ValueStore.pinnedItems.contains(name)) {
                                                 pinned.add(new GVItem(true, name, true, getApplicationContext(), findViewById(android.R.id.content).getRootView()));
                                             } else {
                                                 unpinned.add(new GVItem(true, name, false, getApplicationContext(), findViewById(android.R.id.content).getRootView()));
@@ -346,7 +366,7 @@ public class MainActivity extends AppCompatActivity {
                                 //iterate over each IP
                                 for (String ip : ips) {
 
-                                    System.out.println("network info (ip): " + ips);
+                                    System.out.println("xyz network info (ip): " + ips);
 
                                     //get all names for this IP
                                     List<String> names = EKClient.getAccountNamebyIP(ip);
@@ -361,7 +381,7 @@ public class MainActivity extends AppCompatActivity {
                                         if (!temp.contains(name)) {
 
                                             //add this name to res
-                                            if (GridViewStore.pinnedItems.contains(name)) {
+                                            if (ValueStore.pinnedItems.contains(name)) {
                                                 pinned.add(new GVItem(true, name, true, getApplicationContext(), findViewById(android.R.id.content).getRootView()));
                                             } else {
                                                 unpinned.add(new GVItem(true, name, false, getApplicationContext(), findViewById(android.R.id.content).getRootView()));
@@ -381,7 +401,7 @@ public class MainActivity extends AppCompatActivity {
 
                     //check cloud for last time
                     if(cloud==null || (cloud!=null && cloud.size()==0)){
-                        cloud.add(new GVItem(GridViewStore.cloudStatusCache, "Cloud", true, getApplicationContext(), findViewById(android.R.id.content).getRootView()));
+                        cloud.add(new GVItem(ValueStore.cloudStatusCache, "Cloud", true, getApplicationContext(), findViewById(android.R.id.content).getRootView()));
                     }
 
                     //cloud = cloud + pinned + pinnedItems + unpinned
@@ -389,7 +409,7 @@ public class MainActivity extends AppCompatActivity {
                     cloud.addAll(pinned);
 
                     //add pinned items(DISCONNECTED) into cloud list
-                    for(String pinnedDisItem: GridViewStore.pinnedItems){
+                    for(String pinnedDisItem: ValueStore.pinnedItems){
                         if(!temp.contains(pinnedDisItem)){
                             cloud.add(new GVItem(false, pinnedDisItem, true, getApplicationContext(), findViewById(android.R.id.content).getRootView()));
                             temp.add(pinnedDisItem);
@@ -400,13 +420,18 @@ public class MainActivity extends AppCompatActivity {
                     cloud.addAll(unpinned);
 
                     //delete myself
-                    if(GridViewStore.myName!=null) {
+                    if(ValueStore.myName!=null) {
                         for (int i = 0; i < cloud.size(); i++) {
-                            if (cloud.get(i).getNAME().equals(GridViewStore.myName.substring(0, GridViewStore.myName.indexOf(".")))) {
+                            if (cloud.get(i).getNAME().equals(ValueStore.myName.substring(0, ValueStore.myName.indexOf(".")))) {
                                 cloud.remove(i);
                             }
                         }
                     }
+
+                    //test add multiple test
+                    //for (int i=0; i< 30; i++){
+                    //    cloud.add(new GVItem(true, "camry" + i, true, getApplicationContext(), findViewById(android.R.id.content).getRootView()));
+                    //}
 
                     //update UI
                     //run on UI thread aka mainActivity in this case

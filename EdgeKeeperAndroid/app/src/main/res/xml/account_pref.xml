@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceScreen
+        android:key="P12_FILE_PATH"
+        android:title="Choose certificate"
+        android:onClick="startFileChooser"
+        />
+
+    <EditTextPreference
+        android:inputType="textPassword"
+        android:key="P12_FILE_PASSWORD"
+        android:title="Certificate Password"
+        android:defaultValue="atakatak"
+        android:password="true"/>
+
+</PreferenceScreen>

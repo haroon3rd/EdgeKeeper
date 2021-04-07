@@ -1,41 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceScreen
-        android:key="P12_FILE_PATH"
-        android:title="Choose certificate"
-        android:onClick="startFileChooser"
-        />
-
-    <EditTextPreference
-        android:inputType="textPassword"
-        android:key="P12_FILE_PASSWORD"
-        android:title="Certificate Password"
-        android:defaultValue="atakatak"
-        android:password="true"/>
-
-    <EditTextPreference
-        android:defaultValue="@string/log_file_name_default"
-        android:key="log_file_name_key"
-        android:title="@string/log_file_name_title"
-        />
-
-    <ListPreference
-        android:defaultValue="ALL"
-        android:entries="@array/log_levels"
-        android:entryValues="@array/log_levels"
-        android:key="logging_level_key"
-        android:title="Logging level"
-        />
-
-    <CheckBoxPreference
-        android:defaultValue="false"
-        android:key="@string/enable_perpetual_run"
-        android:summaryOff="Running all the time"
-        android:summaryOn="Running only with Activity"
-        android:title="Run perpetually?"/>
-
-
     <!--android:dependency="DB_default"-->
     <EditTextPreference
         android:defaultValue="18.189.77.68"
@@ -57,7 +22,7 @@
     <EditTextPreference
         android:defaultValue="auto"
         android:key="EDGE_KEEPER_MASTER"
-        android:title="EdgeKeeper masster IP"
+        android:title="EdgeKeeper master IP"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 

@@ -2,12 +2,14 @@ package edu.tamu.cse.lenss.edgeKeeper.android;
 
 public class Wrapper {
 
-    public boolean cloudConnected;
-    public boolean zkClientConnected;
+    public int GNSConnected;
+    public int zkClientConnected;
+    public int zkServerConnection;
 
-    public Wrapper(boolean cloudConnected, boolean zkClientConnected){
-        this.cloudConnected = cloudConnected;
+    public Wrapper(int GNSConnected, int zkClientConnected, int zkServerConnection){
+        this.GNSConnected = GNSConnected;
         this.zkClientConnected = zkClientConnected;
+        this.zkServerConnection = zkServerConnection;
     }
 
 }

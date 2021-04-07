@@ -1,7 +1,6 @@
 package edu.tamu.cse.lenss.edgeKeeper.android;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -34,6 +33,8 @@ import edu.tamu.cse.lenss.edgeKeeper.server.GNSClientHandler;
 
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
+
+
 
 
 /**
@@ -192,7 +193,7 @@ public class EKService extends Service {
         try {
 
             //Create Wrapper object with default value
-            Wrapper wrap = new Wrapper(false, false);
+            Wrapper wrap = new Wrapper(-1, -1, -1);
 
             //parse GNS/cloud information
             if(!error && message!=null && message.contains("GNS")){
@@ -200,22 +201,63 @@ public class EKService extends Service {
                 //get GNS/Cloud status
                 String[] tokens = message.split(", ");
                 String GNS_status = tokens[0].split(":")[1];
-                if(GNS_status.equals("CONNECTED") || GNS_status.equals("RECONNECTED") ){
-                    wrap.cloudConnected = true;
+                if(GNS_status==null) {
+                    wrap.GNSConnected = -1;
+                }else{
+                    if(GNS_status.equals("null")){
+                        wrap.GNSConnected = -1;
+                    }else if (GNS_status.equals(GNSClientHandler.ConnectionState.CONNECTED.toString()) || GNS_status.equals("RECONNECTED")) {
+                        wrap.GNSConnected = 0;
+                    } else if (GNS_status.equals(GNSClientHandler.ConnectionState.DISCONNECTED.toString())) {
+                        wrap.GNSConnected = 1;
+                    }else if (GNS_status.equals(GNSClientHandler.ConnectionState.REGISTRATION_FAILED.toString())){
+                        wrap.GNSConnected = 2;
+                    }
                 }
+                System.out.println("xyz break");
+
 
 
                 //get zkClient status
                 String zkclient_status = tokens[1].split(":")[1];
-                if(zkclient_status.equals("CONNECTED") || zkclient_status.equals("RECONNECTED")) {
-                    wrap.zkClientConnected = true;
+                if(zkclient_status==null){
+                    wrap.zkClientConnected = -1;
+                }else {
+                    if(zkclient_status.equals("null")){
+                        wrap.zkClientConnected = -1;
+                    } else if (zkclient_status.equals("CONNECTED") || zkclient_status.equals("RECONNECTED")) {
+                        wrap.zkClientConnected = 0;
+                    } else if(zkclient_status.equals("SUSPENDED")){
+                        wrap.zkClientConnected = 1;
+                    }else if(zkclient_status.equals("LOST")){
+                        wrap.zkClientConnected = 2;
+                    }
                 }
 
+                //get zkServer status
+                String zkserver_status = tokens[2].split(":")[1];
+                if(zkserver_status==null){
+                    wrap.zkServerConnection = -1;
+                }else{
+                    if(zkserver_status.equals("null")){
+                        wrap.zkServerConnection = -1;
+                    }else if(zkserver_status.equals(ServerState.LEADING.toString())){
+                        wrap.zkServerConnection = 0;
+                    }else if(zkserver_status.equals(ServerState.FOLLOWING.toString())){
+                        wrap.zkServerConnection = 1;
+                    }else if(zkserver_status.equals(ServerState.OBSERVING.toString())){
+                        wrap.zkServerConnection = 2;
+                    }else if(zkserver_status.equals(ServerState.LOOKING.toString())){
+                        wrap.zkServerConnection = 3;
+                    }
+
+                }
             }
 
 
-            GridViewStore.GNS_status.set(wrap.cloudConnected);
-            GridViewStore.EKClient_status.set(wrap.zkClientConnected);
+            ValueStore.GNS_status.set(wrap.GNSConnected);
+            ValueStore.ZKClient_status.set(wrap.zkClientConnected);
+            ValueStore.ZKServer_status.set(wrap.zkServerConnection);
 
         }catch (Exception e){
             logger.log(Level.ALL, "EXCEPTION in EKService processEdgeReplicaInfo(): " + e);
