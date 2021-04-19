@@ -1,21 +1,16 @@
 package edu.tamu.cse.lenss.edgeKeeper.android;
 
-import android.app.ActivityManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Build;
-import android.preference.PreferenceManager;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
-import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
-import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtilsAndroid;
 
 
@@ -76,7 +71,7 @@ public class Autostart extends BroadcastReceiver
 
         // This code will take care of closing the problem of shutting down the service
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Intent notificationIntent = new Intent(context, MainActivity.class);
+            Intent notificationIntent = new Intent(context, MainActivitySCRAP.class);
             PendingIntent pendingIntent = PendingIntent.getActivity(
                     context, 0, notificationIntent, 0);
             context.startForegroundService(intent);

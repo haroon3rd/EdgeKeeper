@@ -11,7 +11,9 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
@@ -25,11 +27,19 @@ import android.content.Context;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceEvent;
+import javax.jmdns.ServiceInfo;
+import javax.jmdns.ServiceListener;
 
 import edu.tamu.cse.lenss.edgeKeeper.client.EKClient;
 import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
@@ -38,11 +48,14 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtilsAndroid;
 
 
-public class MainActivity extends AppCompatActivity {
-
+public class MainActivity extends AppCompatActivity{
 
     Context context;
     Logger logger = Logger.getLogger(this.getClass());
+    JmDNS jmdns;
+    private SampleListener sampleListener;
+    private String service_type = "_http._tcp.local.";
+
 
     public static GridView GV;
 
@@ -50,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
     private EKService mEKService;
     private boolean mBound = false;
     private boolean SERVICE_STARTED = false;
+
+
 
 
     enum ServiceStatus {STARTED,CONNECTED,TERMINATED}
@@ -83,6 +98,13 @@ public class MainActivity extends AppCompatActivity {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         checkPermissions();
+
+    }
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
 
     }
 
@@ -122,6 +144,22 @@ public class MainActivity extends AppCompatActivity {
 
     protected void onDestroy() {
 
+        //close jmdns
+        try{
+            jmdns.removeServiceListener(service_type, sampleListener );
+        }catch (Exception e){
+            logger.log(Level.ALL, "_NSD_SSS exception in unregistering service", e);
+        }
+        try {
+            jmdns.unregisterAllServices();
+            jmdns.close();
+            logger.log(Level.ALL, "_NSD_SSS_mohammad jmdns.close() succeeded");
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.log(Level.ALL, "_NSD_SSS_mohammad exception in jmdns.close()");
+        }
+
+
         logger.info("Inside onDestroy function. isFinishing: "+isFinishing());
         Autostart.stopEKService(this.getApplicationContext());
 
@@ -153,12 +191,10 @@ public class MainActivity extends AppCompatActivity {
             logger.error(e);
         }
 
-        logger.info("Initializing App main Activity");
-
-
-        if( sharedPreferences.getString(EKProperties.p12Path, null) == null)
+        logger.info(" Initializing App main Activity");
+        if( sharedPreferences.getString(EKProperties.p12Path, null) == null) {
             showAccount();
-        else if(Autostart.isEKServiceRunning(this)){
+        }else if(Autostart.isEKServiceRunning(this)){
             logger.info(EKService.class.getSimpleName()+" is already running. So, not starting service");
             //return;
         } else {
@@ -172,7 +208,84 @@ public class MainActivity extends AppCompatActivity {
         Thread GVupdater = new Thread(new UpdateGridView(getApplicationContext(), this, GV));
         GVupdater.start();
 
-  }
+        //jmdns
+        //sampleListener = new SampleListener(logger, jmdns);
+        //new jmdns().execute();
+
+
+    }
+
+
+    //jmdns class running on background
+    private class jmdns extends AsyncTask<Void, Void, Void>{
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            //first unregister all previous services
+            try{
+                jmdns = JmDNS.create();
+                jmdns.unregisterAllServices();
+            }catch (Exception e){
+                e.printStackTrace();
+                logger.log(Level.ALL, "_NSD_sss_exception in closing jmdns()", e);
+            }
+
+            //now create a new instance of jmdns
+            try {
+                jmdns = JmDNS.create(InetAddress.getLocalHost());
+                //ServiceInfo serviceInfo = ServiceInfo.create(service_type, "EDGEKEEPER_NSD_", 1236, "<newline>SSS_mohammad_from_android " + EKClient.getOwnGuid() + "<newline>");
+                //ServiceInfo serviceInfo = ServiceInfo.create(service_type, "EDGEKEEPER_NSD_" + EKClient.getOwnGuid().substring(0, 4), service_type, 0, 1,1,true,  "100.100.100.100");
+                ServiceInfo serviceInfo = ServiceInfo.create(service_type, "EK_NSD_EHIHIHI" , service_type, 0, 1,1,true,  "100.100.100.100");
+
+
+                jmdns.registerService(serviceInfo);
+                jmdns.addServiceListener(service_type, sampleListener);
+            }catch (Exception e){
+                e.printStackTrace();
+                logger.log(Level.ALL,"_NSD_sss_exception in jmdns() class", e);
+
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+
+        }
+
+    }
+
+    private static class SampleListener implements ServiceListener {
+
+        Logger logger;
+        JmDNS jmdns;
+
+        public SampleListener(Logger logger, JmDNS jmdns){
+            this.logger = logger;
+            this.jmdns = jmdns;
+        }
+        @Override
+        public void serviceAdded(ServiceEvent event) {
+            logger.log(Level.ALL, "SSS_mohammad_in_android_EDGEKEEPER_NSD_added:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+            System.out.println("SSS_mohammad_in_android_EDGEKEEPER_NSD_added:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+            jmdns.requestServiceInfo(event.getType(), event.getName(), 5000);
+        }
+
+        @Override
+        public void serviceRemoved(ServiceEvent event) {
+            logger.log(Level.ALL, "SSS_mohammad_in_android_EDGEKEEPER_NSD_removed:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+            System.out.println("SSS_mohammad_in_android_EDGEKEEPER_NSD_removed:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+        }
+
+        @Override
+        public void serviceResolved(ServiceEvent event) {
+            logger.log(Level.ALL, "SSS_mohammad_in_android_EDGEKEEPER_NSD_resolved:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+            System.out.println( "SSS_mohammad_in_android_EDGEKEEPER_NSD_resolved:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+
+        }
+    }
+
 
     /*
         Now deal with the menus
@@ -225,7 +338,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkPermissions() {
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
             logger.warn("Permission not granted for Writing to external storage");
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 
@@ -462,4 +576,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+
+
 }

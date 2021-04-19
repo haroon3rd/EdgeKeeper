@@ -31,6 +31,7 @@
         android:key="NEIGHBOR_IPS"
         android:title="IPs of neighbor EK masters"/>
 
+
     <EditTextPreference
         android:defaultValue="30000"
         android:key="DEVICE_STATUS_INTERVAL"
@@ -90,5 +91,22 @@
         android:defaultValue="2181"
         android:key="clientPort"
         android:title="Zookeeper client port"/>
+
+    <EditTextPreference
+        android:defaultValue="@string/log_file_name_default"
+        android:key="log_file_name_key"
+        android:title="@string/log_file_name_title"
+        android:visibility="visible"
+        />
+
+    <ListPreference
+        android:defaultValue="ALL"
+        android:entries="@array/log_levels"
+        android:entryValues="@array/log_levels"
+        android:key="logging_level_key"
+        android:title="Logging level"
+        />
+
+
 
 </PreferenceScreen>

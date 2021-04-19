@@ -35,11 +35,12 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        >
 
 
         <activity
-            android:name=".MainActivity"
+            android:name=".MainActivitySCRAP"
             android:launchMode="singleTop"
             android:screenOrientation="portrait"
             >
@@ -56,12 +57,12 @@
          <activity
             android:name=".SettingsActivity"
             android:label="@string/action_settings"
-            android:parentActivityName=".MainActivity"
+            android:parentActivityName=".MainActivitySCRAP"
             android:screenOrientation="portrait"
             >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity"/>
+                android:value=".MainActivitySCRAP"/>
         </activity>
 
 
@@ -76,23 +77,23 @@
         <activity
             android:name=".AccountActivity"
             android:label="Account"
-            android:parentActivityName=".MainActivity"
+            android:parentActivityName=".MainActivitySCRAP"
             android:screenOrientation="portrait"
             >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity"/>
+                android:value=".MainActivitySCRAP"/>
         </activity>
 
         <activity
             android:name=".DebugActivity"
             android:label="Debug"
-            android:parentActivityName=".MainActivity"
+            android:parentActivityName=".MainActivitySCRAP"
             android:screenOrientation="portrait"
             >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity"/>
+                android:value=".MainActivitySCRAP"/>
         </activity>
 
         <receiver android:name=".Autostart">
@@ -101,7 +102,6 @@
                 <action android:name="restartservice" />
             </intent-filter>
         </receiver>
-
 
         <service
             android:name=".EKService"

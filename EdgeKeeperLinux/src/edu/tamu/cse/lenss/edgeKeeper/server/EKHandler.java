@@ -1,9 +1,11 @@
 package edu.tamu.cse.lenss.edgeKeeper.server;
 
 
-//import javax.jmdns.*;
+import javax.jmdns.*;
 
+import edu.tamu.cse.lenss.edgeKeeper.client.EKClient;
 import org.apache.curator.framework.CuratorFramework;
+
 
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent.Type;
 import org.apache.curator.framework.state.ConnectionState;
@@ -43,8 +45,7 @@ import edu.tamu.cse.lenss.edgeKeeper.zk.ZKClientHandler;
  * stopping them, etc. It is written for putting common code between Desktop and
  * android in one place.
  * @author sbhunia
- * @param <EKUtils>
- * @param <EKUtils>
+
  *
  */
 public class EKHandler extends Thread implements Terminable{
@@ -52,7 +53,8 @@ public class EKHandler extends Thread implements Terminable{
 
 	
 	boolean isTerminated;
-	///JmDNS jmdns;
+	JmDNS jmdns;
+	String ownGUID;
 
 	static GNSClientHandler gnsClientHandler;
 	static EKUtils ekUtils;
@@ -61,7 +63,6 @@ public class EKHandler extends Thread implements Terminable{
 	static ZKClientHandler zkClientHandler;
 	public static EKRecord ekRecord = new EKRecord();
 	RequestResolver requestResolver;
-
 	public static EdgeStatus edgeStatus;
 	public static CoordinatorServer coordinatorServer;
 	public static CoordinatorClient coordinatorClient;
@@ -81,7 +82,8 @@ public class EKHandler extends Thread implements Terminable{
 	public static TopoHandler topoHandler;
     public static AtomicInteger conNum=new AtomicInteger(0);
 	private ClusterHealthClient clusterHealthClient;
-
+	private SampleListener sampleListener;
+	private String service_type = "_http._tcp.local.";
 
 
 	public EKHandler(EKUtils _ekUtils, EKProperties prop) {
@@ -112,10 +114,6 @@ public class EKHandler extends Thread implements Terminable{
     public static TopoHandler getTopoHandler() {
     	return topoHandler;
     }
-    
-//    public static ClusterLeaderHandler getClusterLeaderHandler () {
-//    	return clusterLeaderHandler;
-//    }
 
     /**
      * This method start the service and create two Request server threads. If the request 
@@ -141,7 +139,7 @@ public class EKHandler extends Thread implements Terminable{
     	this.terminableTasks.add(gnsClientHandler);
 
     	//Now, fetch the device's GUID
-		String ownGUID = gnsClientHandler.getOwnGUID();
+		ownGUID = gnsClientHandler.getOwnGUID();
 		if (ownGUID == null) {
 			logger.fatal("Could not fetch Own GUID entry");
 			ekUtils.onError("Could not fetch Own GUID");
@@ -152,13 +150,6 @@ public class EKHandler extends Thread implements Terminable{
 		ekProperties.setGUID(ownGUID);
 		ekRecord.updateField(EKRecord.ACCOUNTNAME_FIELD, ekProperties.getAccountName());
 
-		// Radu: commented out
-		// try {
-			// sleep(2000); // This sleep is necessary to ensure that all the terminable tasks are properly terminated during restart
-		//} catch (InterruptedException e1) {
-		//	logger.error("Sleep interrupted",e1);
-		//}
-		
 		edgeStatus = new EdgeStatus();
 		
 		try {
@@ -208,13 +199,40 @@ public class EKHandler extends Thread implements Terminable{
 
     		//TODO: start new services from here
     		//register JMDNS service
-    		 /*jmdns = JmDNS.create(InetAddress.getLocalHost());
-             ServiceInfo serviceInfo = ServiceInfo.create("_http._tcp.local.", "example", 1234, "path=index.html");
-             jmdns.registerService(serviceInfo);*/
+			//only run if this desktop EdgeKeeper
+			//Android runs this service from MainActivity
+			//currently turned off (true==false)
+			if(/*!EKUtils.isAndroid()*/true==false) {
+				jmdns = JmDNS.create();
+				sampleListener = new SampleListener(jmdns);
+
+				//create service
+				//ServiceInfo serviceInfo = ServiceInfo.create(service_type, "EDGEKEEPER_NSD_", 1236, "<newline>" + "SSS_mohammad_from_desktop " + ownGUID+ "<newline>");
+				//ServiceInfo serviceInfo = ServiceInfo.create(service_type, "EDGEKEEPER_NSD_"+ownGUID.substring(0, 4), service_type, 0, 1,1,true,"<newline>" + "SSS_mohammad_from_desktop " + ownGUID+ "<newline>");
+				ServiceInfo serviceInfo = ServiceInfo.create(service_type, "EK_NSD_" + ownGUID.substring(0, 4), service_type, 0, 1,1,true,  "foobar");
+
+				//first unregister all old service
+				try{
+					jmdns.removeServiceListener(service_type, sampleListener);
+				}catch (Exception e){
+					logger.log(Level.ALL, "exception in unregistering service", e);
+				}
+				try{
+					jmdns.unregisterAllServices();
+				}catch (Exception e){
+					logger.log(Level.ALL, "exception in unregistering service", e);
+				}
+
+				//now register this service as fresh
+				jmdns = JmDNS.create(InetAddress.getLocalHost());
+				jmdns.registerService(serviceInfo);
+
+				jmdns.addServiceListener(service_type, sampleListener);
+			}
 
     		
     		
-    		
+    		 
 		} catch (IOException e) {
 			logger.fatal("Problem in creating one of the server thread"+e);
     		ekUtils.onError("Could not start server port for clients"+e.getStackTrace());
@@ -229,22 +247,34 @@ public class EKHandler extends Thread implements Terminable{
     }
     
     
-    /*//JMDNS stuff
-	@Override
-	public void serviceAdded(ServiceEvent event) {
-        System.out.println("SSS Service added: " + event.getInfo());		
-	}
+    //class for jmdns service discovery
+    private static class SampleListener implements ServiceListener {
 
-	@Override
-	public void serviceRemoved(ServiceEvent event) {
-        System.out.println("SSS Service removed: " + event.getInfo());		
-	}
+		JmDNS jmdns;
 
-	@Override
-	public void serviceResolved(ServiceEvent event) {
-        System.out.println("Service resolved: " + event.getInfo());	
+    	public SampleListener(JmDNS jmdns){
+    		this.jmdns = jmdns;
+		}
 
-	}*/
+		@Override
+		public void serviceAdded(ServiceEvent event) {
+			logger.log(Level.ALL, "SSS_mohammad_in_desktop_EDGEKEEPER_NSD_added:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+			jmdns.requestServiceInfo(event.getType(), event.getName(), true, 5000);
+
+		}
+
+		@Override
+		public void serviceRemoved(ServiceEvent event) {
+			logger.log(Level.ALL, "SSS_mohammad_in_desktop_EDGEKEEPER_NSD_removed:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+		}
+
+		@Override
+		public void serviceResolved(ServiceEvent event) {
+			logger.log(Level.ALL, "SSS_mohammad_in_desktop_EDGEKEEPER_NSD_resolved:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+		}
+    }
+    
+	
 	
 	
 
@@ -296,12 +326,7 @@ public class EKHandler extends Thread implements Terminable{
 			this.terminated=true;
 			this.interrupt();
 			logger.info("Terminated"+this.getClass().getName());
-			/*try {
-				jmdns.unregisterAllServices();
-	            jmdns.close();
-			}catch(Exception e) {
-				e.printStackTrace();
-			}*/
+			
 		}
     }
     
@@ -310,6 +335,24 @@ public class EKHandler extends Thread implements Terminable{
     }
     
     public void terminate() {
+    	
+    	logger.log(Level.ALL, "SSS_mohammad terminate() start");
+    	
+    	//stop jmdns
+		//only stop jmdns if this is desktop EdgeKeeper
+		if(!EKUtils.isAndroid()) {
+			try {
+				jmdns.unregisterAllServices();
+				jmdns.close();
+				logger.log(Level.ALL, "SSS_mohammad jmdns.close() succeeded");
+			} catch (Exception e) {
+				e.printStackTrace();
+				logger.log(Level.ALL, "SSS_mohammad exception in jmdns.close()");
+			}
+		}
+
+    	logger.log(Level.ALL, "SSS_mohammad terminate() end");
+    	
         this.getShutDownHook().start();
     }
     
@@ -359,6 +402,7 @@ public class EKHandler extends Thread implements Terminable{
 
         	//this will release the other instances.
         	logger.debug("Stopped EdgeKeeper. ConcurrentServices: " +conNum.decrementAndGet());  
+        	
         }
     }
     
@@ -383,46 +427,7 @@ public class EKHandler extends Thread implements Terminable{
 
 	public void curatorStateChange(CuratorFramework c, ConnectionState newState) {
 		ekUtils.onCuratorStateChange(newState);
-		//logger.info("CUrator client state changed to  "+newState.toString());
-//		if(newState==ConnectionState.CONNECTED || newState == ConnectionState.RECONNECTED) {
-//			logger.info("Zookeeper client reconnected. Trying to update the current record "+this+zkClientHandler+this.zkServerHandler+ekRecord);
-//			this.zkClientHandler.update(ekRecord.fetchRecord());
-//		}
-		
-		
 	}
-
-//	public void treeCacheEvent(Type eventType) {
-//		switch (eventType) {
-//		case CONNECTION_LOST:
-//			logger.info("ZK client connection lost");
-//			break;
-//			
-//		case CONNECTION_RECONNECTED:
-//			logger.info("ZK client connection reconnected");
-//			break;
-//			
-//		case CONNECTION_SUSPENDED:
-//			logger.info("ZK client connection suspended");
-//			break;
-//			
-//		case INITIALIZED:
-//			logger.info("ZK client connection initialized");
-//			break;
-//		
-//		case NODE_ADDED:
-//			logger.info("New node entry in cluster");
-//			break;
-//			
-//		case NODE_REMOVED:
-//			logger.info("Removed an entry from cluster");
-//			break;
-//		
-//		case NODE_UPDATED:
-//			logger.info("Updated an entry from cluster");
-//			break;
-//		}
-//	}
 
 
 	public void onZKServerStateChnage(ServerState newServStatus) {

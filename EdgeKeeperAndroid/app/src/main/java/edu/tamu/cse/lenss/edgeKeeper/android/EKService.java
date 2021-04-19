@@ -1,6 +1,5 @@
 package edu.tamu.cse.lenss.edgeKeeper.android;
 
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -47,7 +46,6 @@ public class EKService extends Service {
     Intent intent;
     EKPropertiesAndroid ekProperties = new EKPropertiesAndroid();
     static AtomicBoolean isRunning = new AtomicBoolean(false);
-
     public static final String CHANNEL_ID = "EKForegroundServiceChannel";
 
     // We use this to store the certificate name and password
@@ -71,7 +69,7 @@ public class EKService extends Service {
 
         try {
             EKUtilsAndroid.initLoggerAndroid(context);
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.out.println("Problem with creating logger");
         }
     }
@@ -153,16 +151,10 @@ public class EKService extends Service {
         return START_NOT_STICKY;
     }
 
-    //this function
-    private void updateGridView(){
-
-    }
-
-
     private void showNotification(String message, boolean error) {
         String input = intent.getStringExtra("inputExtra");
         createNotificationChannel();
-        Intent notificationIntent = new Intent(this, MainActivity.class);
+        Intent notificationIntent = new Intent(this, MainActivitySCRAP.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this,
                 0, notificationIntent, 0);
 

@@ -50,7 +50,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         for (int i = 0; i < count; i++) {
             Preference p = prefScreen.getPreference(i);
 
-            if (! ( (p instanceof CheckBoxPreference) || (p.getKey().equals(EKProperties.p12pass))   ) ) {
+            if (! ( (p instanceof CheckBoxPreference) || (p.getKey().equals(EKProperties.p12pass)))) {
                 //handle non-check box items
                 String value = sharedPreferences.getString(p.getKey(), "");
                 p.setSummary(value);

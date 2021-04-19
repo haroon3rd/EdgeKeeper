@@ -36,7 +36,7 @@ public class GVAdapter extends ArrayAdapter<GVItem> {
             listitemView = LayoutInflater.from(getContext()).inflate(R.layout.card_item, parent, false);
         }
 
-        //get this item
+        //get this gridview item
         GVItem input = getItem(position);
 
         //get resources
