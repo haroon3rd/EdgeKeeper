@@ -382,6 +382,38 @@ public class ZKClientHandler implements Terminable {
 	}
 
 
+	//Added by Amran (Unfinished)
+    //This method is written by Amran. ####################################################
+    //     _                              
+    //    / \   _ __ ___  _ __ __ _ _ __  
+    //   / _ \ | '_ ` _ \| '__/ _` | '_ \ 
+    //  / ___ \| | | | | | | | (_| | | | |
+    // /_/   \_\_| |_| |_|_|  \__,_|_| |_|
+	
+	public List<String> getPeers(String service, String duty) {
+		Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);
+		if(map == null) {
+			logger.log(Level.ALL,"Cache is not initialized");
+			return null;
+		}
+		List<String> peerGUIDs = new ArrayList<String>();
+		for (String guid : map.keySet()) {
+			try {
+				JSONObject guidData = parseBytetoJSON( map.get(guid).getData());
+				if (guidData.getString(service).equals(duty)) {
+					peerGUIDs.add(guid);
+					//logger.log(Level.ALL, "GUID "+guid+" contains "+service);
+				}
+			} catch (JSONException | NullPointerException e) {
+				//logger.log(Level.ALL, "The "+service+" fild does not exist in "+guid, e);
+			}
+		}
+		logger.log(Level.ALL, "Service: "+service+", duty: "+duty+" matches for the GUIDS" +peerGUIDs);
+		return peerGUIDs;
+	}
+	
+	
+	
 	public String getGUIDbyAccountName(String accountName) {
 		Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);
 		if(map == null) {

@@ -47,6 +47,7 @@ public class RequestTranslator implements Runnable,  Terminable{
     public final static String requestField = "REQUEST";
     public final static String serviceField = "SERVICE";
     public final static String dutyField = "DUTY_FIELD";
+    
     //public final static String accountName = "ACCOUNTNAME";
 
     //Now the commands from client
@@ -54,19 +55,25 @@ public class RequestTranslator implements Runnable,  Terminable{
     public final static String getOwnGuidCommand = "GET_OWN_GUID";
 
     public final static String addServiceCommand = "ADD_SERVICE";
+    public final static String addServiceCommandExt = "ADD_SERVICE_EXT";
     public final static String removeServiceCommand = "REMOVE_SERVICE";
     public final static String getPeerIPsCommand = "GET_PEER_IPS";
     public final static String getPeerNamesCommand = "GET_PEER_HOSTNAMES";
     public final static String getPeerGUIDCommand = "GET_PEER_GUID";
+    public final static String getPeersCommand = "GET_PEERS";     //Added by Amran
     public static final String purgeClusterCommand = "PURGE_NAMING_CLUSTER";
 	public static final String getAllLocalGUIDCommand = "GET_ALL_LOCAL_GUID";
 	public static final String getmergedGUIDCommand = "GET_MERGED_GUID";
 	public static final String readGUIDCommand = "READ_GUID";
+	public static final String targetServiceName = "TARGET_SERVICE"; // Added by Amran
+	public static final String targetServiceID = "SERVICE_ID";       // Added by Amran
 
     public final static String fieldNetworkInfo = "FIELD_NETWORK_INFO";
     public final static String fieldGUID = "GUID";
     public final static String fieldIP = "netAddress";
     public final static String fieldAccountName = "ACCOUNT_NAME";
+    public final static String fieldPort = "PORT_NO"; // Added by Amran 
+    
     
     public final static String updateIPCommand = "UPDATE_IP";
     public final static String getIpByGuidCommand = "GET_IP_BY_GUID";
@@ -262,6 +269,16 @@ public class RequestTranslator implements Runnable,  Terminable{
                     else
                     	rep=errorJSON("Update failed").toString();
                 }
+                else if (command.equals(addServiceCommandExt)) { //Block Added by Amran 
+                    String service = reqJSON.getString(serviceField);
+                    String duty = reqJSON.getString(dutyField);
+                    String ip = reqJSON.getString(fieldIP);
+                    String port = reqJSON.getString(fieldPort);
+                    if(requestResolver.addServiceExt(service, duty, ip, port))
+                    	rep= successJSON().toString();
+                    else
+                    	rep=errorJSON("Update failed").toString();
+                }
                 else if (command.equals(getAllLocalGUIDCommand)) {
                     rep= successJSON().put(fieldGUID, requestResolver.getAllLocalGUIDs()).toString();
                 }
@@ -276,6 +293,11 @@ public class RequestTranslator implements Runnable,  Terminable{
                     String service = reqJSON.getString(serviceField);
                     String duty = reqJSON.getString(dutyField);
                     rep= successJSON().put(fieldGUID, requestResolver.getPeerGUIDs(service, duty)).toString();
+                }
+                else if (command.equals(getPeersCommand)) {   		//Added by Amran (unfinished)   ########
+                    String service = reqJSON.getString(serviceField);
+                    String duty = reqJSON.getString(dutyField);
+                    rep= successJSON().put(fieldGUID, requestResolver.getPeers(service, duty)).toString();
                 }
                 else if (command.equals(getPeerIPsCommand)) {
                     String service = reqJSON.getString(serviceField);

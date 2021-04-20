@@ -441,6 +441,43 @@ public class GNSClientHandler implements Terminable{
 		}
         return guidList;
     }
+    
+    
+    //Added by Amran (Unfinished)
+    //This method is written by Amran. ####################################################
+    //     _                              
+    //    / \   _ __ ___  _ __ __ _ _ __  
+    //   / _ \ | '_ ` _ \| '__/ _` | '_ \ 
+    //  / ___ \| | | | | | | | (_| | | | |
+    // /_/   \_\_| |_| |_|_|  \__,_|_| |_|
+    /**
+     * This function lookup for the particular service and the target duty
+     * and retrieve a list of GUIDs
+     * @param service
+     * @param duty
+     * @return JSONArray of GUIDs 
+     * @throws IOException
+     * @throws JSONException
+     * @throws GNSException
+     * @author Amran 
+     */
+    public List<String> getPeers(String service, String duty)  {
+    	if(this.connectionState != ConnectionState.CONNECTED) {
+        	logger.log(Level.ALL, "GNS Client is disconnected from GNS server");
+        	return null;
+        }
+    	List<String> guidList = null;
+    	String qur = "~"+service+" : \""+duty+"\"" ;
+        try {
+			guidList = (List<String>) client.execute(GNSCommand.selectQuery(qur)).getResultList();
+	        logger.log(Level.ALL, "[GNS] GUID list:"+ guidList.toString());
+
+		} catch (ClientException | IOException | NullPointerException e) {
+			logger.debug("Error in executing GNS command with server. "+service+", "+duty, e);
+			this.gnsDisconnected();
+		}
+        return guidList;
+    }
 
     /**
      * This function implements reverse DNS kind of thing. 

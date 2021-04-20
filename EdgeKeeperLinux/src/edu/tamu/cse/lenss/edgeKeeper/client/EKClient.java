@@ -173,6 +173,52 @@ public class EKClient {
 		}	
 	}
 	
+	
+	
+    //This method is written by Amran. ####################################################
+    //     _                              
+    //    / \   _ __ ___  _ __ __ _ _ __  
+    //   / _ \ | '_ ` _ \| '__/ _` | '_ \ 
+    //  / ___ \| | | | | | | | (_| | | | |
+    // /_/   \_\_| |_| |_|_|  \__,_|_| |_|
+	/**
+	 * This function registers a service and the duty at the GNS server for service discovery.
+	 * 
+	 * @param ownService What is the name of the service, usually the application name
+	 * @param ownDuty What duty it is playing
+	 * @param ip is ip of Service node/container
+	 * @param port is the port it uses for the service
+	 * @return true if the update is successful at the GNS server
+	 */
+	
+	public static boolean addService(String ownService, String ownDuty, String ip, int port) {
+		String repResult;
+		try {
+			JSONObject reqJSON = new JSONObject();
+			reqJSON.put(RequestTranslator.requestField, RequestTranslator.addServiceCommand);
+			reqJSON.put(RequestTranslator.serviceField, ownService);
+			reqJSON.put(RequestTranslator.dutyField, ownDuty);
+			reqJSON.put(RequestTranslator.fieldIP, ip);
+			reqJSON.put(RequestTranslator.fieldPort, port);
+
+			JSONObject repJSON = getResponseFromEK(reqJSON);
+			repResult = repJSON.getString(RequestTranslator.resultField);
+		} catch (Exception e) {
+			logger.error("Communication with GNS-service failed", e);
+			return false;		
+		}
+	
+		if (repResult.equals(RequestTranslator.successMessage)) {
+			logger.debug("Update Successful ");
+			return true;
+		}else {
+			logger.debug("Update failed ");
+			return false;
+		}	
+	}
+	
+	
+	
 
 	/**
 	 * This function remove the service from GNS server, thus removing the 
@@ -236,6 +282,51 @@ public class EKClient {
 			logger.error("Communication with GNS-service failed", e);		
 		}
 		return guidList;	
+	}
+	
+	
+    //This method is written by Amran. ####################################################
+    //     _                              
+    //    / \   _ __ ___  _ __ __ _ _ __  
+    //   / _ \ | '_ ` _ \| '__/ _` | '_ \ 
+    //  / ___ \| | | | | | | | (_| | | | |
+    // /_/   \_\_| |_| |_|_|  \__,_|_| |_|	
+	/**
+	 * This function retrieves a list of GUID of the nodes running a targetService with the 
+	 * target duty. 
+	 * 
+	 * @param targetService
+	 * @param targetDuty
+	 * @return a JSONObject
+	 * @author Amran.
+	 */
+	
+	public static JSONObject getPeers(String targetService, String targetDuty){
+
+		List <String> guidList = new ArrayList<String>();
+		JSONObject JSONGUID = new JSONObject();
+		try {
+			JSONObject reqJSON = new JSONObject();
+			reqJSON.put(RequestTranslator.requestField, RequestTranslator.getPeerGUIDCommand);
+			reqJSON.put(RequestTranslator.serviceField, targetService);
+			reqJSON.put(RequestTranslator.dutyField, targetDuty);
+
+			JSONObject repJSON = getResponseFromEK(reqJSON);
+			String repResult = repJSON.getString(RequestTranslator.resultField);
+
+			if (repResult.equals(RequestTranslator.successMessage)) {
+				JSONArray ipJsonArray = repJSON.getJSONArray(RequestTranslator.fieldGUID); 
+
+				for(int j = 0; j < ipJsonArray.length(); j++)
+					guidList.add(ipJsonArray.getString(j));
+				logger.debug("Got peers GUIDs as:  "+guidList.toString());
+			} else 
+				logger.debug("GNS service returns error i.e. problem in executing the desired command");
+
+		} catch (Exception e) {
+			logger.error("Communication with GNS-service failed", e);		
+		}
+		return JSONGUID;	
 	}
 	
 	
@@ -694,6 +785,54 @@ public class EKClient {
     	
     }
  
+       
+    //This method is written by Amran. ####################################################
+    //     _                              
+    //    / \   _ __ ___  _ __ __ _ _ __  
+    //   / _ \ | '_ ` _ \| '__/ _` | '_ \ 
+    //  / ___ \| | | | | | | | (_| | | | |
+    // /_/   \_\_| |_| |_|_|  \__,_|_| |_|   
+    /**
+     * getEdgeStatus application status of a specified appName in a specified GUID
+     * @param targetGUID
+     * @param appName
+     * @return JSONObject or null
+     */
+    public static JSONObject getAppStatus(String targetGUID, String targetServiceName, String targetServiceID) {
+    	try {
+    		    		
+    		//create a new json object for request
+    		JSONObject reqJSON = new JSONObject(); 
+        
+			//put request fields in the json object
+			reqJSON.put(RequestTranslator.requestField, RequestTranslator.getAppStatus);
+			reqJSON.put(RequestTranslator.fieldGUID, targetGUID);
+			reqJSON.put(RequestTranslator.targetServiceName, targetServiceName);
+			reqJSON.put(RequestTranslator.targetServiceID, targetServiceID);
+			
+    		logger.log(Level.ALL, "Request to server getAppStatus: " + reqJSON.toString());
+    		//send and receive reply
+    		JSONObject repJSON = getResponseFromEK(reqJSON);
+		
+			if(repJSON!=null && repJSON.getString(RequestTranslator.resultField).equals(RequestTranslator.successMessage)) {
+	    		logger.log(Level.ALL, "Reply from server getAppStatus: " + repJSON.toString());
+	    		repJSON.remove(RequestTranslator.resultField);
+	    		return repJSON;
+			}
+    	}catch(Exception e) {
+    		logger.error("Communication with GNS-service failed", e);	
+    	}
+    	
+    	//dummy return
+		logger.log(Level.DEBUG, "Reply from server getAppStatus returned null.");
+    	return null;
+    	
+    }
+    
+    
+    
+    
+    
 	/**
      * getEdgeStatus device status of a specified GUID
      * @param guid

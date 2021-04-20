@@ -37,6 +37,23 @@ public class RequestResolver{
 //		triggerUpdate();
 //		return result;
 	}
+	
+	
+	//Added by Amran (Unfinished)
+    //This method is written by Amran. ####################################################
+    //     _                              
+    //    / \   _ __ ___  _ __ __ _ _ __  
+    //   / _ \ | '_ ` _ \| '__/ _` | '_ \ 
+    //  / ___ \| | | | | | | | (_| | | | |
+    // /_/   \_\_| |_| |_|_|  \__,_|_| |_|
+	
+	public boolean addServiceExt(String serviceName, String duty, String ip, String port) {
+		return updateFieldStrictlyStrict(serviceName, duty, ip, port);
+//		boolean result = EKHandler.ekRecord.updateField(serviceName, duty);
+//		logger.debug("Updated the service to own record ");
+//		triggerUpdate();
+//		return result;
+	}
 
 	public boolean removeService(String serviceName) {
 		return updateFieldLazy(serviceName, "NULL");
@@ -60,6 +77,39 @@ public class RequestResolver{
 		}
 		if(zkClientHandler.update(record)) {
 			EKHandler.ekRecord.updateField(field, value);
+			gnsClientHandler.update();
+			return true;
+		}
+		else {
+			logger.debug("Could not update to Zookeeper. So, discarding the update.");
+			return false;
+		}
+	}
+	
+	
+	//Added by Amran (Unfinished)
+    //This method is written by Amran. ####################################################
+    //     _                              
+    //    / \   _ __ ___  _ __ __ _ _ __  
+    //   / _ \ | '_ ` _ \| '__/ _` | '_ \ 
+    //  / ___ \| | | | | | | | (_| | | | |
+    // /_/   \_\_| |_| |_|_|  \__,_|_| |_|
+	
+	private boolean updateFieldStrictlyStrict(String field, Object value1, Object value2, Object value3) {
+		//gnsClientHandler.update(EKHandler.ekRecord);
+		//zkClientHandler.update(EKHandler.ekRecord);
+		
+		Object obj[] = {value1, value2, value3};
+		
+		JSONObject record = EKHandler.ekRecord.fetchRecord();
+		try {
+			record.put(field, obj);
+		} catch (JSONException e) {
+			logger.error("Could not add these key pair in the record: " + field + ", "+obj);
+			return false;
+		}
+		if(zkClientHandler.update(record)) {
+			EKHandler.ekRecord.updateField(field, obj);
 			gnsClientHandler.update();
 			return true;
 		}
@@ -145,6 +195,26 @@ public class RequestResolver{
 		logger.log(Level.ALL, "Local query returns: "+local);
 		
 		List<String> global = gnsClientHandler.getPeerGUIDs(service, duty);
+			logger.log(Level.ALL, "Global query returnes: "+global);
+		
+		return jArrayMerge(local, global);
+	}
+	
+	
+	
+	//Added by Amran (Unfinished)
+    //This method is written by Amran. ####################################################
+    //     _                              
+    //    / \   _ __ ___  _ __ __ _ _ __  
+    //   / _ \ | '_ ` _ \| '__/ _` | '_ \ 
+    //  / ___ \| | | | | | | | (_| | | | |
+    // /_/   \_\_| |_| |_|_|  \__,_|_| |_|
+	
+	public  JSONArray getPeers(String service, String duty) {
+		List<String> local = zkClientHandler.getPeers(service, duty);
+		logger.log(Level.ALL, "Local query returns: "+local);
+		
+		List<String> global = gnsClientHandler.getPeers(service, duty);
 			logger.log(Level.ALL, "Global query returnes: "+global);
 		
 		return jArrayMerge(local, global);

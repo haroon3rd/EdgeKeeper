@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  web:
+    #build: .
+    image: "containers_web:latest"
+    container_name: web
+    ports:
+      - "5000:5000"
+  redis:
+    image: "redis:alpine"
+    container_name: redis
