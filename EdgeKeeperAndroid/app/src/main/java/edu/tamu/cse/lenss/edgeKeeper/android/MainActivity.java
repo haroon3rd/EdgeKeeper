@@ -209,8 +209,8 @@ public class MainActivity extends AppCompatActivity{
         GVupdater.start();
 
         //jmdns
-        //sampleListener = new SampleListener(logger, jmdns);
-        //new jmdns().execute();
+        sampleListener = new SampleListener(logger, jmdns);
+        new jmdns().execute();
 
 
     }

@@ -3,6 +3,9 @@ package edu.tamu.cse.lenss.edgeKeeper.server;
 
 import javax.jmdns.*;
 
+import android.content.Context;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import edu.tamu.cse.lenss.edgeKeeper.client.EKClient;
 import org.apache.curator.framework.CuratorFramework;
 
@@ -54,6 +57,7 @@ public class EKHandler extends Thread implements Terminable{
 	
 	boolean isTerminated;
 	JmDNS jmdns;
+	JmDNS jmdns2;
 	String ownGUID;
 
 	static GNSClientHandler gnsClientHandler;
@@ -83,6 +87,7 @@ public class EKHandler extends Thread implements Terminable{
     public static AtomicInteger conNum=new AtomicInteger(0);
 	private ClusterHealthClient clusterHealthClient;
 	private SampleListener sampleListener;
+	private SampleListener sampleListener2;
 	private String service_type = "_http._tcp.local.";
 
 
@@ -202,32 +207,31 @@ public class EKHandler extends Thread implements Terminable{
 			//only run if this desktop EdgeKeeper
 			//Android runs this service from MainActivity
 			//currently turned off (true==false)
-			if(/*!EKUtils.isAndroid()*/true==false) {
+			if(!EKUtils.isAndroid()) {
 				jmdns = JmDNS.create();
 				sampleListener = new SampleListener(jmdns);
 
-				//create service
-				//ServiceInfo serviceInfo = ServiceInfo.create(service_type, "EDGEKEEPER_NSD_", 1236, "<newline>" + "SSS_mohammad_from_desktop " + ownGUID+ "<newline>");
-				//ServiceInfo serviceInfo = ServiceInfo.create(service_type, "EDGEKEEPER_NSD_"+ownGUID.substring(0, 4), service_type, 0, 1,1,true,"<newline>" + "SSS_mohammad_from_desktop " + ownGUID+ "<newline>");
-				ServiceInfo serviceInfo = ServiceInfo.create(service_type, "EK_NSD_" + ownGUID.substring(0, 4), service_type, 0, 1,1,true,  "foobar");
+				jmdns2 = JmDNS.create();
+				sampleListener2 = new SampleListener(jmdns2);
 
-				//first unregister all old service
-				try{
-					jmdns.removeServiceListener(service_type, sampleListener);
-				}catch (Exception e){
-					logger.log(Level.ALL, "exception in unregistering service", e);
-				}
-				try{
-					jmdns.unregisterAllServices();
-				}catch (Exception e){
-					logger.log(Level.ALL, "exception in unregistering service", e);
-				}
+				//create service
+				ServiceInfo serviceInfo = ServiceInfo.create(service_type, "EK_NSD_" + ownGUID.substring(0, 4), service_type, 0, 1,1,true,  "100.desk.top.100");
 
 				//now register this service as fresh
-				jmdns = JmDNS.create(InetAddress.getLocalHost());
-				jmdns.registerService(serviceInfo);
+				logger.log(Level.ALL, "_NSD_ using ownIP: " + InetAddress.getLocalHost().getHostAddress());
+				//jmdns = JmDNS.create(InetAddress.getLocalHost(), InetAddress.getLocalHost().getHostName());  //good one
 
+
+				//jmdns
+				jmdns = JmDNS.create(InetAddress.getByName("192.168.0.18"), InetAddress.getLocalHost().getHostName());
+				jmdns.registerService(serviceInfo);
 				jmdns.addServiceListener(service_type, sampleListener);
+
+				//jmdns2
+				jmdns2 = JmDNS.create(InetAddress.getByName("192.168.2.121"), InetAddress.getLocalHost().getHostName());
+				jmdns2.registerService(serviceInfo);
+				jmdns2.addServiceListener(service_type, sampleListener2);
+
 			}
 
     		
@@ -245,8 +249,7 @@ public class EKHandler extends Thread implements Terminable{
 			executorService.submit(task);
 		logger.info("EdgeKeeper all tasks started");
     }
-    
-    
+
     //class for jmdns service discovery
     private static class SampleListener implements ServiceListener {
 

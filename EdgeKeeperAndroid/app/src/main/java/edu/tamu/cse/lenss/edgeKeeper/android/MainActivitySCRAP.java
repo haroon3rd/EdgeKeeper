@@ -247,26 +247,19 @@ public class MainActivitySCRAP extends AppCompatActivity{
         @Override
         protected Void doInBackground(Void... voids) {
 
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-
             isDiscovering = false;
-            wm = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-            multicastLock = wm.createMulticastLock(activity.getPackageName());
-            multicastLock.setReferenceCounted(false);
+            //wm = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+            //multicastLock = wm.createMulticastLock(activity.getPackageName());
+            //multicastLock.setReferenceCounted(false);
             try {
                 WifiManager wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
                 // get the device ip address
                 final InetAddress deviceIpAddress = getDeviceIpAddress(wifi);
-                multicastLock = wifi.createMulticastLock(getClass().getName());
-                multicastLock.setReferenceCounted(true);
-                multicastLock.acquire();
-                jmdns = JmDNS.create(deviceIpAddress, InetAddress.getLocalHost().getHostName());
-                ServiceInfo serviceInfo = ServiceInfo.create(service_type, "EK_NSD_" + EKClient.getOwnGuid().substring(0,4), service_type, 0, 1,1,true,  deviceIpAddress.getHostName());
+                //multicastLock = wifi.createMulticastLock(getClass().getName());
+                //multicastLock.setReferenceCounted(true);
+                //multicastLock.acquire();
+                jmdns = JmDNS.create(InetAddress.getByName("192.168.49.1"), InetAddress.getLocalHost().getHostName());
+                ServiceInfo serviceInfo = ServiceInfo.create(service_type, "android_right2", 55555, 1,1,true,  "android_test_right2");
                 sampleListener = new SampleListener(logger, jmdns);
 
                 jmdns.registerService(serviceInfo);
