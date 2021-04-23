@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -11,7 +12,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.tamu.cse.lenss.edgeKeeper.dns.DNSServer;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKRecord;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
 import edu.tamu.cse.lenss.edgeKeeper.zk.ZKClientHandler;
@@ -19,7 +19,6 @@ import edu.tamu.cse.lenss.edgeKeeper.zk.ZKClientHandler;
 public class RequestResolver{
 	public static final Logger logger = Logger.getLogger(RequestResolver.class);
 
-	
 	GNSClientHandler gnsClientHandler;
 	ZKClientHandler zkClientHandler;
     
@@ -47,8 +46,8 @@ public class RequestResolver{
     //  / ___ \| | | | | | | | (_| | | | |
     // /_/   \_\_| |_| |_|_|  \__,_|_| |_|
 	
-	public boolean addServiceExt(String serviceName, String duty, String ip, String port) {
-		return updateFieldStrictlyStrict(serviceName, duty, ip, port);
+	public boolean addServiceExt(String serviceName, String serviceID, String duty, String ip, String port) {
+		return updateFieldStrictlyStrict(serviceName, serviceID, duty, ip, port);
 //		boolean result = EKHandler.ekRecord.updateField(serviceName, duty);
 //		logger.debug("Updated the service to own record ");
 //		triggerUpdate();
@@ -87,7 +86,7 @@ public class RequestResolver{
 	}
 	
 	
-	//Added by Amran (Unfinished)
+	//Added by Amran (Almost Finished)
     //This method is written by Amran. ####################################################
     //     _                              
     //    / \   _ __ ___  _ __ __ _ _ __  
@@ -95,26 +94,44 @@ public class RequestResolver{
     //  / ___ \| | | | | | | | (_| | | | |
     // /_/   \_\_| |_| |_|_|  \__,_|_| |_|
 	
-	private boolean updateFieldStrictlyStrict(String field, Object value1, Object value2, Object value3) {
+	private boolean updateFieldStrictlyStrict(String fieldService, String serviceID, String fieldDuty, String fieldIP, String fieldPort) {
 		//gnsClientHandler.update(EKHandler.ekRecord);
 		//zkClientHandler.update(EKHandler.ekRecord);
-		
-		Object obj[] = {value1, value2, value3};
-		
-		JSONObject record = EKHandler.ekRecord.fetchRecord();
+		//serviceID = "ABCDXYZ";
+		JSONObject obj = new JSONObject();
 		try {
-			record.put(field, obj);
+			obj.put(fieldService, fieldDuty);
+			obj.put(RequestTranslator.fieldIP, fieldIP);
+			obj.put(RequestTranslator.fieldPort, fieldPort);
+		} catch (JSONException e1) {
+			logger.error("Could not put objects with error: ",e1);
+		}
+	
+		JSONObject record = EKHandler.ekRecord.fetchRecord();
+		String allServices = null;
+		
+		try {
+			if(record.isNull(RequestTranslator.allServicesField)){
+				allServices = serviceID;
+			} else {
+				allServices = record.getString(RequestTranslator.allServicesField)+"/"+serviceID;
+			}
+
+			record.put(serviceID, obj);
+			record.put(RequestTranslator.allServicesField, allServices);
+
+			if(zkClientHandler.update(record)) {
+				EKHandler.ekRecord.updateField(RequestTranslator.allServicesField, allServices);
+				EKHandler.ekRecord.updateField(serviceID, obj);
+				gnsClientHandler.update();
+				return true;
+			}
+			else {
+				logger.debug("Could not update to Zookeeper. So, discarding the update.");
+				return false;
+			} 
 		} catch (JSONException e) {
-			logger.error("Could not add these key pair in the record: " + field + ", "+obj);
-			return false;
-		}
-		if(zkClientHandler.update(record)) {
-			EKHandler.ekRecord.updateField(field, obj);
-			gnsClientHandler.update();
-			return true;
-		}
-		else {
-			logger.debug("Could not update to Zookeeper. So, discarding the update.");
+			logger.error("Could not add these key pair in the record: " + serviceID + ", "+ obj);
 			return false;
 		}
 	}
@@ -210,14 +227,24 @@ public class RequestResolver{
     //  / ___ \| | | | | | | | (_| | | | |
     // /_/   \_\_| |_| |_|_|  \__,_|_| |_|
 	
-	public  JSONArray getPeers(String service, String duty) {
-		List<String> local = zkClientHandler.getPeers(service, duty);
-		logger.log(Level.ALL, "Local query returns: "+local);
+	public  JSONArray getPeerInfo(String service, String duty) {
+		Map<String, List<String>> local = zkClientHandler.getPeerInfo(service, duty);
+		logger.log(Level.ALL, "Local query returns get Peer info -----------------------------------------: "+local);
 		
-		List<String> global = gnsClientHandler.getPeers(service, duty);
-			logger.log(Level.ALL, "Global query returnes: "+global);
+//		Map<String, List<String>> global = gnsClientHandler.getPeerInfo(service, duty);
+//		logger.log(Level.ALL, "Global query returnes: "+global);
+//		
+//		local.putAll(global);
+		JSONObject obj=new JSONObject(local);
+		JSONArray array = null;
+		try {
+			array = new JSONArray("["+obj.toString()+"]");
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+		return array;
 		
-		return jArrayMerge(local, global);
 	}
 
 	public JSONArray getIPsFromGuid(String guid) {
@@ -333,6 +360,25 @@ public class RequestResolver{
 		logger.log(Level.DEBUG, " Accountnames for IP: "+ip+ " Names: "+ result);
 		return result;
 	}
+	
+	//Added by Amran (Unfinished)
+    //This method is written by Amran. ####################################################
+    //     _                              
+    //    / \   _ __ ___  _ __ __ _ _ __  
+    //   / _ \ | '_ ` _ \| '__/ _` | '_ \ 
+    //  / ___ \| | | | | | | | (_| | | | |
+    // /_/   \_\_| |_| |_|_|  \__,_|_| |_|
+	
+	public JSONArray getPortNObyIP(String ip) {
+		List<String> local = zkClientHandler.getPortNObyIP(ip);
+		logger.log(Level.ALL, "Local query returns: "+local);
+		
+		List<String> global = gnsClientHandler.getPortNObyIP(ip);
+			logger.log(Level.ALL, "Global query returnes: "+global);
+		
+		return jArrayMerge(local, global);
+	}
+	
 	public JSONArray getIPsFromAccountName(String name) {
 		String guid = getGUIDbyAccountName(name);
 		return getIPsFromGuid(guid);

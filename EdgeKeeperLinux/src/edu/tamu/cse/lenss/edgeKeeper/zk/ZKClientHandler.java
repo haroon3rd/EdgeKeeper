@@ -11,6 +11,7 @@ import org.apache.curator.framework.state.ConnectionState;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import org.json.JSONObject;
 
 import edu.tamu.cse.lenss.edgeKeeper.dns.DNSServer;
 import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
+import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKRecord;
@@ -390,28 +392,81 @@ public class ZKClientHandler implements Terminable {
     //  / ___ \| | | | | | | | (_| | | | |
     // /_/   \_\_| |_| |_|_|  \__,_|_| |_|
 	
-	public List<String> getPeers(String service, String duty) {
+	public Map<String, List<String>> getPeerInfo(String service, String duty) {
+		Map<String, List<String>> peerInfo =  new HashMap<String, List<String>>();
 		Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);
 		if(map == null) {
 			logger.log(Level.ALL,"Cache is not initialized");
 			return null;
 		}
-		List<String> peerGUIDs = new ArrayList<String>();
 		for (String guid : map.keySet()) {
 			try {
+				String delimitedIDS = parseBytetoJSON( map.get(guid).getData()).getString("ALL_SERVICES");
+				String[] serviceIDs = delimitedIDS.split("/");
 				JSONObject guidData = parseBytetoJSON( map.get(guid).getData());
-				if (guidData.getString(service).equals(duty)) {
-					peerGUIDs.add(guid);
-					//logger.log(Level.ALL, "GUID "+guid+" contains "+service);
+				for(String id : serviceIDs) {
+					JSONObject iterData = new JSONObject(guidData.getString(id));
+					String data = null;
+					List<String> peerIPs = new ArrayList<String>();
+					if(iterData.getString(service).equals(duty)) {
+						data = iterData.getString(RequestTranslator.fieldIP);
+						if (data!=null)
+							peerIPs.add(data);
+					}
+					peerInfo.put(id, peerIPs);
 				}
-			} catch (JSONException | NullPointerException e) {
+			}catch (JSONException | NullPointerException e) {
 				//logger.log(Level.ALL, "The "+service+" fild does not exist in "+guid, e);
 			}
 		}
-		logger.log(Level.ALL, "Service: "+service+", duty: "+duty+" matches for the GUIDS" +peerGUIDs);
-		return peerGUIDs;
+		logger.log(Level.ALL, "Service: "+service+", duty: "+duty+" matches for the GUIDS" +peerInfo);
+		return peerInfo;
 	}
 	
+	
+	//Added by Amran (Unfinished)
+    //This method is written by Amran. ####################################################
+    //     _                              
+    //    / \   _ __ ___  _ __ __ _ _ __  
+    //   / _ \ | '_ ` _ \| '__/ _` | '_ \ 
+    //  / ___ \| | | | | | | | (_| | | | |
+    // /_/   \_\_| |_| |_|_|  \__,_|_| |_|
+	/*
+	 * public Map<String, List<String>> getPeerGUIDInfo(String service, String duty)
+	 * { Map<String, List<String>> peerGUIDInfo = new HashMap<String,
+	 * List<String>>(); Map<String, List<String>> peerInfo = new HashMap<String,
+	 * List<String>>(); Map<String,ChildData> map =
+	 * cache.getCurrentChildren(nameRecordPath); logger.log(Level.ALL,
+	 * "-------------------------------------MAP------------------------------------------------"
+	 * ); logger.log(Level.ALL,map); logger.log(Level.ALL,
+	 * "-----------------------------------MAP-ENDS---------------------------------------------"
+	 * ); if(map == null) { logger.log(Level.ALL,"Cache is not initialized"); return
+	 * null; } for (String guid : map.keySet()) { try { String delimitedIDS =
+	 * parseBytetoJSON( map.get(guid).getData()).getString("ALL_SERVICES"); String[]
+	 * serviceIDs = delimitedIDS.split("/");
+	 * logger.log(Level.ALL,"------------serviceIDs-------------" +
+	 * serviceIDs.toString()); JSONObject guidData = parseBytetoJSON(
+	 * map.get(guid).getData()); logger.log(Level.ALL,
+	 * "-------------------------------------GUID------------------------------------------------"
+	 * ); logger.log(Level.ALL,guidData); logger.log(Level.ALL,
+	 * "-----------------------------------GUID-ENDS---------------------------------------------"
+	 * ); for(String id : serviceIDs) {
+	 * logger.log(Level.ALL,"------------Iteration for-------------" + id);
+	 * JSONObject iterData = new JSONObject(guidData.getString(id)); String data =
+	 * null; List<String> peerIPs = new ArrayList<String>();
+	 * if(iterData.getString(service).equals(duty)) { data =
+	 * iterData.getString(RequestTranslator.fieldIP); logger.log(Level.ALL,
+	 * "-------------------------------------IP-DATA-------------------------------------------"
+	 * + data); if (data!=null) peerIPs.add(data); } peerInfo.put(id, peerIPs); }
+	 * }catch (JSONException | NullPointerException e) { //logger.log(Level.ALL,
+	 * "The "+service+" fild does not exist in "+guid, e); } peerGUIDInfo.put(guid,
+	 * peerInfo); } logger.log(Level.ALL,
+	 * "Service: "+service+", duty: "+duty+" matches for the GUIDS" +peerInfo);
+	 * logger.log(Level.ALL,
+	 * "-------------------------------------PEER_INFO-------------------------------------------"
+	 * + peerInfo); return peerGUIDInfo; }
+	 */
+
 	
 	
 	public String getGUIDbyAccountName(String accountName) {
@@ -473,6 +528,39 @@ public class ZKClientHandler implements Terminable {
 	}
 
 
+	//Added by Amran (Unfinished)
+    //This method is written by Amran. ####################################################
+    //     _                              
+    //    / \   _ __ ___  _ __ __ _ _ __  
+    //   / _ \ | '_ ` _ \| '__/ _` | '_ \ 
+    //  / ___ \| | | | | | | | (_| | | | |
+    // /_/   \_\_| |_| |_|_|  \__,_|_| |_|
+	public List<String> getPortNObyIP(String ip) {
+		logger.log(Level.ALL, "Trying to fetch GUID for IP:"+ip);
+		Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);
+		if(map == null) {
+			logger.log(Level.ALL,"Cache is not initialized");
+			return null;
+		}
+		List<String> portNOs = new ArrayList<String>();
+		for (String port : map.keySet()) {
+			try {
+				JSONObject portData = parseBytetoJSON( map.get(port).getData());
+				JSONArray jarr = portData.getJSONObject(EKRecord.A_RECORD_FIELD).getJSONArray(EKRecord.RECORD_FIELD);
+				for (int i =0; i< jarr.length(); i++)
+					if(ip.equals(jarr.getString(i))) {
+						portNOs.add(port);
+				}		
+			} catch (JSONException | NullPointerException e) {
+				logger.log(Level.ALL, "Problem in parsing the GUID data for GUID "+port, e);
+			}
+		}
+		logger.log(Level.ALL, "IP: "+ip+" matches GUID: "+portNOs);
+		return portNOs;
+	}
+	
+	
+	
 	public List<String> getGUIDbyIP(String ip) {
 		logger.log(Level.ALL, "Trying to fetch GUID for IP:"+ip);
 		Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);

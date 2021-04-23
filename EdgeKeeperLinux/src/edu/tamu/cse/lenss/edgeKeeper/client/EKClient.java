@@ -18,6 +18,7 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -191,29 +192,34 @@ public class EKClient {
 	 * @return true if the update is successful at the GNS server
 	 */
 	
-	public static boolean addService(String ownService, String ownDuty, String ip, int port) {
+	public static String addService(String ownService, String ownDuty, String ip, int port) {
 		String repResult;
+		String serviceID = UUID.randomUUID().toString();
 		try {
 			JSONObject reqJSON = new JSONObject();
-			reqJSON.put(RequestTranslator.requestField, RequestTranslator.addServiceCommand);
+			reqJSON.put(RequestTranslator.requestField, RequestTranslator.addServiceCommandExt);
 			reqJSON.put(RequestTranslator.serviceField, ownService);
+			reqJSON.put(RequestTranslator.serviceIDField, serviceID);
 			reqJSON.put(RequestTranslator.dutyField, ownDuty);
 			reqJSON.put(RequestTranslator.fieldIP, ip);
 			reqJSON.put(RequestTranslator.fieldPort, port);
+			
+//			logger.log(Level.ALL,"---------------------- reqJSON     -------------------------------------" + reqJSON);
+//			logger.log(Level.ALL,"---------------------- reqJSON to String -------------------------------" + reqJSON);
 
 			JSONObject repJSON = getResponseFromEK(reqJSON);
 			repResult = repJSON.getString(RequestTranslator.resultField);
 		} catch (Exception e) {
 			logger.error("Communication with GNS-service failed", e);
-			return false;		
+			return null;		
 		}
 	
 		if (repResult.equals(RequestTranslator.successMessage)) {
 			logger.debug("Update Successful ");
-			return true;
+			return serviceID;
 		}else {
 			logger.debug("Update failed ");
-			return false;
+			return null;
 		}	
 	}
 	
@@ -301,13 +307,12 @@ public class EKClient {
 	 * @author Amran.
 	 */
 	
-	public static JSONObject getPeers(String targetService, String targetDuty){
+	public static List<String>  getPeerInfo(String targetService, String targetDuty){
 
-		List <String> guidList = new ArrayList<String>();
-		JSONObject JSONGUID = new JSONObject();
+		List <String> netInfoList = new ArrayList<String>();
 		try {
 			JSONObject reqJSON = new JSONObject();
-			reqJSON.put(RequestTranslator.requestField, RequestTranslator.getPeerGUIDCommand);
+			reqJSON.put(RequestTranslator.requestField, RequestTranslator.getPeerInfoCommand);
 			reqJSON.put(RequestTranslator.serviceField, targetService);
 			reqJSON.put(RequestTranslator.dutyField, targetDuty);
 
@@ -318,15 +323,15 @@ public class EKClient {
 				JSONArray ipJsonArray = repJSON.getJSONArray(RequestTranslator.fieldGUID); 
 
 				for(int j = 0; j < ipJsonArray.length(); j++)
-					guidList.add(ipJsonArray.getString(j));
-				logger.debug("Got peers GUIDs as:  "+guidList.toString());
+					netInfoList.add(ipJsonArray.getString(j));
+				logger.debug("Got peer info as:  "+netInfoList.toString());
 			} else 
 				logger.debug("GNS service returns error i.e. problem in executing the desired command");
 
 		} catch (Exception e) {
 			logger.error("Communication with GNS-service failed", e);		
 		}
-		return JSONGUID;	
+		return netInfoList;	
 	}
 	
 	
@@ -526,6 +531,50 @@ public class EKClient {
 		return accountName;	
 	}
 
+	
+	
+    //This method is written by Amran. ####################################################
+    //     _                              
+    //    / \   _ __ ___  _ __ __ _ _ __  
+    //   / _ \ | '_ ` _ \| '__/ _` | '_ \ 
+    //  / ___ \| | | | | | | | (_| | | | |
+    // /_/   \_\_| |_| |_|_|  \__,_|_| |_|
+	/**
+	 * Retrieve the list of account names which has this IP. It may return multiple 
+	 * hostnames if multiple nodes updated their GUID record with the targetIP
+	 * @param targetIp
+	 * @return AccountName
+	 */
+	public static List<String> getPortNObyIP(String targetIp){
+		List<String> portNOList = new ArrayList<String>();
+		try {
+			JSONObject reqJSON = new JSONObject();
+			reqJSON.put(RequestTranslator.requestField, RequestTranslator.getPortNObyIPCommand);
+			reqJSON.put(RequestTranslator.fieldIP, targetIp);
+			
+			
+			JSONObject repJSON = getResponseFromEK(reqJSON);
+			String repResult = repJSON.getString(RequestTranslator.resultField);
+	
+			if (repResult.equals(RequestTranslator.successMessage)) {
+				//accountName = repJSON.getString(RequestTranslator.fieldAccountName);
+				
+				JSONArray jsonArray = repJSON.getJSONArray(RequestTranslator.fieldPort); 
+				
+				if(jsonArray!=null) {
+					for(int j = 0; j < jsonArray.length(); j++)
+						portNOList.add(jsonArray.getString(j));	
+				} else logger.log(Level.ALL,"Port_No Not found");
+				
+				logger.debug("Port_No :" + portNOList);
+			} else 
+				logger.debug("GNS service returns error i.e. problem in executing the desired command");
+		} catch (Exception e) {
+			logger.error("Communication with GNS-service failed", e);		
+		}
+		return portNOList;	
+	}
+	
 	
 	
 	
@@ -807,8 +856,8 @@ public class EKClient {
 			//put request fields in the json object
 			reqJSON.put(RequestTranslator.requestField, RequestTranslator.getAppStatus);
 			reqJSON.put(RequestTranslator.fieldGUID, targetGUID);
-			reqJSON.put(RequestTranslator.targetServiceName, targetServiceName);
-			reqJSON.put(RequestTranslator.targetServiceID, targetServiceID);
+			reqJSON.put(RequestTranslator.serviceField, targetServiceName);
+			reqJSON.put(RequestTranslator.serviceID, targetServiceID);
 			
     		logger.log(Level.ALL, "Request to server getAppStatus: " + reqJSON.toString());
     		//send and receive reply
@@ -1089,6 +1138,4 @@ public class EKClient {
 	}
 //======================================================================MOHAMMAD======================================================================================    
 
-
-    
 }

@@ -12,6 +12,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -29,6 +30,7 @@ import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.GNSException;
@@ -461,15 +463,18 @@ public class GNSClientHandler implements Terminable{
      * @throws GNSException
      * @author Amran 
      */
-    public List<String> getPeers(String service, String duty)  {
+    @SuppressWarnings("unchecked")
+	public Map<String, List<String>>  getPeerInfo(String service, String duty)  {
     	if(this.connectionState != ConnectionState.CONNECTED) {
         	logger.log(Level.ALL, "GNS Client is disconnected from GNS server");
         	return null;
         }
-    	List<String> guidList = null;
+    	Map<String, List<String>>  guidList = null;
     	String qur = "~"+service+" : \""+duty+"\"" ;
         try {
-			guidList = (List<String>) client.execute(GNSCommand.selectQuery(qur)).getResultList();
+        	CommandPacket sample  = GNSCommand.selectQuery(qur);
+        	logger.log(Level.ALL, "Connad Packet : "+ sample.toString());
+			guidList = (Map<String, List<String>>) client.execute(GNSCommand.selectQuery(qur)).getResultList();
 	        logger.log(Level.ALL, "[GNS] GUID list:"+ guidList.toString());
 
 		} catch (ClientException | IOException | NullPointerException e) {
@@ -491,7 +496,8 @@ public class GNSClientHandler implements Terminable{
      * @throws ClientException
      * @throws IOException
      */
-    public List<String> getGUIDbyIP(String ip) {
+    @SuppressWarnings("unchecked")
+	public List<String> getGUIDbyIP(String ip) {
     	if(this.connectionState != ConnectionState.CONNECTED) {
         	logger.log(Level.ALL, "GNS Client is disconnected from GNS server");
         	return null;
@@ -509,6 +515,33 @@ public class GNSClientHandler implements Terminable{
         return guidList;       
     }
 
+    
+    
+    //Added by Amran (Unfinished)
+    //This method is written by Amran. ####################################################
+    //     _                              
+    //    / \   _ __ ___  _ __ __ _ _ __  
+    //   / _ \ | '_ ` _ \| '__/ _` | '_ \ 
+    //  / ___ \| | | | | | | | (_| | | | |
+    // /_/   \_\_| |_| |_|_|  \__,_|_| |_|
+    @SuppressWarnings("unchecked")
+	public List<String> getPortNObyIP(String ip) {
+    	if(this.connectionState != ConnectionState.CONNECTED) {
+        	logger.log(Level.ALL, "GNS Client is disconnected from GNS server");
+        	return null;
+        }
+    	List<String> portList = null;
+    	try {
+	    	String qur = "~"+fieldIP+" : \""+ip+"\"" ;
+	        logger.log(Level.ALL,"Trying to execute query: "+qur);
+	        portList = (List<String>) client.execute(GNSCommand.selectQuery(qur)).getResultList();
+	        logger.debug("[GNS] GUID list:"+ portList.toString());
+    	}catch (ClientException | IOException | NullPointerException e) {
+			logger.debug("Error in executing GNS command with server. "+ip, e);
+			this.gnsDisconnected();
+		}
+        return portList;       
+    }
     
     
     public void run() {

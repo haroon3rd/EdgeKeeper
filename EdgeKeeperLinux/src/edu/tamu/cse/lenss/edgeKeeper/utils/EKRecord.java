@@ -105,6 +105,35 @@ public class EKRecord {
 		}
 	}
 	
+	
+	
+	//Added by Amran (Unfinished)
+    //This method is written by Amran. ####################################################
+    //     _                              
+    //    / \   _ __ ___  _ __ __ _ _ __  
+    //   / _ \ | '_ ` _ \| '__/ _` | '_ \ 
+    //  / ___ \| | | | | | | | (_| | | | |
+    // /_/   \_\_| |_| |_|_|  \__,_|_| |_|
+	@SuppressWarnings("finally")
+	public JSONObject fetchAnyRecord() {
+		lock.lock();
+		
+		JSONObject jRecord =null;
+		
+		// We are doing this to make sure the JSOn is deeply copied.
+		try {
+			jRecord = new JSONObject(this.record.toString());
+			logger.log(Level.ALL, "fetched record: "+jRecord.toString());
+		} catch (JSONException | NullPointerException e) {
+			logger.warn("Problem in fetching ownrecord.");
+		} finally {
+			lock.unlock();
+			return jRecord;
+		}
+	}
+	
+	
+	
 	public byte[] fetchRecordBytes() {
 		return this.fetchRecord().toString().getBytes();
 	}
