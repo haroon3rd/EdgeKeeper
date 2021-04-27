@@ -8,7 +8,7 @@
         android:title="GNS server address"/>
 
     <CheckBoxPreference
-        android:defaultValue="false"
+        android:defaultValue="true"
         android:key="ENABLE_MASTER"
         android:summaryOff="Dummy EK slave"
         android:summaryOn="Potential candidate for EK master"

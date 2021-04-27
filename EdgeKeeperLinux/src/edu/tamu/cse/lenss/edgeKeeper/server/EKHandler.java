@@ -48,18 +48,19 @@ import edu.tamu.cse.lenss.edgeKeeper.zk.ZKClientHandler;
  * stopping them, etc. It is written for putting common code between Desktop and
  * android in one place.
  * @author sbhunia
-
  *
  */
 public class EKHandler extends Thread implements Terminable{
+
+	//logger
 	public static final Logger logger = Logger.getLogger(EKHandler.class);
 
-	
+	//variables
 	boolean isTerminated;
 	JmDNS jmdns;
-	JmDNS jmdns2;
 	String ownGUID;
 
+	//more variables
 	static GNSClientHandler gnsClientHandler;
 	static EKUtils ekUtils;
 	private static EKProperties ekProperties;
@@ -71,10 +72,10 @@ public class EKHandler extends Thread implements Terminable{
 	public static CoordinatorServer coordinatorServer;
 	public static CoordinatorClient coordinatorClient;
 
-	
-	
-     
+
     ExecutorService executorService;
+
+    //list of terminable objects which we terminate when process is being killed
     List<Terminable> terminableTasks = new ArrayList<Terminable>();
     
     DNSServer dnsServer;
@@ -87,55 +88,50 @@ public class EKHandler extends Thread implements Terminable{
     public static AtomicInteger conNum=new AtomicInteger(0);
 	private ClusterHealthClient clusterHealthClient;
 	private SampleListener sampleListener;
-	private SampleListener sampleListener2;
 	private String service_type = "_http._tcp.local.";
 
 
+	//only public constructor
 	public EKHandler(EKUtils _ekUtils, EKProperties prop) {
         ekUtils= _ekUtils;
         ekProperties = prop;
     }
 
+    //getter functions
     public static ZKClientHandler getZKClientHandler() {
     	return zkClientHandler;
     }
-    
     public static ZKServerHandler getZKServerHandler() {
     	return zkServerHandler;
     }
-    
     public static GNSClientHandler getGNSClientHandler() {
     	return gnsClientHandler;
     }
-    
     public static EKProperties getEKProperties() {
     	return ekProperties;
     }
-    
     public static EKUtils getEKUtils() {
     	return ekUtils;
     }
-    
     public static TopoHandler getTopoHandler() {
     	return topoHandler;
     }
 
-    /**
-     * This method start the service and create two Request server threads. If the request 
-     * servers can not be started (mainly due to bind exception), the function returns false 
-     * otherwise it returns true and try to connect to the GNS server.
-     * @return false if the request server can not bind.
-     */
+    //this method start the service and create two Request server threads.
     public void run()  {
+
+		//start ekUtils for
     	ekUtils.onStart();
     	
     	logger.debug("Starting GNS service. ConcurrentServices: " +conNum.incrementAndGet());
+
+    	//validate ek properties
     	try {
     		ekProperties.validate();
     		logger.log(Level.ALL, "Validated all properties");
     	} catch(Exception e) {
-    		logger.fatal("Invalied EK Properties. Not starting EdgeKeeper services", e);
-    		ekUtils.onError("Invalied EK Properties. Not starting EdgeKeeper services");
+    		logger.fatal("Invalid EK Properties. Not starting EdgeKeeper services", e);
+    		ekUtils.onError("Invalid EK Properties. Not starting EdgeKeeper services");
     		return;
     	}
     	isTerminated = false;
@@ -205,38 +201,23 @@ public class EKHandler extends Thread implements Terminable{
     		//TODO: start new services from here
     		//register JMDNS service
 			//only run if this desktop EdgeKeeper
-			//Android runs this service from MainActivity
-			//currently turned off (true==false)
-			if(!EKUtils.isAndroid()) {
+			//Android runs this service from MainActivity.
+			//currently jmDNS is turned off (true==false)
+			if(/*!EKUtils.isAndroid()*/true==false) {
 				jmdns = JmDNS.create();
 				sampleListener = new SampleListener(jmdns);
-
-				jmdns2 = JmDNS.create();
-				sampleListener2 = new SampleListener(jmdns2);
 
 				//create service
 				ServiceInfo serviceInfo = ServiceInfo.create(service_type, "EK_NSD_" + ownGUID.substring(0, 4), service_type, 0, 1,1,true,  "100.desk.top.100");
 
 				//now register this service as fresh
 				logger.log(Level.ALL, "_NSD_ using ownIP: " + InetAddress.getLocalHost().getHostAddress());
-				//jmdns = JmDNS.create(InetAddress.getLocalHost(), InetAddress.getLocalHost().getHostName());  //good one
-
-
-				//jmdns
-				jmdns = JmDNS.create(InetAddress.getByName("192.168.0.18"), InetAddress.getLocalHost().getHostName());
+				jmdns = JmDNS.create(InetAddress.getLocalHost(), InetAddress.getLocalHost().getHostName());
 				jmdns.registerService(serviceInfo);
 				jmdns.addServiceListener(service_type, sampleListener);
 
-				//jmdns2
-				jmdns2 = JmDNS.create(InetAddress.getByName("192.168.2.121"), InetAddress.getLocalHost().getHostName());
-				jmdns2.registerService(serviceInfo);
-				jmdns2.addServiceListener(service_type, sampleListener2);
-
 			}
 
-    		
-    		
-    		 
 		} catch (IOException e) {
 			logger.fatal("Problem in creating one of the server thread"+e);
     		ekUtils.onError("Could not start server port for clients"+e.getStackTrace());

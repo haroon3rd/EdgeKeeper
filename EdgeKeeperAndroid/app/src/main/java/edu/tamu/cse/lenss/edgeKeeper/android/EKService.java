@@ -74,12 +74,6 @@ public class EKService extends Service {
         }
     }
 
-//    @Override
-//    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-//        ekProperties.load(sharedPreferences);
-//    }
-
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         isRunning.set(true);

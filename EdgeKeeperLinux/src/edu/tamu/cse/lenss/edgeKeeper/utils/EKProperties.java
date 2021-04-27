@@ -42,6 +42,7 @@ public class EKProperties extends Properties{
 	
 	
 
+	//takes a property key and value and validates it whether the property field is legit.s
 	public static boolean validateField(String key, Object vo) {
 		if ( key == null || key.isEmpty() || vo == null )
 			return false;		
@@ -50,7 +51,9 @@ public class EKProperties extends Properties{
 			value = (String) vo;
 		else
 			value = String.valueOf(vo);
+
 		EKUtils.logger.debug( "validating Properties "+key+": "+value.toString());
+
 		switch (key) {
 		case p12Path:
 			if(! value.endsWith(".p12")) 
@@ -62,11 +65,9 @@ public class EKProperties extends Properties{
 			if(! (validIP(value) || value.toLowerCase().equals("auto")))
 				return false;
 			break;
-			
-
 		case enableMaster:
 		case enableRealIP:
-			if(! ("true".equals(value.toLowerCase()) || "false".equals(value.toLowerCase()) ))
+			if(! (   "true".equals(value.toLowerCase()) || "false".equals(value.toLowerCase()) ))
 				return false;
 			break;
 			
@@ -96,21 +97,22 @@ public class EKProperties extends Properties{
 	 */
 	public boolean validate() throws IllegalArgumentException, IllegalAccessException {
 		EKUtils.logger.log(Level.ALL, "Validating all properties:");
+
 		for(Field f:  EKProperties.class.getDeclaredFields()) {
 			String key;
 			key = (String) f.get(this);
 			String value = this.getProperty(key);
-			//EKUtils.logger.log(Level.ALL,"Validating key:"+key+" value:"+value);
-			if ( ! validateField(key,value)) { 
+			if ( ! validateField(key,value)) {
 				EKUtils.logger.error("Illegal value for key:"+key+" value:"+value);
 				throw new IllegalArgumentException("Illegal argument. key:"+key+" value:"+value);
+			}else{
+				EKUtils.logger.info("Legal value for key:"+key+" value:"+value);
 			}
 			
 		}
 		return true;
 	}
-	
-	
+
 	public Object setProperty(String key, Object value){
 	    if (value instanceof String)
 	        return this.setProperty(key, (String) value);
@@ -135,7 +137,7 @@ public class EKProperties extends Properties{
 	/**
 	 * Check if the string represent multiple valid IPs seperated by ','
 	 * A sample was taken from https://stackoverflow.com/questions/4581877/validating-ipv4-string-in-java
-	 * @param ip
+	 * @param
 	 * @return
 	 */
 	public static boolean validIP (String ips) {
@@ -182,7 +184,8 @@ public class EKProperties extends Properties{
         EKUtils.logger.debug("p12Filepath: "+p12FilePath+"Stripped accountname: "+ accountName);
         return accountName;
     }
-    
+
+    //loading ek.properties file from disk (this function is used for EdgeKeeper Desktop aka EdgeKeeper Linux)
     public static EKProperties loadFromFile(String ekPropPath) throws IllegalArgumentException, IOException, IllegalAccessException{
     	EKProperties ekProp = new EKProperties();
     	

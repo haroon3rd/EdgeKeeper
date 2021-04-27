@@ -48,24 +48,29 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
         // Go through all of the preferences, and set up their preference summary.
         for (int i = 0; i < count; i++) {
+
             Preference p = prefScreen.getPreference(i);
 
             if (! ( (p instanceof CheckBoxPreference) || (p.getKey().equals(EKProperties.p12pass)))) {
+
                 //handle non-check box items
                 String value = sharedPreferences.getString(p.getKey(), "");
                 p.setSummary(value);
                 tempPref.put(p.getKey(), value.toString());
                 logger.log(Level.ALL,"Preference screen setting summary for "+p.getKey()+" "+value);
+
             }else{
+
                 //handle check box items
-                CheckBoxPreference mCheckBoxPreference = (CheckBoxPreference) getPreferenceScreen()
-                        .findPreference(p.getKey());
+                CheckBoxPreference mCheckBoxPreference = (CheckBoxPreference) getPreferenceScreen().findPreference(p.getKey());
+
                 if (mCheckBoxPreference.isChecked()) {
                     tempPref.put(p.getKey(), "true");
                 }else{
                     tempPref.put(p.getKey(), "false");
                 }
             }
+
             p.setOnPreferenceChangeListener(this);
         }
     }

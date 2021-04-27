@@ -37,12 +37,13 @@ import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
 import org.json.JSONObject;
 
 /**
- * This class contains miscleneous useful functionalities
+ * This class contains miscellaneous useful functionalities
  * 
  * @author sbhunia
  *
  */
 public abstract class EKUtils {
+
 	public static final Logger logger = Logger.getLogger(EKUtils.class);
 	EKProperties ekProp;
 
