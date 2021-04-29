@@ -233,8 +233,8 @@ public class RequestResolver{
 		
 //		Map<String, List<String>> global = gnsClientHandler.getPeerInfo(service, duty);
 //		logger.log(Level.ALL, "Global query returnes: "+global);
-//		
-//		local.putAll(global);
+		
+		//local.putAll(global);
 		JSONObject obj=new JSONObject(local);
 		JSONArray array = null;
 		try {

@@ -190,6 +190,7 @@ public class EKClient {
 	 * @param ip is ip of Service node/container
 	 * @param port is the port it uses for the service
 	 * @return true if the update is successful at the GNS server
+	 * @Author Amran
 	 */
 	
 	public static String addService(String ownService, String ownDuty, String ip, int port) {

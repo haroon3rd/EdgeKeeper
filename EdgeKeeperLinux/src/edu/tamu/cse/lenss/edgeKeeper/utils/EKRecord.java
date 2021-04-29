@@ -6,6 +6,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.xbill.DNS.Type;
 
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnscommon.GNSProtocol;
 
 import java.util.concurrent.locks.ReentrantLock;

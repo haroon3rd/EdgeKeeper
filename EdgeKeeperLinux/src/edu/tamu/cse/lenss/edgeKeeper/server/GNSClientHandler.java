@@ -11,6 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -469,19 +470,18 @@ public class GNSClientHandler implements Terminable{
         	logger.log(Level.ALL, "GNS Client is disconnected from GNS server");
         	return null;
         }
-    	Map<String, List<String>>  guidList = null;
+    	List<String> guidList = null;
     	String qur = "~"+service+" : \""+duty+"\"" ;
         try {
-        	CommandPacket sample  = GNSCommand.selectQuery(qur);
-        	logger.log(Level.ALL, "Connad Packet : "+ sample.toString());
-			guidList = (Map<String, List<String>>) client.execute(GNSCommand.selectQuery(qur)).getResultList();
+			guidList = (List<String>) client.execute(GNSCommand.selectQuery(qur)).getResultList();
 	        logger.log(Level.ALL, "[GNS] GUID list:"+ guidList.toString());
 
 		} catch (ClientException | IOException | NullPointerException e) {
 			logger.debug("Error in executing GNS command with server. "+service+", "+duty, e);
 			this.gnsDisconnected();
 		}
-        return guidList;
+        Map<String, List<String>> peerInfo = new HashMap();
+        return peerInfo;
     }
 
     /**
