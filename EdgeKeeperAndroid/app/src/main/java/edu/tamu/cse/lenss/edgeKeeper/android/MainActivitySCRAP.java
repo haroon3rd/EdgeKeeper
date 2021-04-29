@@ -34,13 +34,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
 
-
-
-
-
-
-
-
 import javax.jmdns.JmDNS;
 import javax.jmdns.JmmDNS;
 import javax.jmdns.ServiceEvent;
@@ -68,7 +61,9 @@ public class MainActivitySCRAP extends AppCompatActivity{
     WifiManager wm;
     InetAddress bindingAddress;
     boolean isDiscovering;
+    public static String myname = "samsung";
 
+    NetworkChangeReceiver netChange;
 
 
     public static GridView GV;
@@ -246,7 +241,9 @@ public class MainActivitySCRAP extends AppCompatActivity{
         //new jmdnss().execute();
 
         //init jmmdns stuff
-        new jmmdnss().execute();
+        //new jmmdnss().execute();
+
+        netChange = new NetworkChangeReceiver(getApplicationContext());
 
     }
 
@@ -325,7 +322,7 @@ public class MainActivitySCRAP extends AppCompatActivity{
                 multicastLock.setReferenceCounted(true);
                 multicastLock.acquire();
                 registry = JmmDNS.Factory.getInstance();
-                ServiceInfo serviceInfo = ServiceInfo.create(service_type, "EK_NSD_android_jmm_RIGHT", 0, 1,1,true,  "android_text_wifi_jmm");
+                ServiceInfo serviceInfo = ServiceInfo.create(service_type, "EK_NSD_android_jmm_" + myname, 0, 1,1,true,  "android_text_wifi_jmm_" + myname);
                 sampleListener_jmm = new SampleListener_JmmDNS(logger, registry);
 
                 registry.registerService(serviceInfo);
@@ -377,20 +374,20 @@ public class MainActivitySCRAP extends AppCompatActivity{
         @Override
         public void serviceAdded(ServiceEvent event) {
             logger.log(Level.ALL, "SSS_mohammad_in_android_EDGEKEEPER_NSD_added:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
-            System.out.println("SSS_mohammad_in_android_EDGEKEEPER_NSD_added:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+            System.out.println("SSS_jmdns_mohammad_in_android_EDGEKEEPER_NSD_added:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
             jmdns.requestServiceInfo(event.getType(), event.getName(), 5000);
         }
 
         @Override
         public void serviceRemoved(ServiceEvent event) {
             logger.log(Level.ALL, "SSS_mohammad_in_android_EDGEKEEPER_NSD_removed:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
-            System.out.println("SSS_mohammad_in_android_EDGEKEEPER_NSD_removed:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+            System.out.println("SSS_jmdns_mohammad_in_android_EDGEKEEPER_NSD_removed:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
         }
 
         @Override
         public void serviceResolved(ServiceEvent event) {
             logger.log(Level.ALL, "SSS_mohammad_in_android_EDGEKEEPER_NSD_resolved:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
-            System.out.println( "SSS_mohammad_in_android_EDGEKEEPER_NSD_resolved:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+            System.out.println( "SSS_jmdns_mohammad_in_android_EDGEKEEPER_NSD_resolved:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
 
         }
     }
@@ -408,20 +405,39 @@ public class MainActivitySCRAP extends AppCompatActivity{
         @Override
         public void serviceAdded(ServiceEvent event) {
             logger.log(Level.ALL, "SSS_mohammad_in_android_EDGEKEEPER_NSD_added:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
-            System.out.println("SSS_mohammad_in_android_EDGEKEEPER_NSD_added:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+            System.out.println("SSS_jmdns_mohammad_in_android_EDGEKEEPER_NSD_added:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
             jmmdns.requestServiceInfo(event.getType(), event.getName(), 5000);
+
+            //delete this bit of code it was made for fun
+            String data = event.getName();
+            if(data.contains("(")){
+                data = data.split(" ")[0];
+            }
+            String[] tokens = data.split("_");
+            String name = tokens[tokens.length-1];
+            System.out.println("nameSir: " + name);
+            if(!ValueStore.pinnedItems.contains(name)){
+                ValueStore.pinnedItems.add(name);
+            }
         }
 
         @Override
         public void serviceRemoved(ServiceEvent event) {
             logger.log(Level.ALL, "SSS_mohammad_in_android_EDGEKEEPER_NSD_removed:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
-            System.out.println("SSS_mohammad_in_android_EDGEKEEPER_NSD_removed:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+            System.out.println("SSS_jmdns_mohammad_in_android_EDGEKEEPER_NSD_removed:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
         }
 
         @Override
         public void serviceResolved(ServiceEvent event) {
             logger.log(Level.ALL, "SSS_mohammad_in_android_EDGEKEEPER_NSD_resolved:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
-            System.out.println( "SSS_mohammad_in_android_EDGEKEEPER_NSD_resolved:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+            System.out.println( "SSS_jmdns_mohammad_in_android_EDGEKEEPER_NSD_resolved:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+
+            //delete this bit of code it was made for fun
+            String[] tokens = event.getName().substring(1).split("_");
+            String name = tokens[tokens.length-1];
+            if(ValueStore.pinnedItems.contains(name)){
+                ValueStore.pinnedItems.remove(name);
+            }
 
         }
     }

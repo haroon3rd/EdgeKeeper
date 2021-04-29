@@ -25,6 +25,8 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
 
+
+
     <!--
         <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     -->
@@ -74,6 +76,15 @@
         </receiver>
 
 
+        <receiver
+            android:name="NetworkChangeReceiver"
+            android:label="NetworkChangeReceiver" >
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+                <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
+
         <activity
             android:name=".AccountActivity"
             android:label="Account"
@@ -102,6 +113,8 @@
                 <action android:name="restartservice" />
             </intent-filter>
         </receiver>
+
+
 
         <service
             android:name=".EKService"
