@@ -3,6 +3,7 @@ package edu.tamu.cse.lenss.edgeKeeper.client;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -79,13 +80,15 @@ public class UnitTest {
 					//EKClient.getNetworkInfo();
 					
 					System.out.println("--------------------------------------------REGISTER--------------------------------------");
-					String serviceID = EKClient.addService("DistressNet-MStrom", "master", "192.168.1.111", 998877);
+					String serviceID = EKClient.addService("MStrom", "master", "192.168.1.111");
 					System.out.println("-----------------" + serviceID + "-------------------------------------");
 					
 					System.out.println("--------------------------------------------REGISTER--------------------------------------");
-					String serviceID2 = EKClient.addService("DistressNet-MStrom", "master", "192.168.1.222", 998877);
+					String serviceID2 = EKClient.addService("MStrom", "master", "192.168.1.222");
 					System.out.println("-----------------" + serviceID2 + "-------------------------------------");
 //					
+					
+					
 //					System.out.println("--------------------------------------------REGISTER--------------------------------------");
 //					EKClient.addService("DistressNet-MStrom", "master");
 //					System.out.println("------------------------------------------------------------------------------------------");
@@ -97,12 +100,9 @@ public class UnitTest {
 					
 					
 					System.out.println("--------------------------------------------FETCH-INFO------------------------------------");
-					EKClient.getPeerInfo("DistressNet-MStrom", "master");
-					System.out.println("------------------------------------------------------------------------------------------");
+					List<String> peers = EKClient.getPeerList("MStrom", "master");
+					System.out.println("--------------------" + peers +"----------------------------------------------------------------------");
 		
-					System.out.println("--------------------------------------------FETCH-INFO------------------------------------");
-					EKClient.getPortNObyIP("192.168.1.111");
-					System.out.println("------------------------------------------------------------------------------------------");
 					
 					JSONObject record = EKHandler.ekRecord.fetchRecord();
 					System.out.println("----------------------------" + record.toString());

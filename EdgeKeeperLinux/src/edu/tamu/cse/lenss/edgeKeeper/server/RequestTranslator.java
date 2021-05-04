@@ -59,11 +59,13 @@ public class RequestTranslator implements Runnable,  Terminable{
 
     public final static String addServiceCommand = "ADD_SERVICE";
     public final static String addServiceCommandExt = "ADD_SERVICE_EXT";
+    public final static String addServiceCommandExtnoPort = "ADD_SERVICE_EXT_NO_PORT";
     public final static String removeServiceCommand = "REMOVE_SERVICE";
     public final static String getPeerIPsCommand = "GET_PEER_IPS";
     public final static String getPeerNamesCommand = "GET_PEER_HOSTNAMES";
     public final static String getPeerGUIDCommand = "GET_PEER_GUID";
-    public final static String getPeerInfoCommand = "GET_PEERS";     //Added by Amran
+    public final static String getPeerInfoCommand = "GET_PEER_INFO";     //Added by Amran
+    public final static String getPeerListCommand = "GET_PEER_LIST";     //Added by Amran
     public static final String purgeClusterCommand = "PURGE_NAMING_CLUSTER";
 	public static final String getAllLocalGUIDCommand = "GET_ALL_LOCAL_GUID";
 	public static final String getmergedGUIDCommand = "GET_MERGED_GUID";
@@ -282,6 +284,15 @@ public class RequestTranslator implements Runnable,  Terminable{
                     else
                     	rep=errorJSON("Update failed").toString();
                 }
+                else if (command.equals(addServiceCommandExtnoPort)) { 			//Block Added by Amran ##################################################### 
+                    String service = reqJSON.getString(serviceField);
+                    String serviceID = reqJSON.getString(serviceIDField);
+                    String duty = reqJSON.getString(dutyField);
+                    if(requestResolver.addServiceExt(service, serviceID, duty))
+                    	rep= successJSON().toString();
+                    else
+                    	rep=errorJSON("Update failed").toString();
+                }
                 else if (command.equals(getAllLocalGUIDCommand)) {
                     rep= successJSON().put(fieldGUID, requestResolver.getAllLocalGUIDs()).toString();
                 }
@@ -301,6 +312,11 @@ public class RequestTranslator implements Runnable,  Terminable{
                     String service = reqJSON.getString(serviceField);
                     String duty = reqJSON.getString(dutyField);
                     rep= successJSON().put(fieldGUID, requestResolver.getPeerInfo(service, duty)).toString();
+                }
+                else if (command.equals(getPeerListCommand)) {   		//Added by Amran (unfinished)   #################################################
+                    String service = reqJSON.getString(serviceField);
+                    String duty = reqJSON.getString(dutyField);
+                    rep= successJSON().put(fieldGUID, requestResolver.getPeerList(service, duty)).toString();
                 }
                 else if (command.equals(getPeerIPsCommand)) {
                     String service = reqJSON.getString(serviceField);

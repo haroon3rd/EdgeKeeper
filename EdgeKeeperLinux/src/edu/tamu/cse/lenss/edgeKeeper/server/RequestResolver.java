@@ -53,6 +53,22 @@ public class RequestResolver{
 //		triggerUpdate();
 //		return result;
 	}
+	
+	//Added by Amran (Unfinished)
+    //This method is written by Amran. ####################################################
+    //     _                              
+    //    / \   _ __ ___  _ __ __ _ _ __  
+    //   / _ \ | '_ ` _ \| '__/ _` | '_ \ 
+    //  / ___ \| | | | | | | | (_| | | | |
+    // /_/   \_\_| |_| |_|_|  \__,_|_| |_|
+	
+	public boolean addServiceExt(String serviceName, String serviceID, String duty) {
+		return updateFieldStrictlyStrict(serviceName, serviceID, duty);
+//		boolean result = EKHandler.ekRecord.updateField(serviceName, duty);
+//		logger.debug("Updated the service to own record ");
+//		triggerUpdate();
+//		return result;
+	}
 
 	public boolean removeService(String serviceName) {
 		return updateFieldLazy(serviceName, "NULL");
@@ -135,6 +151,53 @@ public class RequestResolver{
 			return false;
 		}
 	}
+	
+	
+	
+	//Added by Amran (Almost Finished)
+    //This method is written by Amran. ####################################################
+    //     _                              
+    //    / \   _ __ ___  _ __ __ _ _ __  
+    //   / _ \ | '_ ` _ \| '__/ _` | '_ \ 
+    //  / ___ \| | | | | | | | (_| | | | |
+    // /_/   \_\_| |_| |_|_|  \__,_|_| |_|
+	
+	private boolean updateFieldStrictlyStrict(String fieldService, String serviceID, String fieldDuty) {
+		//gnsClientHandler.update(EKHandler.ekRecord);
+		//zkClientHandler.update(EKHandler.ekRecord);
+		//serviceID = "ABCDXYZ";
+			
+		JSONObject record = EKHandler.ekRecord.fetchRecord();
+		String allServices = null;
+		
+		try {
+			if(record.isNull(RequestTranslator.allServicesField)){
+				allServices = serviceID;
+			} else {
+				allServices = record.getString(RequestTranslator.allServicesField)+"/"+serviceID;
+			}
+
+			record.put(serviceID, fieldService+"-"+fieldDuty);
+			record.put(RequestTranslator.allServicesField, allServices);
+
+			if(zkClientHandler.update(record)) {
+				EKHandler.ekRecord.updateField(RequestTranslator.allServicesField, allServices);
+				EKHandler.ekRecord.updateField(serviceID, fieldService+"-"+fieldDuty);
+				//gnsClientHandler.update();
+				return true;
+			}
+			else {
+				logger.debug("Could not update to Zookeeper. So, discarding the update.");
+				return false;
+			} 
+		} catch (JSONException e) {
+			logger.error("Could not add these key pair in the record: " + serviceID + ":" + fieldService+"-"+fieldDuty);
+			return false;
+		}
+	}
+	
+	
+	
 	
 	
 	private boolean updateFieldLazy(String field, Object value) {
@@ -246,7 +309,39 @@ public class RequestResolver{
 		return array;
 		
 	}
+	
+	//Added by Amran (Unfinished)
+    //This method is written by Amran. ####################################################
+    //     _                              
+    //    / \   _ __ ___  _ __ __ _ _ __  
+    //   / _ \ | '_ ` _ \| '__/ _` | '_ \ 
+    //  / ___ \| | | | | | | | (_| | | | |
+    // /_/   \_\_| |_| |_|_|  \__,_|_| |_|
+	
+	public  JSONArray getPeerList(String service, String duty) {
+		Map<String, List<String>> local = zkClientHandler.getPeerList(service, duty);
+		logger.log(Level.ALL, "Local query returns get Peer info -----------------------------------------: "+local);
+		
+//		Map<String, List<String>> global = gnsClientHandler.getPeerInfo(service, duty);
+//		logger.log(Level.ALL, "Global query returnes: "+global);
+		
+		//local.putAll(global);
+		JSONObject obj=new JSONObject(local);
+		JSONArray array = null;
+		try {
+			array = new JSONArray("["+obj.toString()+"]");
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+		return array;
+		
+	}
 
+	
+	
+	
+	
 	public JSONArray getIPsFromGuid(String guid) {
 		List<String> local = zkClientHandler.getIPsFromGuid(guid);
 		logger.log(Level.ALL, "Local query returns: "+local);

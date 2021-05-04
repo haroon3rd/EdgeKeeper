@@ -146,7 +146,7 @@ public class GNSClientHandler implements Terminable{
      * @throws UnrecoverableKeyException
      * @throws GNSException 
      */
-    public void registetAccount() throws UnrecoverableKeyException,  NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException, JSONException, GNSException, KeyStoreException  {
+    public void registerAccount() throws UnrecoverableKeyException,  NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException, JSONException, GNSException, KeyStoreException  {
         logger.debug("Trying to register to GNS server");
 
         //tryConnectingGNS();
@@ -269,7 +269,7 @@ public class GNSClientHandler implements Terminable{
                 logger.debug("Connected with one GNS server: "+ client.toString());
                 
                 try {
-					this.registetAccount();
+					this.registerAccount();
 					this.gnsConnected(); // Announce connected
 				} catch (UnrecoverableKeyException | NoSuchAlgorithmException | CertificateException | KeyStoreException | IOException | JSONException | GNSException e1) {
 					logger.error("Problem in registering account: "+e1);
@@ -403,7 +403,7 @@ public class GNSClientHandler implements Terminable{
         }
     	List<String> ipList = new ArrayList<String>();
     	try {
-	        JSONObject aJsonObj = client.execute(GNSCommand.fieldRead(targetGuid, A_RECORD_FIELD,ownGUID)).getResultJSONObject();
+    		JSONObject aJsonObj = client.execute(GNSCommand.fieldRead(targetGuid, A_RECORD_FIELD,ownGUID)).getResultJSONObject();
 	        JSONArray ipJsonArray = aJsonObj.getJSONObject(A_RECORD_FIELD).getJSONArray(RECORD_FIELD);
 	        //logger.info(aJsonObj.toString());
 	        for (int i = 0; i < ipJsonArray.length(); i++) {
@@ -446,7 +446,7 @@ public class GNSClientHandler implements Terminable{
     }
     
     
-    //Added by Amran (Unfinished)
+    //Added by Amran (Unfinished) // FixME
     //This method is written by Amran. ####################################################
     //     _                              
     //    / \   _ __ ___  _ __ __ _ _ __  
@@ -475,11 +475,17 @@ public class GNSClientHandler implements Terminable{
         try {
 			guidList = (List<String>) client.execute(GNSCommand.selectQuery(qur)).getResultList();
 	        logger.log(Level.ALL, "[GNS] GUID list:"+ guidList.toString());
-
-		} catch (ClientException | IOException | NullPointerException e) {
+	        
+	        for (String guid : guidList) {
+	        	//JSONObject recJsonObj = client.execute(GNSCommand.readSecure(guid).getResultJSONObject();
+	        }
+        } catch (ClientException | IOException | NullPointerException e) {
 			logger.debug("Error in executing GNS command with server. "+service+", "+duty, e);
 			this.gnsDisconnected();
 		}
+                
+        
+        
         Map<String, List<String>> peerInfo = new HashMap();
         return peerInfo;
     }
@@ -517,7 +523,7 @@ public class GNSClientHandler implements Terminable{
 
     
     
-    //Added by Amran (Unfinished)
+    //Added by Amran (Unfinished)  //FixME
     //This method is written by Amran. ####################################################
     //     _                              
     //    / \   _ __ ___  _ __ __ _ _ __  

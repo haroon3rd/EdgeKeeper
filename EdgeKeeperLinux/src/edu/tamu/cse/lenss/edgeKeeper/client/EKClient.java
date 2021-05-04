@@ -195,7 +195,8 @@ public class EKClient {
 	
 	public static String addService(String ownService, String ownDuty, String ip, int port) {
 		String repResult;
-		String serviceID = UUID.randomUUID().toString();
+		//String serviceID = UUID.randomUUID().toString();
+		String serviceID = getOwnGuid() + "-" + ip;
 		try {
 			JSONObject reqJSON = new JSONObject();
 			reqJSON.put(RequestTranslator.requestField, RequestTranslator.addServiceCommandExt);
@@ -204,6 +205,55 @@ public class EKClient {
 			reqJSON.put(RequestTranslator.dutyField, ownDuty);
 			reqJSON.put(RequestTranslator.fieldIP, ip);
 			reqJSON.put(RequestTranslator.fieldPort, port);
+			
+//			logger.log(Level.ALL,"---------------------- reqJSON     -------------------------------------" + reqJSON);
+//			logger.log(Level.ALL,"---------------------- reqJSON to String -------------------------------" + reqJSON);
+
+			JSONObject repJSON = getResponseFromEK(reqJSON);
+			repResult = repJSON.getString(RequestTranslator.resultField);
+		} catch (Exception e) {
+			logger.error("Communication with GNS-service failed", e);
+			return null;		
+		}
+	
+		if (repResult.equals(RequestTranslator.successMessage)) {
+			logger.debug("Update Successful ");
+			return serviceID;
+		}else {
+			logger.debug("Update failed ");
+			return null;
+		}	
+	}
+	
+	
+	 //This method is written by Amran. ####################################################
+    //     _                              
+    //    / \   _ __ ___  _ __ __ _ _ __  
+    //   / _ \ | '_ ` _ \| '__/ _` | '_ \ 
+    //  / ___ \| | | | | | | | (_| | | | |
+    // /_/   \_\_| |_| |_|_|  \__,_|_| |_|
+	/**
+	 * This function registers a service and the duty at the GNS server for service discovery.
+	 * 
+	 * @param ownService What is the name of the service, usually the application name
+	 * @param ownDuty What duty it is playing
+	 * @param ip is ip of Service node/container
+	 * @param port is the port it uses for the service
+	 * @return true if the update is successful at the GNS server
+	 * @Author Amran
+	 */
+	
+	public static String addService(String ownService, String ownDuty, String ip) {
+		String repResult;
+		//String serviceID = UUID.randomUUID().toString();
+		String serviceID = getOwnGuid() + "-" + ip;
+		try {
+			JSONObject reqJSON = new JSONObject();
+			reqJSON.put(RequestTranslator.requestField, RequestTranslator.addServiceCommandExtnoPort);
+			reqJSON.put(RequestTranslator.serviceField, ownService);
+			reqJSON.put(RequestTranslator.serviceIDField, serviceID);
+			reqJSON.put(RequestTranslator.dutyField, ownDuty);
+			reqJSON.put(RequestTranslator.fieldIP, ip);
 			
 //			logger.log(Level.ALL,"---------------------- reqJSON     -------------------------------------" + reqJSON);
 //			logger.log(Level.ALL,"---------------------- reqJSON to String -------------------------------" + reqJSON);
@@ -334,6 +384,55 @@ public class EKClient {
 		}
 		return netInfoList;	
 	}
+	
+	
+	
+	 //This method is written by Amran. ####################################################
+    //     _                              
+    //    / \   _ __ ___  _ __ __ _ _ __  
+    //   / _ \ | '_ ` _ \| '__/ _` | '_ \ 
+    //  / ___ \| | | | | | | | (_| | | | |
+    // /_/   \_\_| |_| |_|_|  \__,_|_| |_|	
+	/**
+	 * This function retrieves a list of GUID of the nodes running a targetService with the 
+	 * target duty. 
+	 * 
+	 * @param targetService
+	 * @param targetDuty
+	 * @return a JSONObject
+	 * @author Amran.
+	 */
+	
+	public static List<String>  getPeerList(String targetService, String targetDuty){
+
+		List <String> netInfoList = new ArrayList<String>();
+		try {
+			JSONObject reqJSON = new JSONObject();
+			reqJSON.put(RequestTranslator.requestField, RequestTranslator.getPeerListCommand);
+			reqJSON.put(RequestTranslator.serviceField, targetService);
+			reqJSON.put(RequestTranslator.dutyField, targetDuty);
+
+			JSONObject repJSON = getResponseFromEK(reqJSON);
+			String repResult = repJSON.getString(RequestTranslator.resultField);
+
+			if (repResult.equals(RequestTranslator.successMessage)) {
+				JSONArray ipJsonArray = repJSON.getJSONArray(RequestTranslator.fieldGUID); 
+
+				for(int j = 0; j < ipJsonArray.length(); j++)
+					netInfoList.add(ipJsonArray.getString(j));
+				logger.debug("Got peer info as:  "+netInfoList.toString());
+			} else 
+				logger.debug("GNS service returns error i.e. problem in executing the desired command");
+
+		} catch (Exception e) {
+			logger.error("Communication with GNS-service failed", e);		
+		}
+		return netInfoList;	
+	}
+	
+	
+	
+	
 	
 	
 	/**

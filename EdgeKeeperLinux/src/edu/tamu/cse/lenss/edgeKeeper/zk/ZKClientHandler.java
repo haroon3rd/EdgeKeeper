@@ -431,6 +431,46 @@ public class ZKClientHandler implements Terminable {
     //   / _ \ | '_ ` _ \| '__/ _` | '_ \ 
     //  / ___ \| | | | | | | | (_| | | | |
     // /_/   \_\_| |_| |_|_|  \__,_|_| |_|
+	
+	public Map<String, List<String>> getPeerList(String service, String duty) {
+		Map<String, List<String>> peerInfo =  new HashMap<String, List<String>>();
+		Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);
+		if(map == null) {
+			logger.log(Level.ALL,"Cache is not initialized");
+			return null;
+		}
+		for (String guid : map.keySet()) {
+			try {
+				String delimitedIDS = parseBytetoJSON( map.get(guid).getData()).getString("ALL_SERVICES");
+				String[] serviceIDs = delimitedIDS.split("/");
+				JSONObject guidData = parseBytetoJSON( map.get(guid).getData());
+				for(String id : serviceIDs) {
+					String serviceData = guidData.getString(id);
+					
+					List<String> peerIPs = new ArrayList<String>();
+					if(serviceData.equals(service+"-"+duty)) {
+						String[] serviceIPs =id.split("-");
+						if (serviceIPs[1]!=null)
+							peerIPs.add(serviceIPs[1]);
+					}
+					peerInfo.put(id, peerIPs);
+				}
+			}catch (JSONException | NullPointerException e) {
+				//logger.log(Level.ALL, "The "+service+" fild does not exist in "+guid, e);
+			}
+		}
+		logger.log(Level.ALL, "Service: "+service+", duty: "+duty+" matches for the GUIDS" +peerInfo);
+		return peerInfo;
+	}
+	
+	
+	//Added by Amran (Unfinished)
+    //This method is written by Amran. ####################################################
+    //     _                              
+    //    / \   _ __ ___  _ __ __ _ _ __  
+    //   / _ \ | '_ ` _ \| '__/ _` | '_ \ 
+    //  / ___ \| | | | | | | | (_| | | | |
+    // /_/   \_\_| |_| |_|_|  \__,_|_| |_|
 	/*
 	 * public Map<String, List<String>> getPeerGUIDInfo(String service, String duty)
 	 * { Map<String, List<String>> peerGUIDInfo = new HashMap<String,
