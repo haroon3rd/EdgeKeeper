@@ -17,7 +17,9 @@ import net.minidev.json.JSONArray;
 
 public class UnitTest {
 	static  Logger logger = Logger.getLogger(UnitTest.class);
-
+	
+	public static EdgeKeeperAPI mEKClient;
+	
 	public static void main(String[] args) {
 
 //		Logger logger = Logger.getLogger(UnitTest.class);
@@ -58,6 +60,16 @@ public class UnitTest {
 		logger.log(Level.ALL, "----------------------------" + obj.toString());
 				
 		
+		
+		
+		try {	
+			mEKClient = new EKClient();
+			logger.info("Start a Zookeeper client ...");	
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		
 		for (int i =0; i< 1; i++) {
 			
 			/*new Thread(){
@@ -65,26 +77,24 @@ public class UnitTest {
 			
 			
 			
-			
-			
 			try {
-					String ownGUID = EKClient.getOwnGuid();
-					String ownName = EKClient.getOwnAccountName();
+					String ownGUID = mEKClient.getOwnGuid();
+					String ownName = mEKClient.getOwnAccountName();
 					
-					EKClient.getAllLocalGUID();
-					EKClient.readGUID(ownGUID);
+					mEKClient.getAllLocalGUID();
+					mEKClient.readGUID(ownGUID);
 					
-					EKClient.getNetworkInfo();
+					mEKClient.getNetworkInfo();
 					
 					
 					//EKClient.getNetworkInfo();
 					
 					System.out.println("--------------------------------------------REGISTER--------------------------------------");
-					String serviceID = EKClient.addService("MStrom", "master", "192.168.1.111");
+					String serviceID = mEKClient.addService("MStrom", "master", "192.168.1.111");
 					System.out.println("-----------------" + serviceID + "-------------------------------------");
 					
 					System.out.println("--------------------------------------------REGISTER--------------------------------------");
-					String serviceID2 = EKClient.addService("MStrom", "master", "192.168.1.222");
+					String serviceID2 = mEKClient.addService("MStrom", "master", "192.168.1.222");
 					System.out.println("-----------------" + serviceID2 + "-------------------------------------");
 //					
 					
@@ -100,7 +110,7 @@ public class UnitTest {
 					
 					
 					System.out.println("--------------------------------------------FETCH-INFO------------------------------------");
-					List<String> peers = EKClient.getPeerList("MStrom", "master");
+					List<String> peers = mEKClient.getPeerList("MStrom", "master");
 					System.out.println("--------------------" + peers +"----------------------------------------------------------------------");
 		
 					
@@ -160,7 +170,7 @@ public class UnitTest {
 			mdfsHealth.put("test_cpu_status", "Good");
 
 			//send
-			EKClient.putAppStatus("suman", mdfsHealth);
+			mEKClient.putAppStatus("suman", mdfsHealth);
 		}catch(JSONException e ){
 			e.printStackTrace();
 		}
@@ -171,7 +181,7 @@ public class UnitTest {
 		try {
 
 			//getEdgeStatus edge status
-			System.out.println(EKClient.getEdgeStatus().toString(4));
+			System.out.println(mEKClient.getEdgeStatus().toString(4));
 
 		} catch (JSONException e) {
 			e.printStackTrace();

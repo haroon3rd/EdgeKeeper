@@ -30,6 +30,7 @@ import org.json.JSONObject;
 
 
 import edu.tamu.cse.lenss.edgeKeeper.client.EKClient;
+import edu.tamu.cse.lenss.edgeKeeper.client.EdgeKeeperAPI;
 import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
 import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
 import edu.tamu.cse.lenss.edgeKeeper.topology.TopoUtils;
@@ -41,12 +42,19 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 
 public class HealthWebView extends NanoHTTPD implements Terminable{
 	static final Logger logger = Logger.getLogger(HealthWebView.class);
+	public static EdgeKeeperAPI mEKClient;
 	
 	public HealthWebView() {
         super(EKConstants.HEALTH_VIEW_PORT);
     }
 
     public static void main(String[] args) {
+    	try {	
+			mEKClient = new EKClient();
+			logger.info("Start a Zookeeper client ...");	
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
         ServerRunner.run(HealthWebView.class);
     }
 
@@ -57,7 +65,7 @@ public class HealthWebView extends NanoHTTPD implements Terminable{
         StringBuilder sb = new StringBuilder();
         putHeader(sb);
         
-        JSONObject edgeStatus = EKClient.getEdgeStatus();
+        JSONObject edgeStatus = mEKClient.getEdgeStatus();
         
         try {
         	logger.log(Level.ALL, "Obtained Edge Health= "+edgeStatus.toString( ));

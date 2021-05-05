@@ -17,9 +17,19 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
  *
  */
 public class EKCli {
+	
+	public static EdgeKeeperAPI mEKClient;
+		
     static final Logger logger = Logger.getLogger(EKCli.class);
 
 	public static void main(String[] args) {
+		try {	
+			mEKClient = new EKClient();
+			logger.info("Start a Zookeeper client ...");	
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+			
 		
 		try {
 			EKUtils.initLogger("logs/"+EKCli.class.getSimpleName()+".log", Level.ALL);
@@ -36,7 +46,7 @@ public class EKCli {
 		}
 		else if (args[0].trim().toLowerCase().equals("add_service")) {
 			if (args.length == 3)
-				EKClient.addService(args[1], args[2]);
+				mEKClient.addService(args[1], args[2]);
 			else {
 				logger.debug("Invalid command");
 				return;
@@ -44,7 +54,7 @@ public class EKCli {
 		}
 		else if (args[0].trim().toLowerCase().equals("remove_service")) {
 			if (args.length >1)
-				EKClient.removeService(args[1]);
+				mEKClient.removeService(args[1]);
 			else {
 				logger.debug("Invalid command");
 				return;
