@@ -25,9 +25,11 @@ public class TopoMessage implements Serializable {
 		TOPO_REPLY,
 		TOPO_CLOUD,
 		TOPO_NEIGHBOR_MSG,
-		TOPO_NEIGHBOR_REPLY
-
+		TOPO_NEIGHBOR_REPLY,
+		TOPO_LTE_UNICAST,
+		TOPO_LTE_UNICAST_REPLY
 	}
+
 	public TopoNode sender;
 	public Map<TopoNode, NeighborStatus> neighborStatus;
 
@@ -40,7 +42,7 @@ public class TopoMessage implements Serializable {
 	private TopoMessage() {
 	}
 
-
+	//create a broadcast message with TOPO_BROADCAST type
 	public static TopoMessage newBroadcastMessage(String sessionID, int broadcastSeq) {
 		TopoMessage msg = new TopoMessage();
 		msg.sessionID = sessionID;
@@ -49,7 +51,8 @@ public class TopoMessage implements Serializable {
 		return msg;
 	}
 
-	public static TopoMessage newReplyMessage(String sessionID, int seq, String destIP) {
+	//create new reply message
+	public static TopoMessage newBroadCastReplyMessage(String sessionID, int seq, String destIP) {
 		TopoMessage msg = new TopoMessage();
 		msg.sessionID = sessionID;
 		msg.messageType = MessageType.TOPO_REPLY;

@@ -131,10 +131,10 @@ public class RequestTranslator implements Runnable,  Terminable{
 
     /**
      * The default constructor
-     * @param serverName
+     * @param serverType
      * @param cSocket
      * @param requestResolver
-     * @param olsrInfoRunner 
+     * @param requestResolver
      */
     public RequestTranslator(RequestServer.ServerType serverType, Socket cSocket, 
     		RequestResolver requestResolver) {
@@ -330,7 +330,9 @@ public class RequestTranslator implements Runnable,  Terminable{
                     	rep= errorJSON("Could not purge the Cluster").toString();
                 }
                 else if (command.equals(getTopologyCommand)) {
-                	rep = successJSON().put(fieldNetworkInfo, TopoParser.exportGraph(EKHandler.getTopoHandler().getGraph())).toString();
+                	//rep = successJSON().put(fieldNetworkInfo, TopoParser.exportGraph(  EKHandler.getTopoHandler().getGraph()  )).toString();
+                    //rep = successJSON().put(fieldNetworkInfo, TopoParser.exportGraph(  EKHandler.getTopologyMonitor().getGraph()  )).toString();
+                    rep = successJSON().put(fieldNetworkInfo, TopoParser.exportGraph(  EKHandler.getTopoMonitor().getGraph()  )).toString();
                 }
                 else if(command.equals(putAppStatus)) {
                 	reqJSON.put(RequestTranslator.fieldGUID, requestResolver.getOwnGUID());

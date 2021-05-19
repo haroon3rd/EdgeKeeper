@@ -222,7 +222,10 @@ public class CoordinatorClient implements Terminable{
 	 * 
 	 */
 	private void tryEdgeMerge() {
-		TopoGraph g = EKHandler.getTopoHandler().getGraph();
+		//TopoGraph g = EKHandler.getTopoHandler().getGraph();
+		//TopoGraph g = EKHandler.getTopologyMonitor().getGraph();
+		TopoGraph g = EKHandler.getTopoMonitor().getGraph();
+
 		Set<TopoNode> neighbors = g.getVertexbyType(NodeType.EDGE_NEIBOR);
 		
 		if(System.currentTimeMillis() - lastGUIDmargeTime > GUID_MERGE_INTERVAL) {

@@ -4,12 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Level;
@@ -23,6 +18,7 @@ import edu.tamu.cse.lenss.edgeKeeper.topology.TopoNode.NodeType;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
+import org.omg.CORBA.INTERNAL;
 
 /**
  * Thic class is responsible for sending UDP broadcast with two hop neighbors
@@ -30,6 +26,7 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
  *
  */
 public class TopoSender {
+
 	public static final Logger logger = Logger.getLogger(TopoSender.class);
 	static Map<String, DatagramSocket>  sockMap;
 	private TopoGraph ekGraph;
@@ -47,16 +44,14 @@ public class TopoSender {
 	 * @param oNode
 	 */
 	public TopoSender(Map<String, DatagramSocket> sMap, TopoGraph ekGraph, TopoNode oNode) {
-		super();
+		super(); //No NeEd
 		sockMap = sMap;
 		this.ekGraph = ekGraph;
 		ownNode = oNode;
 		sessionID = UUID.randomUUID().toString(); // generate separate Session ID
 	}
 	
-	/*
-	 * This function sends the message class as UDP packet.
-	 */
+	//the function that does the sending
 	static void sendMessage(TopoMessage message, String destIP, DatagramSocket ownSocket) {
 		message.destinationIP = destIP; // This IP will be used at the destination to check on which link the pkt is received 
 		
@@ -68,7 +63,6 @@ public class TopoSender {
 		try {
 			DatagramPacket packet = new DatagramPacket(sendByte, sendByte.length, 
 					InetAddress.getByName(destIP), EKConstants.TOPOLOGY_DISCOVERY_PORT);
-			//logger.log(Level.ALL, "Packet created for : " + destIP + " | " +  EKConstants.TOPOLOGY_DISCOVERY_PORT);
 			ownSocket.send(packet);
 			logger.log(Level.ALL, message.messageType +" sent to " +destIP  
 						+" through "+ownSocket.getLocalAddress().getHostAddress()+", length="+packet.getLength());
@@ -77,20 +71,75 @@ public class TopoSender {
 					+" through "+ownSocket.getLocalAddress().getHostAddress()+":"+ownSocket.getLocalPort());
 		}
 	}
-	
-	TopoMessage prepareBroadcast() {
+
+	//prepare a broadcast message
+	TopoMessage prepareBroadcast(){
+
+		//increment broadcast sequence number
 		int msgSeq = broadcastSeq.addAndGet(EKConstants.BRD_SEQ_INCR);
+
+		//create new broadcast message
 		TopoMessage message = TopoMessage.newBroadcastMessage(sessionID, msgSeq);
+
+		//sender = myself
 		message.sender = ownNode;
+
+		//append my own neighbor status
 		message.neighborStatus = ekGraph.getNeighborMap();
+
+		//add current time
 		seq_time.put(msgSeq, System.currentTimeMillis());
+
 		seq_time.remove(msgSeq-28);  // Always delete the old values to prevent the map from growing infinitely
 		return message;
 	}
 
-	void topoBroadcast(TopoMessage message) {
+
+	//Send LTE unicast to all IPs.
+	//Works as poor man's Neighbor Service Discovery over LTE.
+	private void topoLTEunicast(TopoMessage message) {
+
 		try {
-			//TopoMessage message = prepareBroadcast();
+			//set message type
+			message.messageType = MessageType.TOPO_LTE_UNICAST;
+
+			//set probability
+			message.thisLinkRcvProb = EKConstants.TOPO_INITIAL_PROB;
+
+
+
+			//check if this node currently have a LTE interface, if so, return the IP and subnet Mask
+			String[] LTEipAndMask = EKUtils.getLTEipAndSubnetMask();
+
+			//if this node has an LTE interface and class C
+			if(LTEipAndMask!=null && Integer.parseInt(LTEipAndMask[1])>=24){
+
+				//check if sockMap already contains a socket for this ip
+				if(sockMap.containsKey(LTEipAndMask[0])) {
+					//send broadcast from ip range 2 to 254
+					String destIPprefix = LTEipAndMask[0].substring(0,LTEipAndMask[0].lastIndexOf("."));
+
+					for(int i=2; i<255; i++){
+						sendMessage(message, (destIPprefix + "." + i), sockMap.get(LTEipAndMask[0]));
+					}
+				}else{
+					//we do not send message now, wait until a socket for LTE interface is opened by TopoHandler.run()
+				}
+			}
+
+
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+
+
+	}
+
+
+	//everyone regardless of being a master or client, sends this broadcast to all nodes in its current graph
+	void topoBroadcast(TopoMessage message){
+
+		try {
 			message.messageType=MessageType.TOPO_BROADCAST;
 
 			Set<String> brodDests = new HashSet<String>();
@@ -102,19 +151,23 @@ public class TopoSender {
 			
 			brodDests.addAll(EKHandler.edgeStatus.getMasterIps());
 			brodDests.removeAll(ownNode.ipMaps.keySet());
-			
-			// Send Topo broadcast to all the nodes in the graph 
+
+			//Send the broadcast to only nodes which belong to same edge.
 			for (TopoNode v : ekGraph.vertexSet()) {
 				try {
-					/*
-					 * Send the broadcast to only nodes which belong to same edge.
-					*/
-					if ((!ownNode.equals(v)) && (v.masterGUID.equals(ownNode.masterGUID)) && !v.ipMaps.isEmpty() 
-							&& v.type!=NodeType.EDGE_NEIBOR && v.type!=NodeType.CLOUD__NODE) {
+					//if destination not me, and same edge, and destination IP exists, and not a neighbor, and not a cloud node
+					//this means destination is a non-master node in same edge
+					if ((!ownNode.equals(v)) && (v.masterGUID.equals(ownNode.masterGUID)) && !v.ipMaps.isEmpty() && v.type!=NodeType.EDGE_NEIBOR && v.type!=NodeType.CLOUD__NODE) {
+
+						//get percent receive for destination node
 						message.thisLinkRcvProb = ekGraph.getPrcvforNeighbor(v);
+
+						//for each IP of destination node
 						for (String ip : v.ipMaps.keySet()) {
-							for(DatagramSocket serverSock:sockMap.values()) 
+							//for each IP of this node
+							for(DatagramSocket serverSock:sockMap.values()) {
 								sendMessage(message, ip, serverSock);
+							}
 							brodDests.remove(ip);
 						}
 					} 
@@ -129,46 +182,65 @@ public class TopoSender {
 				for(DatagramSocket serverSock:sockMap.values()) 
 					sendMessage(message, ip, serverSock);
 		} catch (Exception e) {
-			logger.warn("Problem in sending the boradcast", e);
+			logger.warn("Problem in sending the broadcast", e);
 		}
 	}
-	
+
+
+	//called in a while() loop in TopoHandler class.
 	void sendPeriodicPing() {
-		synchronized (ekGraph) {  // This lock ensure that the graph is not modified while sending broadcast
+		// This lock ensure that the graph is not modified while sending broadcast
+		synchronized (ekGraph) {
+
+			//prepare broadcast message
 			TopoMessage message = prepareBroadcast();
-			
-			if(EKHandler.edgeStatus.selfMaster()) {
+
+			//if this node is Master
+			if(EKHandler.edgeStatus.selfMaster()){
+
+				//init ownNode type
 				ownNode.type=NodeType.EDGE_MASTER;
+
+				//send periodic ping to neighbor master IPs if I am a master
 				topoNeigbor(message);
+			}else {
+				//init ownNode type
+				ownNode.type = NodeType.EDGE_CLIENT;
 			}
-			else
-				ownNode.type=NodeType.EDGE_CLIENT;
-		
+
+			//everyone regardless of being a master or client, sends this broadcast to all nodes in its current graph
 			topoBroadcast(message);
+
+			//send lte unicast to all possible IPs
+			topoLTEunicast(message);
+
 			// Now check all the links and update the link if broadcast is not received on that link for long time
 			ekGraph.cleanup();
+
 			if(!EKUtils.isAndroid())
 				TopoUtils.toPng(ekGraph);
 		}
 	}
-	
-//	TopoMessage prepareNeighMsg() {
-//		//int msgSeq = neighbourSeq.addAndGet(2);
-//		int msgSeq = broadcastSeq.get();
-//		TopoMessage message = TopoMessage.newNeighborMessage(sessionID, msgSeq);
-//		message.sender = ownNode;
-//		seq_time.put(msgSeq, System.currentTimeMillis());
-//		seq_time.remove(msgSeq-18);  // Always delete the old values to prevent the map from growing infinitely
-//		return message;
-//	}
-	
+
+	//send periodic ping to neighbor master IPs if I am a master
 	private void topoNeigbor(TopoMessage message) {
+
+		//set message type
 		message.messageType=MessageType.TOPO_NEIGHBOR_MSG;
-		//TopoMessage message = prepareNeighMsg();
+
+		//get all neighbor IPs fro Properties file
 		String neighborIps = EKHandler.getEKProperties().getProperty(EKProperties.neighborIPs);
+
+		//if all IPs valid
 		if (EKProperties.validIP(neighborIps)) {
+
+			//parse IPs
 			String[] ips = neighborIps.split(",");
+
+			//set probability
 			message.thisLinkRcvProb = EKConstants.TOPO_INITIAL_PROB;
+
+			//send message to all IPs
 			for(String ip: ips) {
 				for(DatagramSocket serverSock:sockMap.values()) 
 					sendMessage(message, ip, serverSock);

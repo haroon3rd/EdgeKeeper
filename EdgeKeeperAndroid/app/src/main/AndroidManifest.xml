@@ -40,9 +40,8 @@
         android:theme="@style/AppTheme"
         >
 
-
         <activity
-            android:name=".MainActivitySCRAP"
+            android:name=".MainActivity"
             android:launchMode="singleTop"
             android:screenOrientation="portrait"
             >
@@ -56,65 +55,38 @@
         </activity>
 
 
-         <activity
+        <activity
             android:name=".SettingsActivity"
             android:label="@string/action_settings"
-            android:parentActivityName=".MainActivitySCRAP"
+            android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait"
             >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivitySCRAP"/>
+                android:value=".MainActivity"/>
         </activity>
-
-
-        <receiver android:name=".Autostart">
-            <intent-filter>
-                <action android:name="@string/restartservice" />
-                <action android:name="restartservice" />
-            </intent-filter>
-        </receiver>
-
-
-        <receiver
-            android:name="NetworkChangeReceiver"
-            android:label="NetworkChangeReceiver" >
-            <intent-filter>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
-                <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
-            </intent-filter>
-        </receiver>
-
+        
         <activity
             android:name=".AccountActivity"
             android:label="Account"
-            android:parentActivityName=".MainActivitySCRAP"
+            android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait"
             >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivitySCRAP"/>
+                android:value=".MainActivity"/>
         </activity>
 
         <activity
             android:name=".DebugActivity"
             android:label="Debug"
-            android:parentActivityName=".MainActivitySCRAP"
+            android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait"
             >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivitySCRAP"/>
+                android:value=".MainActivity"/>
         </activity>
-
-        <receiver android:name=".Autostart">
-            <intent-filter>
-                <action android:name="@string/restartservice" />
-                <action android:name="restartservice" />
-            </intent-filter>
-        </receiver>
-
-
 
         <service
             android:name=".EKService"

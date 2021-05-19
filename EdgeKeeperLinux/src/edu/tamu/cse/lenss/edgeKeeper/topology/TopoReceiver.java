@@ -5,7 +5,6 @@ import java.net.DatagramSocket;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import edu.tamu.cse.lenss.edgeKeeper.dns.DNSServer;
 import edu.tamu.cse.lenss.edgeKeeper.topology.TopoNode.NodeType;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
 
@@ -56,18 +55,16 @@ public class TopoReceiver extends Thread {
         try {
 			//Packet received
 	        String senderAddress = packet.getAddress().getHostAddress();
-	        //String dataStr = new String(packet.getData());
-	        
-	        //logger.log(Level.ALL, "received packet from" + senderAddress+ " message: "+dataStr);
-	        
-	        //TopoMessage inMsg = TopoMessage.createTopoMessage(packet.getData());
+
 	        TopoMessage inMsg = TopoMessage.getMessage(packet.getData());
-	        
+
+	        //check by guid if message sender is myself
 	        if (ownNode.equals(inMsg.sender)) {
 	        	logger.log(Level.ALL, "The packet is from own node. Discarding it.");
 	        	return;
 	        }
-	        
+
+	        //check if message was expected to be received in one interface but received in a different one.
 	        if(!inMsg.destinationIP.equals(this.serverSock.getLocalAddress().getHostAddress())) {
 	        	logger.log(Level.ALL, "Message received on wrong interface. "
 	        			+ "actual = "+ serverSock.getLocalAddress().getHostAddress()
@@ -75,22 +72,25 @@ public class TopoReceiver extends Thread {
 	        	return;
 	        }
 	        
-	        			
-	        
+	        //take action by message type
 	        switch(inMsg.messageType) {
-	        case TOPO_BROADCAST:
+	        case TOPO_BROADCAST:  //when received broadcast from any node from another edge
 	        	onBroadcastReceived(inMsg,senderAddress);
 	        	break;
-	        case TOPO_REPLY:
+	        case TOPO_REPLY:   //when received a reply of a previous broadcast from any node from another edge
 	        	onReplyReceived(inMsg, senderAddress);
 	        	break;
 	        case TOPO_NEIGHBOR_MSG:
-	        	onNeighMessage(inMsg,senderAddress);
+	        	onNeighMessage(inMsg,senderAddress);   //
 	        	break;
 	        case TOPO_NEIGHBOR_REPLY:
 	        	onNeighbourReply(inMsg,senderAddress);
 	        	break;
-
+	        case TOPO_LTE_UNICAST:
+				onLTEunicastReceived(inMsg,senderAddress);
+				break;
+			case TOPO_LTE_UNICAST_REPLY:
+				onLTEunicastReplyReceived(inMsg,senderAddress);
 	        default:
 	        	logger.warn("Unknown message type = "+inMsg.messageType+" from " +senderAddress);
 	        }
@@ -100,54 +100,95 @@ public class TopoReceiver extends Thread {
         }
 	}
 
+	//this function is called when this node receives a TOPO_LTE_UNICAST_REPLY message
+	private void onLTEunicastReplyReceived(TopoMessage inMsg, String senderIP) {
+		long rtt = TopoSender.getRTT(inMsg.sessionID,inMsg.BroadcastSeq);
+		logger.log(Level.ALL, inMsg.messageType+" received for "+senderIP+"-"+inMsg.destinationIP +" RTT="+rtt);
+		ekGraph.updateRTT(ownNode, inMsg.sender, inMsg.destinationIP, senderIP,	rtt );
+	}
+
+
+
+	//this function is called when this node receives a TOPO_LTE_UNICAST message
+	private void onLTEunicastReceived(TopoMessage inMsg, String senderIP) {
+
+		//log
+		logger.log(Level.ALL, inMsg.messageType+" received LTE Unicast from "+senderIP+" through "+inMsg.destinationIP);
+
+		//First send a reply so that other node can calculate RTT
+		TopoMessage outMessage = TopoMessage.newBroadCastReplyMessage(inMsg.sessionID, inMsg.BroadcastSeq, senderIP);
+		outMessage.messageType = TopoMessage.MessageType.TOPO_LTE_UNICAST_REPLY;
+		outMessage.sender=ownNode;
+		TopoSender.sendMessage(outMessage, senderIP, this.serverSock);
+
+		// First update the link between the sender node and the current node
+		ekGraph.updateEdge(ownNode, inMsg.sender, inMsg.destinationIP, senderIP, null, inMsg.sessionID, inMsg.BroadcastSeq,  inMsg.sessionID, inMsg.BroadcastSeq, inMsg.thisLinkRcvProb);
+
+		//Now update the two hop links
+		if(inMsg.neighborStatus.keySet()!=null) {
+			for (TopoNode twoHop : inMsg.neighborStatus.keySet()) {
+				if (!twoHop.equals(ownNode)) {
+					NeighborStatus thStatus = inMsg.neighborStatus.get(twoHop);
+
+					if (thStatus.nextHopGuid.equals(ownNode.guid)) {
+						logger.log(Level.ALL, "Discarding the link to " + twoHop.guid + " as it goes through the resident node");
+						continue;
+					} else {
+						ekGraph.updateEdge(inMsg.sender, twoHop, null, null, thStatus.etx, thStatus.lastKnownSession, thStatus.lastKnownSeq, null, null, null);
+					}
+				}
+			}
+		}
+	}
+
 	/*
 	 * This function process the reply packets. It updates the RTT value.
+	 * Reply for TOPO_BROADCAST, which is TOPO_REPLY
 	 */
 	private void onReplyReceived(TopoMessage inMsg, String senderIP) {
         long rtt = TopoSender.getRTT(inMsg.sessionID,inMsg.BroadcastSeq);
-		//logger.log(Level.ALL, "Reply received for link "+senderIP+"-"+inMsg.destinationIP+" RTT="+rtt);
 		logger.log(Level.ALL, inMsg.messageType+" received for "+senderIP+"-"+inMsg.destinationIP +" RTT="+rtt);
 		ekGraph.updateRTT(ownNode, inMsg.sender, inMsg.destinationIP, senderIP,	rtt );
  	}
 	
 
 	/*
-	 * This function updates the links and the neighbors upon receiving a broadcast from a neighbor.
+	 * This function updates the links and the neighbors upon receiving a broadcast (TOPO_BROADCAST) from a neighbor.
 	 */
 	private void onBroadcastReceived(TopoMessage inMsg, String senderIP) {
-		
+
+		//if sender node's master is not the same as my master, aka sender node belongs to another edge,
 		if (! inMsg.sender.masterGUID.equals(ownNode.masterGUID)) {
 			logger.log(Level.ALL, inMsg.messageType+" received from another edge. Sender IP="+senderIP+"Not updating ");
 			return;
 		}
-		
+
+		//log
 		logger.log(Level.ALL, inMsg.messageType+" received from "+senderIP+" through "+inMsg.destinationIP);
 
-		//First send a reply for calculating RTT
-		TopoMessage outMessage = TopoMessage.newReplyMessage(inMsg.sessionID, inMsg.BroadcastSeq, senderIP);
+		//First send a reply so that other node can calculate RTT
+		TopoMessage outMessage = TopoMessage.newBroadCastReplyMessage(inMsg.sessionID, inMsg.BroadcastSeq, senderIP);
 		outMessage.sender=ownNode;
 		TopoSender.sendMessage(outMessage, senderIP, this.serverSock);
 
-		
-		// FIrst update the link between the sender node and the current node
-		ekGraph.updateEdge(ownNode, inMsg.sender, inMsg.destinationIP, senderIP, 
-				null, inMsg.sessionID, inMsg.BroadcastSeq,  inMsg.sessionID, inMsg.BroadcastSeq, inMsg.thisLinkRcvProb);
+		// First update the link between the sender node and the current node
+		ekGraph.updateEdge(ownNode, inMsg.sender, inMsg.destinationIP, senderIP, null, inMsg.sessionID, inMsg.BroadcastSeq,  inMsg.sessionID, inMsg.BroadcastSeq, inMsg.thisLinkRcvProb);
 		
 		//Now update the two hop links
-		if(inMsg.neighborStatus.keySet()!=null)
-			for(TopoNode twoHop : inMsg.neighborStatus.keySet()) {
-				if(!twoHop.equals(ownNode)) {
+		if(inMsg.neighborStatus.keySet()!=null) {
+			for (TopoNode twoHop : inMsg.neighborStatus.keySet()) {
+				if (!twoHop.equals(ownNode)) {
 					NeighborStatus thStatus = inMsg.neighborStatus.get(twoHop);
-					
-					if(thStatus.nextHopGuid.equals(ownNode.guid)) {
-						logger.log(Level.ALL, "Discarding the link to "+twoHop.guid +" as it goes through the resident node");
+
+					if (thStatus.nextHopGuid.equals(ownNode.guid)) {
+						logger.log(Level.ALL, "Discarding the link to " + twoHop.guid + " as it goes through the resident node");
 						continue;
+					} else {
+						ekGraph.updateEdge(inMsg.sender, twoHop, null, null, thStatus.etx, thStatus.lastKnownSession, thStatus.lastKnownSeq, null, null, null);
 					}
-					else
-						ekGraph.updateEdge(inMsg.sender, twoHop, null, null,thStatus.etx, thStatus.lastKnownSession, 
-								thStatus.lastKnownSeq, null, null, null);
 				}
-			}        
+			}
+		}
 	}
 	
 	private void onNeighMessage(TopoMessage inMsg, String senderIP) {

@@ -45,7 +45,7 @@ public class SettingsActivity extends AppCompatActivity {
         super.onDestroy();
         logger.debug("Exiting from Setting view. Restarting the EK Service");
 
-        //decie whether service requires restart or nah
+        //decide whether service requires restart or nah
         if(ValueStore.restart.get()) {
             Autostart.restartEKService(this.getApplication().getApplicationContext());
         }

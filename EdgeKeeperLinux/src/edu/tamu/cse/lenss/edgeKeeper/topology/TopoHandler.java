@@ -29,40 +29,36 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
  * @author sbhunia
  *
  */
-public class TopoHandler extends Thread implements Terminable {
+public class TopoHandler extends Thread implements Terminable, TopologyMonitor {
+
+	//logger
 	public static final Logger logger = Logger.getLogger(TopoHandler.class);
 	
 	private TopoSender topoSender;
 	private TopoCloudServer topoCloudServer;
 	private TopoCloudClient topoCloudClient;
 	private Map<String, DatagramSocket> sockMap = new HashMap<String, DatagramSocket>();
-	
 	TopoGraph ekGraph = null;
-
 	private TopoNode ownNode;
-
 	private boolean terminated;
 
 	public TopoHandler() throws SocketException, UnknownHostException {
-		
-		if(EKHandler.getEKProperties().getBoolean(EKProperties.isRunningOnCloud))
-			this.ownNode = new TopoNode(EKHandler.getGNSClientHandler().getOwnGUID(),NodeType.CLOUD__NODE);
-		else
-			this.ownNode = new TopoNode(EKHandler.getGNSClientHandler().getOwnGUID(),NodeType.EDGE_CLIENT);
-	    this.ekGraph = new TopoGraph(TopoLink.class, ownNode);
-	    this.ekGraph.addVertex(ownNode);
-	    this.topoSender  = new TopoSender(sockMap, ekGraph, ownNode);
-	    this.topoCloudServer = new TopoCloudServer(ownNode);
-	    this.topoCloudClient = new TopoCloudClient(ekGraph, ownNode);
 
+		//check if this piece of code running on cloud or ground edge
+		if(EKHandler.getEKProperties().getBoolean(EKProperties.isRunningOnCloud)) {
+			this.ownNode = new TopoNode(EKHandler.getGNSClientHandler().getOwnGUID(), NodeType.CLOUD__NODE);
+		}else {
+			this.ownNode = new TopoNode(EKHandler.getGNSClientHandler().getOwnGUID(), NodeType.EDGE_CLIENT);
+			this.ekGraph = new TopoGraph(TopoLink.class, ownNode);
+			this.ekGraph.addVertex(ownNode);
+			this.topoSender = new TopoSender(sockMap, ekGraph, ownNode);
+			this.topoCloudServer = new TopoCloudServer(ownNode);
+			this.topoCloudClient = new TopoCloudClient(ekGraph, ownNode);
+		}
 	}
-	
-//	public void startTopoDiscovery(){
-//		this.topoReceiver.start();
-//		this.topoSender.start();
-//	}
-	
-	void openNewSocket(String ip){
+
+	//opens a new socket in the given IP and starts a new TopoReceiver thread.
+	private void openNewSocket(String ip){
 		DatagramSocket sock;
 		try {
 			sock = new DatagramSocket(EKConstants.TOPOLOGY_DISCOVERY_PORT, InetAddress.getByName(ip));
@@ -77,87 +73,84 @@ public class TopoHandler extends Thread implements Terminable {
 			logger.warn("Problem in opening DataGram socket for "+ip + " : "+EKConstants.TOPOLOGY_DISCOVERY_PORT, e);
 		}
 	}
-	
-	
+
 	public void run() {
 		this.terminated = false;
 		if(EKHandler.getEKProperties().getBoolean(EKProperties.isRunningOnCloud)) {
 			this.topoCloudServer.start();
-		}
-		else {
+		}else{
 			this.topoCloudClient.start();
-			//this.topoSender.start();
 			logger.log(Level.ALL, "Started cloud client");
-			
-			Set<String> ownIPs = new HashSet<>();
+			Set<String> currentIPs = new HashSet<>();
+
 			while(!this.terminated) {
 				try {
+
+					///fetch this node's interfaces and IPs
 					ownNode.ipMaps = EKUtils.getOwnIPv4Map();
+
+					//get this node's master's GUID
 					ownNode.masterGUID=EKHandler.edgeStatus.getMasterGUID();
-					
+
 					Set<String> newIPs = ownNode.ipMaps.keySet();
 					
-					if (ownIPs.equals(newIPs) ) {
+					if (currentIPs.equals(newIPs) ) {
+						//all IP addresses of all interfaces in this device has not changed.
 						logger.log(Level.ALL,"Own device IP addresses remains same. No need to update" + newIPs.toString());
-					}
-					else {
-						/* 
-						 * When IP change is detected, it is best to close the corresponding socket and remove
-						 * it from the socket map. We do not need to stop the corresponding receiver thread
-						 * as it will be closed automatically upon the socket closure. 
-						 * Next, we shall open the socket for the newly detected IP.
-						*/
+					}else {
+						//some IP addresses of some interfaces in this device has changed.
+						//so, we close dead sockets.
 						logger.info("Detected change in own IP address. Closing the previous datagram sockets");
-						for(String ip: sockMap.keySet()) 
-							if(!newIPs.contains(ip)) {
-								if(sockMap.get(ip)!=null)
+						for(String ip: sockMap.keySet()){
+							if (!newIPs.contains(ip)){
+								if (sockMap.get(ip) != null)
 									sockMap.get(ip).close();
 								sockMap.remove(ip);
 							}
-						
-						for(String ip: newIPs) 
-							if(!sockMap.containsKey(ip)) {
-								logger.log(Level.ALL,"Opening Datagram Socket for ip : " + ip);
+						}
+
+
+						//open new sockets only for the newest IPs
+						for(String ip: newIPs) {
+							if (!sockMap.containsKey(ip)) {
+								logger.log(Level.ALL, "Opening Datagram Socket for ip : " + ip);
 								openNewSocket(ip);
 							}
-						// Stop the respective socket
-						ownIPs=newIPs;
+						}
+
+						//set newIPs as CurrentIPs
+						currentIPs=newIPs;
 					}
-					/*
-					 * Now check if some socket was accidently closed due to network fluctuation or
-					 * somethine else. This kind of checking makes sure that the EK doesn;t crash.
-					 */
-					for(Map.Entry<String, DatagramSocket> entry: sockMap.entrySet()) 
-						if(entry.getValue().isClosed()) {
-							logger.info("The socket for IP "+entry.getKey() +" was closed. Openning new socket");
+
+					//double check if each entry in sockMap is closed for some reason, in that case re-open them
+					for(Map.Entry<String, DatagramSocket> entry: sockMap.entrySet()) {
+						if (entry.getValue().isClosed()) {
+							logger.info("The socket for IP " + entry.getKey() + " was closed. Openning new socket");
 							openNewSocket(entry.getKey());
 						}
-					
+					}
+
 				} catch (Exception e) {
 					logger.error("Problem in TopoHandler.",e);
 				}
 
+				//Now send the periodic UDP ping messages
 				try {
-					/*
-					 * Now send the periodic UDP ping messages
-					*/
 					topoSender.sendPeriodicPing();
 					logger.log(Level.DEBUG, "Current Graph | "+this.ekGraph.printToString());
-					//this.ekGraph.printToFile();
 					TopoGraph g = TopoParser.importGraph(TopoParser.exportGraph(this.ekGraph));
 					logger.log(Level.ALL, "Exported graph "+g.printToString());
-
 				}catch(Exception e) {
 					logger.error("Problem in sending periodic messages", e);
 				}
-				
-				
+
+				//sleep for thread interrupt
 				try {
 					sleep(EKHandler.getEKProperties().getInteger(EKProperties.topoInterval));
 				} catch (InterruptedException e) {
 					logger.debug("TopoHandler Sleep interupted");
 				}
-				
+
 			}
 		}
 	}

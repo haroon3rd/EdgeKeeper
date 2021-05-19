@@ -3,14 +3,11 @@ package edu.tamu.cse.lenss.edgeKeeper.server;
 
 import javax.jmdns.*;
 
-import android.content.Context;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
-import edu.tamu.cse.lenss.edgeKeeper.client.EKClient;
+import edu.tamu.cse.lenss.edgeKeeper.topology.NSD;
+import edu.tamu.cse.lenss.edgeKeeper.topology.TopoHandler;
+import edu.tamu.cse.lenss.edgeKeeper.topology.TopologyMonitor;
 import org.apache.curator.framework.CuratorFramework;
 
-
-import org.apache.curator.framework.recipes.cache.TreeCacheEvent.Type;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -21,9 +18,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -32,8 +26,8 @@ import edu.tamu.cse.lenss.edgeKeeper.clusterHealth.ClusterHealthClient;
 import edu.tamu.cse.lenss.edgeKeeper.clusterHealth.ClusterHealthServer;
 import edu.tamu.cse.lenss.edgeKeeper.clusterHealth.HealthWebView;
 import edu.tamu.cse.lenss.edgeKeeper.dns.DNSServer;
-import edu.tamu.cse.lenss.edgeKeeper.topology.TopoHandler;
-import edu.tamu.cse.lenss.edgeKeeper.topology.TopoHandler;
+//import edu.tamu.cse.lenss.edgeKeeper.topology.TopoHandler;
+//import edu.tamu.cse.lenss.edgeKeeper.topology.TopoHandler;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKRecord;
@@ -84,12 +78,14 @@ public class EKHandler extends Thread implements Terminable{
     IPMonitor ipMonitor;
 	private ClusterHealthServer clusterHealthServer;
 	private HealthWebView healthWebView;
-	public static TopoHandler topoHandler;
-    public static AtomicInteger conNum=new AtomicInteger(0);
-	private ClusterHealthClient clusterHealthClient;
-	private SampleListener sampleListener;
-	private String service_type = "_http._tcp.local.";
 
+	// Switching between two Topology Monitor Implementation
+	public static TopoHandler topoHandler;
+	//public static TopologyMonitor topoHandler;
+	//public static TopologyMonitor topologyMonitor;
+
+	public static AtomicInteger conNum=new AtomicInteger(0);
+	private ClusterHealthClient clusterHealthClient;
 
 	//only public constructor
 	public EKHandler(EKUtils _ekUtils, EKProperties prop) {
@@ -113,9 +109,11 @@ public class EKHandler extends Thread implements Terminable{
     public static EKUtils getEKUtils() {
     	return ekUtils;
     }
-    public static TopoHandler getTopoHandler() {
-    	return topoHandler;
-    }
+
+	//returns either TopoHandler or TopologyMonitor depending on what implementation is being used
+	public static TopologyMonitor getTopoMonitor() {
+		return topoHandler;
+	}
 
     //this method start the service and create two Request server threads.
     public void run()  {
@@ -161,10 +159,13 @@ public class EKHandler extends Thread implements Terminable{
 				this.dnsServer = new DNSServer();
 				this.terminableTasks.add(dnsServer);
 			}
-			
+
+			//init topology handler
 			topoHandler = new TopoHandler();
-			this.terminableTasks.add(topoHandler);
-			
+			//topologyMonitor = new TopologyMonitorImpl();
+			this.terminableTasks.add((Terminable) topoHandler);
+			//this.terminableTasks.add((Terminable) topologyMonitor);
+
 			coordinatorServer = new CoordinatorServer();
 			this.terminableTasks.add(coordinatorServer);
 			
@@ -178,7 +179,6 @@ public class EKHandler extends Thread implements Terminable{
 			//First start Zookeeper servers
 			zkServerHandler = new ZKServerHandler(this);
 			this.terminableTasks.add(zkServerHandler);
-
 
 			this.clusterHealthClient = new ClusterHealthClient();
 			this.terminableTasks.add(clusterHealthClient);
@@ -198,24 +198,14 @@ public class EKHandler extends Thread implements Terminable{
     		this.healthWebView = new HealthWebView();
     		this.terminableTasks.add(healthWebView);
 
-    		//TODO: start new services from here
     		//register JMDNS service
-			//only run if this desktop EdgeKeeper
-			//Android runs this service from MainActivity.
-			//currently jmDNS is turned off (true==false)
-			if(/*!EKUtils.isAndroid()*/true==false) {
-				jmdns = JmDNS.create();
-				sampleListener = new SampleListener(jmdns);
+			if(true==true) {
+				NSD jmdns = new NSD();
+				ExecutorService executorService = Executors.newFixedThreadPool(1);
+				executorService.execute(jmdns);
 
-				//create service
-				ServiceInfo serviceInfo = ServiceInfo.create(service_type, "EK_NSD_" + ownGUID.substring(0, 4), service_type, 0, 1,1,true,  "100.desk.top.100");
-
-				//now register this service as fresh
-				logger.log(Level.ALL, "_NSD_ using ownIP: " + InetAddress.getLocalHost().getHostAddress());
-				jmdns = JmDNS.create(InetAddress.getLocalHost(), InetAddress.getLocalHost().getHostName());
-				jmdns.registerService(serviceInfo);
-				jmdns.addServiceListener(service_type, sampleListener);
-
+				//add shutdownhook
+				this.terminableTasks.add(jmdns);
 			}
 
 		} catch (IOException e) {
@@ -230,37 +220,6 @@ public class EKHandler extends Thread implements Terminable{
 			executorService.submit(task);
 		logger.info("EdgeKeeper all tasks started");
     }
-
-    //class for jmdns service discovery
-    private static class SampleListener implements ServiceListener {
-
-		JmDNS jmdns;
-
-    	public SampleListener(JmDNS jmdns){
-    		this.jmdns = jmdns;
-		}
-
-		@Override
-		public void serviceAdded(ServiceEvent event) {
-			logger.log(Level.ALL, "SSS_mohammad_in_desktop_EDGEKEEPER_NSD_added:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
-			jmdns.requestServiceInfo(event.getType(), event.getName(), true, 5000);
-
-		}
-
-		@Override
-		public void serviceRemoved(ServiceEvent event) {
-			logger.log(Level.ALL, "SSS_mohammad_in_desktop_EDGEKEEPER_NSD_removed:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
-		}
-
-		@Override
-		public void serviceResolved(ServiceEvent event) {
-			logger.log(Level.ALL, "SSS_mohammad_in_desktop_EDGEKEEPER_NSD_resolved:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
-		}
-    }
-    
-	
-	
-	
 
     /**
      * This function updates the current host IP in the GNS server
@@ -281,7 +240,10 @@ public class EKHandler extends Thread implements Terminable{
     }
 
     private class IPMonitor extends Thread implements Terminable{
-    	boolean terminated = false; 
+    	boolean terminated = false;
+
+
+
 		@Override
 		public void run() {
 	    	Set<String> ownIPs = new HashSet<String>();

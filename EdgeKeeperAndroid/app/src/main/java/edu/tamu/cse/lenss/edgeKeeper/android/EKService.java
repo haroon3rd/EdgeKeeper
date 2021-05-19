@@ -48,13 +48,6 @@ public class EKService extends Service {
     static AtomicBoolean isRunning = new AtomicBoolean(false);
     public static final String CHANNEL_ID = "EKForegroundServiceChannel";
 
-    // We use this to store the certificate name and password
-    //SharedPreferences sharedPref;
-
-
-
-
-
     static AtomicInteger numberOfServiceRunning = new AtomicInteger(0);
 
     private Context context;
@@ -133,7 +126,6 @@ public class EKService extends Service {
                     showNotification("GNS:"+gnsState+", ZKClient:"+zkClientState+", ZKServer:"+zkServerState, false);
                 }
 
-
             };
 
             ekHandler = new EKHandler(gnsServiceUtils, ekProperties);
@@ -148,7 +140,7 @@ public class EKService extends Service {
     private void showNotification(String message, boolean error) {
         String input = intent.getStringExtra("inputExtra");
         createNotificationChannel();
-        Intent notificationIntent = new Intent(this, MainActivitySCRAP.class);
+        Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this,
                 0, notificationIntent, 0);
 
@@ -285,16 +277,7 @@ public class EKService extends Service {
         if (ekHandler != null)
             ekHandler.terminate();
 
-        //broadcaster.sendBroadcast(new Intent(GNS_SERVICE_STOP));
         super.onDestroy();
-        //logger.debug("Logging out. COncurrent services: " + numberOfServiceRunning.getAndDecrement());
-
-/*
-        Intent broadcastIntent = new Intent();
-        broadcastIntent.setAction("restartservice");
-        broadcastIntent.setClass(this, Restarter.class);
-        this.sendBroadcast(broadcastIntent);
-*/
 
         logger.info("Stopped EKService");
 

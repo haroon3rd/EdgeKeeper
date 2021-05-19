@@ -91,7 +91,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         }
     }
 
-    //when user presses on a setting button, change the previous value, and presses OK, this function is called.
+    //when user presses on a setting item, changes the previous value, and presses OK, this function is called.
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 

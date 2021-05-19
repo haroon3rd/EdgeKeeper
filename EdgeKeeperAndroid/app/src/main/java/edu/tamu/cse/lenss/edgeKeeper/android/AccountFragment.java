@@ -83,7 +83,7 @@ public class AccountFragment extends PreferenceFragmentCompat implements SharedP
         }
     }
 
-    //when user presses on a Account button, change the previous value, and presses OK, this function is called.
+    //when user presses on a Account item, changes the previous value, and presses OK, this function is called.
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         // Figure out which preference was changed
@@ -129,10 +129,10 @@ public class AccountFragment extends PreferenceFragmentCompat implements SharedP
 
         //decide whether require service restart or nah
         if(serviceRestart){
-            //Value has been changed for one or many items in Settings
+            //Value has been changed for one or many items in Account
             ValueStore.restart.set(true);
         }else{
-            //Value has not been changed for any items in Settings
+            //Value has not been changed for any items in Account
             ValueStore.restart.set(false);
         }
 

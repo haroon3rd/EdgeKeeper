@@ -72,7 +72,10 @@ public class EdgeStatus {
 			 * First copy the graph. this ensures that the graph is not modified by anyone
 			 * else while thie function is executing
 			 */
-			TopoGraph graph = TopoGraph.getGraph( EKHandler.getTopoHandler().getGraph().getByteArray());
+			//TopoGraph graph = TopoGraph.getGraph( EKHandler.getTopoHandler().getGraph().getByteArray());
+			//TopoGraph graph = TopoGraph.getGraph( EKHandler.getTopologyMonitor().getGraph().getByteArray());
+			TopoGraph graph = TopoGraph.getGraph( EKHandler.getTopoMonitor().getGraph().getByteArray());
+
 			int noReplica = EKHandler.getEKProperties().getInteger(EKProperties.noReplica);
 			
 			String suitableMasterIP = getSuitableMasterIP(graph);

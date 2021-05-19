@@ -51,7 +51,8 @@ public class TopoLink extends DefaultWeightedEdge implements Serializable {
 		this.totalBroadcastRcvd += 1;
 		prcv = (double) this.totalBroadcastRcvd / ( (this.lastSeqRcvd - this.firstSeqRcvd)/EKConstants.BRD_SEQ_INCR + 1);
 	}
-	
+
+
 	double updateStaleLink() {
 		double prcvDest = 1.0 / (this.prcv * this.getEtx());
 		this.lastSeqRcvd += EKConstants.BRD_SEQ_INCR;

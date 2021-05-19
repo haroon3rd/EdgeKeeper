@@ -113,16 +113,7 @@ public class TopoGraph extends WeightedMultigraph<TopoNode, TopoLink> implements
 			}
 		return vSet;
 	}
-	
-//	public Set<String> getAllIPs() {
-//		Set<String> ips = new HashSet<String>();
-//		if(this.vertexSet()!=null)
-//			for(TopoNode v: this.vertexSet())
-//				if(v.ips !=null)
-//					ips.addAll(v.ips);
-//		return ips;
-//	}
-	
+
 	/**
 	 * Obtain the Vertex/Node for a particular IP. 
 	 * @param ip
@@ -138,56 +129,32 @@ public class TopoGraph extends WeightedMultigraph<TopoNode, TopoLink> implements
 		return null;
 	}
 
-//	/**
-//	 * This function returns the map of vertex to EdgeWeight. EdgeWeight is the ETX (check OLSR for details)
-//	 * @return
-//	 */
-//	public Map<TopoNode, Double> getETXMap(){
-//		Map<TopoNode, Double> etxMap = new HashMap<TopoNode, Double>();
-//		SingleSourcePaths shortestPaths = new DijkstraShortestPath(this).getPaths(ownNode);
-//		for (TopoNode v : vertexSet()) {
-//			if (!v.equals(ownNode)) {
-//				Double pathWeight = shortestPaths.getWeight(v);
-//				pathWeight =  pathWeight.isInfinite()? Double.MAX_VALUE :pathWeight;
-//				etxMap.put(v, pathWeight);
-//			}
-//		}
-//		return etxMap;
-//	}
-//	
-	
+
 	/**
 	 * This function returns the map of vertex to EdgeWeight. EdgeWeight is the ETX (check OLSR for details)
 	 * @return
 	 */
 	public Map<TopoNode, NeighborStatus> getNeighborMap(){
-		Map<TopoNode, NeighborStatus> neighborMap = new HashMap<TopoNode, NeighborStatus>();
+		Map<TopoNode, NeighborStatus> neighborMap = new HashMap<>();
 		SingleSourcePaths<TopoNode, TopoLink> shortestPaths = new DijkstraShortestPath(this).getPaths(ownNode);
 		for (TopoNode v : vertexSet()) {
-			//if (!v.equals(ownNode)) {
-			//if (!v.equals(ownNode) && (v.type!=NodeType.EDGE_NEIBOR)) {
 			if (!v.equals(ownNode) && !(v.type==NodeType.EDGE_NEIBOR && ownNode.type ==NodeType.EDGE_CLIENT)) {
 				NeighborStatus ns = new NeighborStatus();
 				ns.lastKnownSeq=v.lastSeqRcvd;
 				ns.lastKnownSession = v.lastSessionID;
 				
 				ns.etx = shortestPaths.getWeight(v);
-				if(!ns.etx.isInfinite())
+				if(!ns.etx.isInfinite()){
 					neighborMap.put(v, ns);
-				
+				}
+
 				try {
 				ns.nextHopGuid=shortestPaths.getPath(v).getVertexList().get(1).guid;
-				//TopoHandler.logger.log(Level.ALL,"Next hop for "+v.guid +" is "+ ns.nextHopGuid);
 				}catch(Exception e) {
 					TopoHandler.logger.log(Level.ALL,"Exception in retrieving next hop for"+v.guid, e);
 				}
 				v.expectedSeq++; // THis will make sure of some expire
-			}
-			/*
-			 * For master, the expectedSeq is updated in the above clause, for EDGE_CLIENT,
-			 * the neighbor sequence has to be updated separately.
-			 */
-			else if (!v.equals(ownNode) && (v.type==NodeType.EDGE_NEIBOR)) {
+			} else if (!v.equals(ownNode) && (v.type==NodeType.EDGE_NEIBOR)) {
 				v.expectedSeq++; // THis will make sure of neighbor expire
 			}
 		}

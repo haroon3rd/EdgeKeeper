@@ -227,7 +227,10 @@ public class HealthWebView extends NanoHTTPD implements Terminable{
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
         try {
-        	BufferedImage image = TopoUtils.getImage(EKHandler.getTopoHandler().getGraph());
+        	//BufferedImage image = TopoUtils.getImage(EKHandler.getTopoHandler().getGraph());
+			//BufferedImage image = TopoUtils.getImage(EKHandler.getTopologyMonitor().getGraph());
+			BufferedImage image = TopoUtils.getImage(EKHandler.getTopoMonitor().getGraph());
+
             ImageIO.write(image, "PNG", bos);
             byte[] imageBytes = bos.toByteArray();
 

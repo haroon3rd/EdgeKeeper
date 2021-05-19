@@ -48,13 +48,10 @@ public class TopoCloudClient extends Thread implements Terminable{
 	//sendRcv is called from connectServer when node is running on Edge
 	String connectCloud(String destIP){
 
-		//		String[] cloudAddr = EKHandler.getEKProperties().getGNSAddr();
 		DataInputStream in = null;
 		DataOutputStream out = null;
 		Socket cSocket = null;
 		try {
-			//TopoHandler.logger.info("Trying to connect Cloud Address # " + destIP);
-			//    			sessionID = UUID.randomUUID().toString();
 			cSocket = new Socket();
 			cSocket.connect(new InetSocketAddress(destIP,EKConstants.TOPOCLOUD_DISCOVERY_PORT), EKConstants.ClientConnectTimeout);
 			cSocket.setSoTimeout(EKConstants.ClientSoTimeout);
@@ -69,7 +66,6 @@ public class TopoCloudClient extends Thread implements Terminable{
 			long cloudRTT = t2-t1;
 			if(reply.destinationIP!=null) {
 				TopoHandler.logger.log(Level.ALL,"Reply from cloud recieved at " +cSocket.getLocalAddress().getHostAddress());
-//				ekGraph.updateCloudNode(ownNode,reply.sender, reply.destinationIP, cSocket.getInetAddress().getHostAddress(),cloudRTT, reply.sessionID, reply.BroadcastSeq);
 				ekGraph.updateEdge(ownNode,reply.sender, reply.destinationIP, cSocket.getInetAddress().getHostAddress(),1.0, reply.sessionID, reply.BroadcastSeq, reply.sessionID, reply.BroadcastSeq,1.0 );
 				ekGraph.updateRTT(ownNode, reply.sender, reply.destinationIP, cSocket.getInetAddress().getHostAddress(),cloudRTT );
 			}

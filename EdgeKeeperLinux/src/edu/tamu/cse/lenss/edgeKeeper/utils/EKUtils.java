@@ -1,6 +1,8 @@
 package edu.tamu.cse.lenss.edgeKeeper.utils;
 
 import java.io.BufferedReader;
+
+import android.net.INetd;
 import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
 import edu.tamu.cse.lenss.edgeKeeper.server.GNSClientHandler;
 
@@ -9,14 +11,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.DatagramSocket;
-import java.net.Inet4Address;
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.URL;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -98,7 +93,7 @@ public abstract class EKUtils {
 	/**
 	 * This constructor to be used in Linux environment
 	 * 
-	 * @param gnsAddrStr
+	 * @param
 	 * @throws UnknownHostException
 	 */
 	public EKUtils(EKProperties prop) {
@@ -148,6 +143,37 @@ public abstract class EKUtils {
 				newIPs.add(realIP);
 		}
 		return newIPs;
+	}
+
+	//returns LTE IP and its subnet mask if available or return null
+	//returns an array of size two.
+	public static String[] getLTEipAndSubnetMask() {
+		try {
+			Enumeration<NetworkInterface> enumNI = NetworkInterface.getNetworkInterfaces();
+			while (enumNI.hasMoreElements()) {
+				NetworkInterface ifc = enumNI.nextElement();
+				if (ifc.isUp()) {
+					Enumeration<InetAddress> enumAdds = ifc.getInetAddresses();
+					while (enumAdds.hasMoreElements()) {
+						InetAddress addr = enumAdds.nextElement();
+						if (!(addr.isLoopbackAddress() || addr.isAnyLocalAddress() || addr.isLinkLocalAddress())){
+							if (addr instanceof Inet4Address){
+								if(ifc.getName().startsWith("rmnet") || ifc.getName().startsWith("pgwtun")){
+									String[] LTEipAndMask = new String[2];
+									LTEipAndMask[0] = addr.toString().substring(1);
+									LTEipAndMask[1] = Short.toString(NetworkInterface.getByInetAddress(addr).getInterfaceAddresses().get(0).getNetworkPrefixLength());
+									return LTEipAndMask;
+								}
+							}
+						}
+					}
+				}
+			}
+		} catch (SocketException e) {
+			logger.error("Problem in obtaining IP address for own device", e);
+		}
+
+		return null;
 	}
 
 	public static String getRealIP() {
@@ -267,6 +293,23 @@ public abstract class EKUtils {
 			logger.error("Problem in obtaining IP address for own device", e);
 		}
 		return addrList;
+	}
+
+	//takes an IP of a local interface and returns the subnet mask of this IP
+	public static String getSubnetMaskIP(String ip){
+
+		try {
+			InetAddress inet = InetAddress.getByAddress(ip.getBytes());
+			NetworkInterface networkInterface = NetworkInterface.getByInetAddress(inet);
+
+			for (InterfaceAddress address : networkInterface.getInterfaceAddresses()) {
+				System.out.println("networkprefix: " + address.getNetworkPrefixLength());
+			}
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+
+		return null;
 	}
 
 

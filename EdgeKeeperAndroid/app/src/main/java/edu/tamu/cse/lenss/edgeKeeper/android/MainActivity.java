@@ -2,15 +2,12 @@ package edu.tamu.cse.lenss.edgeKeeper.android;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
@@ -27,16 +24,18 @@ import android.content.Context;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.UnknownHostException;
-import java.sql.SQLOutput;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
 
 import javax.jmdns.JmDNS;
+import javax.jmdns.JmmDNS;
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
@@ -51,11 +50,19 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtilsAndroid;
 public class MainActivity extends AppCompatActivity{
 
     Context context;
+    Activity activity;
     Logger logger = Logger.getLogger(this.getClass());
     JmDNS jmdns;
-    private SampleListener sampleListener;
+    JmmDNS registry;
+    private WifiManager.MulticastLock multicastLock;
+    private SampleListener_JmDNS sampleListener_jm;
+    private SampleListener_JmmDNS sampleListener_jmm;
     private String service_type = "_http._tcp.local.";
-
+    WifiManager wm;
+    InetAddress bindingAddress;
+    boolean isDiscovering;
+    public static String myname = "essential_l";
+    Thread GVupdater;
 
     public static GridView GV;
 
@@ -63,9 +70,6 @@ public class MainActivity extends AppCompatActivity{
     private EKService mEKService;
     private boolean mBound = false;
     private boolean SERVICE_STARTED = false;
-
-
-
 
     enum ServiceStatus {STARTED,CONNECTED,TERMINATED}
     ServiceStatus serviceStatus = ServiceStatus.TERMINATED;
@@ -86,12 +90,16 @@ public class MainActivity extends AppCompatActivity{
         }
     };
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         this.context = getApplicationContext();
+        this.activity = this;
+
 
         this.getActionBar();
 
@@ -106,6 +114,38 @@ public class MainActivity extends AppCompatActivity{
     protected void onStart() {
         super.onStart();
 
+    }
+
+    private void stopScan_jm() {
+        try {
+            if (jmdns != null) {
+                jmdns.unregisterAllServices();
+                jmdns.close();
+                jmdns = null;
+            }
+            if (multicastLock != null) {
+                multicastLock.release();
+                multicastLock = null;
+            }
+        } catch (Exception ex) {
+            logger.log(Level.ALL, "exception in stopScan_jm(): " , ex);
+        }
+    }
+
+    private void stopScan_jmm() {
+        try {
+            if (registry != null) {
+                registry.unregisterAllServices();
+                registry.close();
+                registry = null;
+            }
+            if (multicastLock != null) {
+                multicastLock.release();
+                multicastLock = null;
+            }
+        } catch (Exception ex) {
+            logger.log(Level.ALL, "exception in stopScan_jmm(): " , ex);
+        }
     }
 
 
@@ -144,21 +184,8 @@ public class MainActivity extends AppCompatActivity{
 
     protected void onDestroy() {
 
-        //close jmdns
-        try{
-            jmdns.removeServiceListener(service_type, sampleListener );
-        }catch (Exception e){
-            logger.log(Level.ALL, "_NSD_SSS exception in unregistering service", e);
-        }
-        try {
-            jmdns.unregisterAllServices();
-            jmdns.close();
-            logger.log(Level.ALL, "_NSD_SSS_mohammad jmdns.close() succeeded");
-        } catch (Exception e) {
-            e.printStackTrace();
-            logger.log(Level.ALL, "_NSD_SSS_mohammad exception in jmdns.close()");
-        }
-
+        //stopScan_jm();
+        stopScan_jmm();
 
         logger.info("Inside onDestroy function. isFinishing: "+isFinishing());
         Autostart.stopEKService(this.getApplicationContext());
@@ -174,6 +201,8 @@ public class MainActivity extends AppCompatActivity{
         }
         else
             logger.info("Perpetual run is disabled. Not starting service");
+
+        this.GVupdater.interrupt();
 
         super.onDestroy();
 
@@ -205,48 +234,66 @@ public class MainActivity extends AppCompatActivity{
         setupGridView();
 
         //start thread that will periodically update gridview
-        Thread GVupdater = new Thread(new UpdateGridView(getApplicationContext(), this, GV));
-        GVupdater.start();
+        this.GVupdater = new Thread(new UpdateGridView(getApplicationContext(), this, GV));
+        this.GVupdater.start();
 
-        //jmdns
-        sampleListener = new SampleListener(logger, jmdns);
-        new jmdns().execute();
+        //init jmdns stuff
+        //new jmdnss().execute();
 
+        //init jmmdns stuff
+        //new jmmdnss().execute();
 
     }
 
-
     //jmdns class running on background
-    private class jmdns extends AsyncTask<Void, Void, Void>{
+    private class jmdnss extends AsyncTask<Void, Void, Void>{
 
         @Override
         protected Void doInBackground(Void... voids) {
 
-            //first unregister all previous services
-            try{
-                jmdns = JmDNS.create();
-                jmdns.unregisterAllServices();
-            }catch (Exception e){
-                e.printStackTrace();
-                logger.log(Level.ALL, "_NSD_sss_exception in closing jmdns()", e);
-            }
-
-            //now create a new instance of jmdns
+            isDiscovering = false;
+            wm = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+            multicastLock = wm.createMulticastLock(activity.getPackageName());
+            multicastLock.setReferenceCounted(false);
             try {
-                jmdns = JmDNS.create(InetAddress.getLocalHost());
-                //ServiceInfo serviceInfo = ServiceInfo.create(service_type, "EDGEKEEPER_NSD_", 1236, "<newline>SSS_mohammad_from_android " + EKClient.getOwnGuid() + "<newline>");
-                //ServiceInfo serviceInfo = ServiceInfo.create(service_type, "EDGEKEEPER_NSD_" + EKClient.getOwnGuid().substring(0, 4), service_type, 0, 1,1,true,  "100.100.100.100");
-                ServiceInfo serviceInfo = ServiceInfo.create(service_type, "EK_NSD_EHIHIHI" , service_type, 0, 1,1,true,  "100.100.100.100");
 
+                WifiManager wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                // get the device ip address
+                final InetAddress deviceIpAddress = getDeviceIpAddress(wifi);
+                multicastLock = wifi.createMulticastLock(getClass().getName());
+                multicastLock.setReferenceCounted(true);
+                multicastLock.acquire();
+                jmdns = JmDNS.create(deviceIpAddress, InetAddress.getLocalHost().getHostName());
+                ServiceInfo serviceInfo = ServiceInfo.create(service_type, "EK_NSD_android_jm", 0, 1,1,true,  "android_text_wifi_jm");
+                sampleListener_jm = new SampleListener_JmDNS(logger, jmdns);
 
                 jmdns.registerService(serviceInfo);
-                jmdns.addServiceListener(service_type, sampleListener);
-            }catch (Exception e){
-                e.printStackTrace();
-                logger.log(Level.ALL,"_NSD_sss_exception in jmdns() class", e);
-
+                jmdns.addServiceListener(service_type, sampleListener_jm);
+            } catch (IOException ex) {
+                logger.log(Level.ALL, "_NSD_sss jmdns exception in onstart()", ex);
             }
             return null;
+        }
+
+        private InetAddress getDeviceIpAddress(WifiManager wifi) {
+            InetAddress result = null;
+            try {
+                // default to Android localhost
+                result = InetAddress.getLocalHost();
+                // figure out our wifi address, otherwise bail
+                WifiInfo wifiinfo = wifi.getConnectionInfo();
+                int intaddr = wifiinfo.getIpAddress();
+                byte[] byteaddr = new byte[] {
+                        (byte) (intaddr & 0xff),
+                        (byte) (intaddr >> 8 & 0xff),
+                        (byte) (intaddr >> 16 & 0xff),
+                        (byte) (intaddr >> 24 & 0xff) };
+                result = InetAddress.getByAddress(byteaddr);
+            } catch (UnknownHostException ex) {
+                logger.log(Level.ALL, "_NSD_sss jmmdns exception getDeviceIpAddress(): ", ex);
+            }
+
+            return result;
         }
 
         @Override
@@ -256,32 +303,140 @@ public class MainActivity extends AppCompatActivity{
 
     }
 
-    private static class SampleListener implements ServiceListener {
+    //jmmdns class running on background
+    private class jmmdnss extends AsyncTask<Void, Void, Void>{
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            isDiscovering = false;
+            wm = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+            multicastLock = wm.createMulticastLock(activity.getPackageName());
+            multicastLock.setReferenceCounted(false);
+            try {
+                WifiManager wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                // get the device ip address
+                final InetAddress deviceIpAddress = getDeviceIpAddress(wifi);
+                multicastLock = wifi.createMulticastLock(getClass().getName());
+                multicastLock.setReferenceCounted(true);
+                multicastLock.acquire();
+                registry = JmmDNS.Factory.getInstance();
+                ServiceInfo serviceInfo = ServiceInfo.create(service_type, "EK_NSD_android_jmm_" + myname, 0, 1,1,true,  "android_text_wifi_jmm_" + myname);
+                sampleListener_jmm = new SampleListener_JmmDNS(logger, registry);
+
+                registry.registerService(serviceInfo);
+                registry.addServiceListener(service_type, sampleListener_jmm);
+            } catch (IOException ex) {
+                logger.log(Level.ALL, "_NSD_sss jmmdns exception in onstart()", ex);
+            }
+            return null;
+        }
+
+        private InetAddress getDeviceIpAddress(WifiManager wifi) {
+            InetAddress result = null;
+            try {
+                // default to Android localhost
+                result = InetAddress.getLocalHost();
+                // figure out our wifi address, otherwise bail
+                WifiInfo wifiinfo = wifi.getConnectionInfo();
+                int intaddr = wifiinfo.getIpAddress();
+                byte[] byteaddr = new byte[] {
+                        (byte) (intaddr & 0xff),
+                        (byte) (intaddr >> 8 & 0xff),
+                        (byte) (intaddr >> 16 & 0xff),
+                        (byte) (intaddr >> 24 & 0xff) };
+                result = InetAddress.getByAddress(byteaddr);
+            } catch (UnknownHostException ex) {
+                logger.log(Level.ALL, "_NSD_sss jmmdns exception getDeviceIpAddress(): ", ex);
+            }
+
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+
+        }
+
+    }
+
+
+    private static class SampleListener_JmDNS implements ServiceListener {
 
         Logger logger;
         JmDNS jmdns;
 
-        public SampleListener(Logger logger, JmDNS jmdns){
+        public SampleListener_JmDNS(Logger logger, JmDNS jmdns){
             this.logger = logger;
             this.jmdns = jmdns;
         }
         @Override
         public void serviceAdded(ServiceEvent event) {
             logger.log(Level.ALL, "SSS_mohammad_in_android_EDGEKEEPER_NSD_added:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
-            System.out.println("SSS_mohammad_in_android_EDGEKEEPER_NSD_added:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+            System.out.println("SSS_jmdns_mohammad_in_android_EDGEKEEPER_NSD_added:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
             jmdns.requestServiceInfo(event.getType(), event.getName(), 5000);
         }
 
         @Override
         public void serviceRemoved(ServiceEvent event) {
             logger.log(Level.ALL, "SSS_mohammad_in_android_EDGEKEEPER_NSD_removed:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
-            System.out.println("SSS_mohammad_in_android_EDGEKEEPER_NSD_removed:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+            System.out.println("SSS_jmdns_mohammad_in_android_EDGEKEEPER_NSD_removed:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
         }
 
         @Override
         public void serviceResolved(ServiceEvent event) {
             logger.log(Level.ALL, "SSS_mohammad_in_android_EDGEKEEPER_NSD_resolved:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
-            System.out.println( "SSS_mohammad_in_android_EDGEKEEPER_NSD_resolved:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+            System.out.println( "SSS_jmdns_mohammad_in_android_EDGEKEEPER_NSD_resolved:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+
+        }
+    }
+
+
+    private static class SampleListener_JmmDNS implements ServiceListener {
+
+        Logger logger;
+        JmmDNS jmmdns;
+
+        public SampleListener_JmmDNS(Logger logger, JmmDNS jmmdns){
+            this.logger = logger;
+            this.jmmdns = jmmdns;
+        }
+        @Override
+        public void serviceAdded(ServiceEvent event) {
+            logger.log(Level.ALL, "SSS_mohammad_in_android_EDGEKEEPER_NSD_added:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+            System.out.println("SSS_jmdns_mohammad_in_android_EDGEKEEPER_NSD_added:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+            jmmdns.requestServiceInfo(event.getType(), event.getName(), 5000);
+
+            //delete this bit of code it was made for fun
+            String data = event.getName();
+            if(data.contains("(")){
+                data = data.split(" ")[0];
+            }
+            String[] tokens = data.split("_");
+            String name = tokens[tokens.length-1];
+            System.out.println("nameSir: " + name);
+            if(!ValueStore.pinnedItems.contains(name)){
+                ValueStore.pinnedItems.add(name);
+            }
+        }
+
+        @Override
+        public void serviceRemoved(ServiceEvent event) {
+            logger.log(Level.ALL, "SSS_mohammad_in_android_EDGEKEEPER_NSD_removed:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+            System.out.println("SSS_jmdns_mohammad_in_android_EDGEKEEPER_NSD_removed:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+        }
+
+        @Override
+        public void serviceResolved(ServiceEvent event) {
+            logger.log(Level.ALL, "SSS_mohammad_in_android_EDGEKEEPER_NSD_resolved:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+            System.out.println( "SSS_jmdns_mohammad_in_android_EDGEKEEPER_NSD_resolved:" + " Name: " + event.getInfo().getName() + ", Text: " + new String(event.getInfo().getTextBytes()));
+
+            //delete this bit of code it was made for fun
+            String[] tokens = event.getName().substring(1).split("_");
+            String name = tokens[tokens.length-1];
+            if(ValueStore.pinnedItems.contains(name)){
+                ValueStore.pinnedItems.remove(name);
+            }
 
         }
     }
@@ -375,7 +530,9 @@ public class MainActivity extends AppCompatActivity{
         logger.debug("Back button pressed. Not doing anything");
     }
 
-    //a child clss that will run a thread that will periodically update gridview
+
+
+    //a child class that will run in a thread that will periodically update gridview on MainActivity to show all available devices in this edge
     class UpdateGridView implements Runnable {
 
         Context context;
@@ -421,6 +578,7 @@ public class MainActivity extends AppCompatActivity{
                     if(ValueStore.ZKClient_status!=null && ValueStore.ZKClient_status.get()==0) {
 
                         //get my name from EKClient
+                        //NOTE: if you came here because you saw an exception in standard output/logcat dont worry this exception is expected and harmless
                         if(ValueStore.myName==null) {
                             ValueStore.myName = EKClient.getOwnAccountName();
                         }
@@ -475,6 +633,7 @@ public class MainActivity extends AppCompatActivity{
                         //HANDLE TOPOLOGY INFORMATION HERE
                         try {
                             Set<String> ips = null;
+                            //NOTE: if you came here because you saw an exception in standard output/logcat dont worry this exception is expected and harmless
                             ips = EKClient.getNetworkInfo().getAllIPs();
                             if (ips != null) {
                                 //iterate over each IP
@@ -542,11 +701,6 @@ public class MainActivity extends AppCompatActivity{
                         }
                     }
 
-                    //test add multiple test
-                    //for (int i=0; i< 30; i++){
-                    //    cloud.add(new GVItem(true, "camry" + i, true, getApplicationContext(), findViewById(android.R.id.content).getRootView()));
-                    //}
-
                     //update UI
                     //run on UI thread aka mainActivity in this case
                     GVAdapter adapter = new GVAdapter(context, cloud);
@@ -560,6 +714,7 @@ public class MainActivity extends AppCompatActivity{
 
 
                     //sleep
+                    //NOTE: if you came here because you saw an exception in standard output/logcat dont worry this exception is expected and harmless
                     try {
                         int updateInterval = EKHandler.getEKProperties().getInteger(EKProperties.topoInterval);
                         Thread.sleep(updateInterval);
@@ -567,14 +722,34 @@ public class MainActivity extends AppCompatActivity{
                         e.printStackTrace();
                         Thread.sleep(10000);
                     }
+
+                    //testing to print all available network interfaces
+                    //Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
+                    //for (NetworkInterface netint : Collections.list(nets)) {
+                    //    //displayInterfaceInformation(netint);
+                    //}
+
+
                 }
 
 
             }catch (Exception e){
-                logger.log(Level.ALL, "EXCEPTION in mainActivityin UpdateGridView class" + e);
+                logger.log(Level.ALL, "EXCEPTION in mainActivity  in UpdateGridView class" + e);
                 e.printStackTrace();
             }
         }
+
+        void displayInterfaceInformation(NetworkInterface netint) throws Exception {
+            System.out.printf("INTERFACEX Display name: %s\n", netint.getDisplayName());
+            System.out.printf("INTERFACEX Name: %s\n", netint.getName());
+            Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
+            for (InetAddress inetAddress : Collections.list(inetAddresses)) {
+                System.out.printf("INTERFACEX InetAddress: %s\n", inetAddress);
+            }
+            System.out.printf("INTERFACEX\n\n");
+        }
+
+
     }
 
 

@@ -42,7 +42,7 @@ public class AccountActivity extends AppCompatActivity {
         super.onDestroy();
         logger.debug("Exiting from Account view. Restarting the EK Service");
 
-        //decie whether service requires restart or nah
+        //decide whether service requires restart or nah
         if(ValueStore.restart.get()) {
             Autostart.restartEKService(this.getApplication().getApplicationContext());
         }
