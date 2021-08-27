@@ -103,12 +103,7 @@ public class TopoSender {
 			//set message type
 			message.messageType = MessageType.TOPO_LTE_UNICAST;
 
-			//set probability
-			message.thisLinkRcvProb = EKConstants.TOPO_INITIAL_PROB;
-
-
-
-			//check if this node currently have a LTE interface, if so, return the IP and subnet Mask
+			//check if this node currently have a LTE interface, if so, get the IP and subnet Mask
 			String[] LTEipAndMask = EKUtils.getLTEipAndSubnetMask();
 
 			//if this node has an LTE interface and class C
@@ -120,7 +115,19 @@ public class TopoSender {
 					String destIPprefix = LTEipAndMask[0].substring(0,LTEipAndMask[0].lastIndexOf("."));
 
 					for(int i=2; i<255; i++){
-						sendMessage(message, (destIPprefix + "." + i), sockMap.get(LTEipAndMask[0]));
+
+						//prepare destIP
+						String destIP = destIPprefix + "." + i;
+
+						//set probability
+						if(this.ekGraph.getAllIPs().contains(destIP)){
+							message.thisLinkRcvProb = ekGraph.getPrcvforNeighbor(ekGraph.getNodebyIP(destIP));
+						}else{
+							message.thisLinkRcvProb = EKConstants.TOPO_INITIAL_PROB;
+						}
+
+						//send
+						sendMessage(message, destIP, sockMap.get(LTEipAndMask[0]));
 					}
 				}else{
 					//we do not send message now, wait until a socket for LTE interface is opened by TopoHandler.run()
@@ -211,8 +218,8 @@ public class TopoSender {
 			//everyone regardless of being a master or client, sends this broadcast to all nodes in its current graph
 			topoBroadcast(message);
 
-			//send lte unicast to all possible IPs
-			topoLTEunicast(message);
+			//send lte unicast to all possible class C IPs
+			//topoLTEunicast(message);
 
 			// Now check all the links and update the link if broadcast is not received on that link for long time
 			ekGraph.cleanup();

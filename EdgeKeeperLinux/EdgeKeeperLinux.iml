@@ -217,12 +217,13 @@
     <orderEntry type="module-library">
       <library name="jmdns-3.5.1.jar">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/jmdns-3.5.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/backup/jmdns-3.5.1.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
       </library>
     </orderEntry>
     <orderEntry type="library" name="jmdns" level="project" />
+    <orderEntry type="library" name="jmdns-3.5.1" level="project" />
   </component>
 </module>

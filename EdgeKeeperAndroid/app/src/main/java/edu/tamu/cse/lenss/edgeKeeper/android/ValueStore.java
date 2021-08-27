@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 //This class contains static data structures to temporarily hold information
+//most (if not all) objects, variables in this class are primitive data types.
 public class ValueStore {
 
     //A cache for cloud status
@@ -24,7 +25,7 @@ public class ValueStore {
     //my EdgeKeeper name (we update it once and read from it forever)
     public static String myName;
 
-    //NOTE: This is not the best way to bypass information from ZKService to MainActivity but the easiest way without changing/breaking the existing code.
+    //NOTE: This is not the best way to bypass information from EKService to MainActivity but the easiest way without changing/breaking the existing code.
     public static AtomicInteger GNS_status = new AtomicInteger();  //-1=null, 0=CONNECTED or RECONNECTED, 1=DISCONNECTED, 2=REGISTRATION_FAILED
     public static AtomicInteger ZKClient_status = new AtomicInteger(); //-1=null, 0=CONNECTED or RECONNECTED, 1=SUSPENDED, 2=LOST
     public static AtomicInteger ZKServer_status = new AtomicInteger(); //-1=null, 0=Leading, 1=Following, 2=Observing, 3=Looking

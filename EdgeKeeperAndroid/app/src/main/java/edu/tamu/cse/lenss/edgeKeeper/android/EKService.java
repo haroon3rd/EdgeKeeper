@@ -33,9 +33,6 @@ import edu.tamu.cse.lenss.edgeKeeper.server.GNSClientHandler;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
 
-
-
-
 /**
  * This is the Android service class that runs in the background and servs the EKService
  */
@@ -165,7 +162,7 @@ public class EKService extends Service {
     }
 
 
-    //puts current cloud and zkClient status into the GridViewStore class for MainActivity to consume.
+    //puts current cloud and zkClient status into the ValueStore class for MainActivity to consume.
     private void processEdgeReplicaInfo(String message, boolean error) {
 
         try {
@@ -192,9 +189,6 @@ public class EKService extends Service {
                         wrap.GNSConnected = 2;
                     }
                 }
-                System.out.println("xyz break");
-
-
 
                 //get zkClient status
                 String zkclient_status = tokens[1].split(":")[1];

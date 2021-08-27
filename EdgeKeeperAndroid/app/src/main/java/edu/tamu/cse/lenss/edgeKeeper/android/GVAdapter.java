@@ -17,7 +17,9 @@ import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.tamu.cse.lenss.edgeKeeper.client.EKCli;
 import edu.tamu.cse.lenss.edgeKeeper.client.EKClient;
+import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
 
 public class GVAdapter extends ArrayAdapter<GVItem> {
     public GVAdapter(@NonNull Context context, ArrayList<GVItem> courseModelArrayList) {
@@ -154,6 +156,7 @@ public class GVAdapter extends ArrayAdapter<GVItem> {
         }
     }
 
+
     public void onClickLogic(GVItem input, View view, ImageView image, ImageView pin, ImageView indicator, TextView text){
         if(!input.getNAME().equals("Cloud")) {
             String guid = null;
@@ -167,13 +170,25 @@ public class GVAdapter extends ArrayAdapter<GVItem> {
 
             } catch (Exception e) {
                 e.printStackTrace();
+
             }finally{
+
                 String message = "";
                 if(guid!=null){
                     message = message + "GUID: " + guid;
                 }
                 if(ips!=null && ips.size()>0){
                     message = message + "\n" + "IP: " + ips;
+
+                    //get master GUID
+                    String master = null;
+                    try{
+                        master = EKHandler.getTopoMonitor().getGraph().getNodebyIP(ips.get(0)).masterGUID;
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    message = message + "\n" + "master: "+ master;
                 }
                 //show as snackbar
                 snackbar(message, input.getView());
@@ -201,7 +216,7 @@ public class GVAdapter extends ArrayAdapter<GVItem> {
         Snackbar snackbar = Snackbar.make(view, message, Snackbar.LENGTH_SHORT);
         View snackbarView = snackbar.getView();
         TextView textView = (TextView) snackbarView.findViewById(android.support.design.R.id.snackbar_text);
-        textView.setMaxLines(3);
+        textView.setMaxLines(5);
         snackbar.show();
 
     }

@@ -26,11 +26,8 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
 
@@ -234,7 +231,7 @@ public class MainActivity extends AppCompatActivity{
         setupGridView();
 
         //start thread that will periodically update gridview
-        this.GVupdater = new Thread(new UpdateGridView(getApplicationContext(), this, GV));
+        this.GVupdater = new Thread(new MainActivityGridView(getApplicationContext(), this, GV));
         this.GVupdater.start();
 
         //init jmdns stuff
@@ -270,7 +267,7 @@ public class MainActivity extends AppCompatActivity{
                 jmdns.registerService(serviceInfo);
                 jmdns.addServiceListener(service_type, sampleListener_jm);
             } catch (IOException ex) {
-                logger.log(Level.ALL, "_NSD_sss jmdns exception in onstart()", ex);
+                logger.log(Level.ALL, "_NSD_SSS jmdns exception in onstart()", ex);
             }
             return null;
         }
@@ -290,7 +287,7 @@ public class MainActivity extends AppCompatActivity{
                         (byte) (intaddr >> 24 & 0xff) };
                 result = InetAddress.getByAddress(byteaddr);
             } catch (UnknownHostException ex) {
-                logger.log(Level.ALL, "_NSD_sss jmmdns exception getDeviceIpAddress(): ", ex);
+                logger.log(Level.ALL, "_NSD_SSS jmmdns exception getDeviceIpAddress(): ", ex);
             }
 
             return result;
@@ -327,7 +324,7 @@ public class MainActivity extends AppCompatActivity{
                 registry.registerService(serviceInfo);
                 registry.addServiceListener(service_type, sampleListener_jmm);
             } catch (IOException ex) {
-                logger.log(Level.ALL, "_NSD_sss jmmdns exception in onstart()", ex);
+                logger.log(Level.ALL, "_NSD_SSS jmmdns exception in onstart()", ex);
             }
             return null;
         }
@@ -347,7 +344,7 @@ public class MainActivity extends AppCompatActivity{
                         (byte) (intaddr >> 24 & 0xff) };
                 result = InetAddress.getByAddress(byteaddr);
             } catch (UnknownHostException ex) {
-                logger.log(Level.ALL, "_NSD_sss jmmdns exception getDeviceIpAddress(): ", ex);
+                logger.log(Level.ALL, "_NSD_SSS jmmdns exception getDeviceIpAddress(): ", ex);
             }
 
             return result;
@@ -533,13 +530,13 @@ public class MainActivity extends AppCompatActivity{
 
 
     //a child class that will run in a thread that will periodically update gridview on MainActivity to show all available devices in this edge
-    class UpdateGridView implements Runnable {
+    class MainActivityGridView implements Runnable {
 
         Context context;
         Activity activity;
         GridView GV;
 
-        public UpdateGridView(Context c, Activity activity, GridView gv){
+        public MainActivityGridView(Context c, Activity activity, GridView gv){
             this.context = c;
             this.activity = activity;
             this.GV = gv;
@@ -592,8 +589,6 @@ public class MainActivity extends AppCompatActivity{
                                 //get all guids which formed this edge
                                 Set<String> replicaGUIDs = status.replicaMap.keySet();
 
-                                System.out.println("xyz replica info (guid): " + replicaGUIDs);
-
                                 //iterate over each guid
                                 for (String guid : replicaGUIDs) {
 
@@ -619,8 +614,6 @@ public class MainActivity extends AppCompatActivity{
                                             temp.add(name);
 
                                         }
-                                    } else {
-                                        System.out.println("XYZ guid to name conversion failed!");
                                     }
                                 }
                             }
@@ -638,8 +631,6 @@ public class MainActivity extends AppCompatActivity{
                             if (ips != null) {
                                 //iterate over each IP
                                 for (String ip : ips) {
-
-                                    System.out.println("xyz network info (ip): " + ips);
 
                                     //get all names for this IP
                                     List<String> names = EKClient.getAccountNamebyIP(ip);
@@ -723,12 +714,6 @@ public class MainActivity extends AppCompatActivity{
                         Thread.sleep(10000);
                     }
 
-                    //testing to print all available network interfaces
-                    //Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
-                    //for (NetworkInterface netint : Collections.list(nets)) {
-                    //    //displayInterfaceInformation(netint);
-                    //}
-
 
                 }
 
@@ -738,17 +723,6 @@ public class MainActivity extends AppCompatActivity{
                 e.printStackTrace();
             }
         }
-
-        void displayInterfaceInformation(NetworkInterface netint) throws Exception {
-            System.out.printf("INTERFACEX Display name: %s\n", netint.getDisplayName());
-            System.out.printf("INTERFACEX Name: %s\n", netint.getName());
-            Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
-            for (InetAddress inetAddress : Collections.list(inetAddresses)) {
-                System.out.printf("INTERFACEX InetAddress: %s\n", inetAddress);
-            }
-            System.out.printf("INTERFACEX\n\n");
-        }
-
 
     }
 

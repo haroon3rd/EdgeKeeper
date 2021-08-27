@@ -146,7 +146,7 @@ public abstract class EKUtils {
 	}
 
 	//returns LTE IP and its subnet mask if available or return null
-	//returns an array of size two.
+	//returns an array of size two or null.
 	public static String[] getLTEipAndSubnetMask() {
 		try {
 			Enumeration<NetworkInterface> enumNI = NetworkInterface.getNetworkInterfaces();
