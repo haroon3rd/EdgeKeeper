@@ -206,6 +206,8 @@ public class EKHandler extends Thread implements Terminable{
 
 				//add shutdownhook
 				this.terminableTasks.add(jmdns);
+
+				//abcd
 			}
 
 		} catch (IOException e) {
