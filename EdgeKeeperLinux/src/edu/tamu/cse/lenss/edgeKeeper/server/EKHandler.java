@@ -199,7 +199,7 @@ public class EKHandler extends Thread implements Terminable{
     		this.terminableTasks.add(healthWebView);
 
     		//register JMDNS service
-			if(true){
+			if(false){
 				NSD jmdns = new NSD();
 				ExecutorService executorService = Executors.newFixedThreadPool(1);
 				executorService.execute(jmdns);
