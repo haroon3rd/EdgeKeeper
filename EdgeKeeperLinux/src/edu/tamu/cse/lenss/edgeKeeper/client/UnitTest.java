@@ -64,7 +64,7 @@ public class UnitTest {
 		
 		try {	
 			mEKClient = new EKClient();
-			logger.info("Start a Zookeeper client ...");	
+			logger.info("Start an EdgeKeeper client ...");	
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -89,13 +89,14 @@ public class UnitTest {
 					
 					//EKClient.getNetworkInfo();
 					
-					System.out.println("--------------------------------------------REGISTER--------------------------------------");
-					String serviceID = mEKClient.addService("MStrom", "master", "192.168.1.111");
-					System.out.println("-----------------" + serviceID + "-------------------------------------");
 					
-					System.out.println("--------------------------------------------REGISTER--------------------------------------");
-					String serviceID2 = mEKClient.addService("MStrom", "master", "192.168.1.222");
-					System.out.println("-----------------" + serviceID2 + "-------------------------------------");
+//					System.out.println("--------------------------------------------REGISTER--------------------------------------");
+//					String serviceID = mEKClient.addService("MStrom", "master", "192.168.1.111");
+//					System.out.println("-----------------" + serviceID + "-------------------------------------");
+//					
+//					System.out.println("--------------------------------------------REGISTER--------------------------------------");
+//					String serviceID2 = mEKClient.addService("MStrom", "master", "192.168.1.222");
+//					System.out.println("-----------------" + serviceID2 + "-------------------------------------");
 //					
 					
 					
@@ -109,16 +110,18 @@ public class UnitTest {
 //					System.out.println("------------------------------------------------------------------------------------------");
 					
 					
-					System.out.println("--------------------------------------------FETCH-INFO------------------------------------");
-					List<String> peers = mEKClient.getPeerList("MStrom", "master");
-					System.out.println("--------------------" + peers +"----------------------------------------------------------------------");
-		
+//					System.out.println("--------------------------------------------FETCH-INFO------------------------------------");
+//					List<String> peers = mEKClient.getPeerList("MStrom", "master");
+//					System.out.println("--------------------" + peers +"----------------------------------------------------------------------");
+//		
+//					
+//					JSONObject record = EKHandler.ekRecord.fetchRecord();
+//					System.out.println("----------------------------" + record.toString());
+//					
 					
-					JSONObject record = EKHandler.ekRecord.fetchRecord();
-					System.out.println("----------------------------" + record.toString());
+					mEKClient.removeService("MStrom");
 					
-					
-					//EKClient.removeService("DistressNet-MStrom");
+					System.out.println(mEKClient.getAccountNamebyGUID("01EC8149379E2B441EF982853B5781C93939B30F"));
 					
 					
 //					EKClient.getPeerGUIDs("DistressNet-MStrom", "master");

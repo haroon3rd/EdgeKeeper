@@ -125,6 +125,11 @@ public interface EdgeKeeperAPI {
 	
 	public  JSONObject readGUID(String guid);
 	
+	public  String getSERVER_IP();
+
+
+	public void setSERVER_IP(String serverIP);
+	
 	
 	
 	 

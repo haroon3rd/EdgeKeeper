@@ -175,8 +175,18 @@ public class EKClient implements EdgeKeeperAPI{
 	}
 	
 	
-	
-    //This method is written by Amran. ####################################################
+	//Added by Amran
+    public  String getSERVER_IP() {
+		return SERVER_IP;
+	}
+
+  //Added by Amran
+	public  void setSERVER_IP(String serverIP) {
+		SERVER_IP = serverIP;
+	}
+
+
+	//This method is written by Amran. ####################################################
     //     _                              
     //    / \   _ __ ___  _ __ __ _ _ __  
     //   / _ \ | '_ ` _ \| '__/ _` | '_ \ 

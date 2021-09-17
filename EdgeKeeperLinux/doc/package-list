@@ -3,6 +3,7 @@ edu.tamu.cse.lenss.edgeKeeper.clusterHealth
 edu.tamu.cse.lenss.edgeKeeper.dns
 edu.tamu.cse.lenss.edgeKeeper.fileMetaData
 edu.tamu.cse.lenss.edgeKeeper.fileMetaData.command
+edu.tamu.cse.lenss.edgeKeeper.orch
 edu.tamu.cse.lenss.edgeKeeper.server
 edu.tamu.cse.lenss.edgeKeeper.topology
 edu.tamu.cse.lenss.edgeKeeper.utils

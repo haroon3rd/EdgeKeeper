@@ -24,6 +24,7 @@ import edu.tamu.cse.lenss.edgeKeeper.clusterHealth.ClusterHealthClient;
 import edu.tamu.cse.lenss.edgeKeeper.clusterHealth.ClusterHealthServer;
 import edu.tamu.cse.lenss.edgeKeeper.clusterHealth.HealthWebView;
 import edu.tamu.cse.lenss.edgeKeeper.dns.DNSServer;
+import edu.tamu.cse.lenss.edgeKeeper.orch.Orch;
 import edu.tamu.cse.lenss.edgeKeeper.topology.TopoHandler;
 import edu.tamu.cse.lenss.edgeKeeper.topology.TopoHandler;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
@@ -77,6 +78,7 @@ public class EKHandler extends Thread implements Terminable{
 	public static TopoHandler topoHandler;
     public static AtomicInteger conNum=new AtomicInteger(0);
 	private ClusterHealthClient clusterHealthClient;
+	private Orch orchStart;
 
 
 
@@ -201,6 +203,14 @@ public class EKHandler extends Thread implements Terminable{
 
     		this.healthWebView = new HealthWebView();
     		this.terminableTasks.add(healthWebView);
+    		
+    		
+    		//run OrchMain stuff
+//    		this.orchStart = new Orch();
+//    		this.terminableTasks.add(orchStart);
+    		
+    		//Thread orchThread = new Thread(new Orch());
+    		//orchThread.start();
 
 		} catch (IOException e) {
 			logger.fatal("Problem in creating one of the server thread"+e);

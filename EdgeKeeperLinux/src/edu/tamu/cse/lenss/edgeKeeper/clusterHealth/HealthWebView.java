@@ -42,7 +42,7 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 
 public class HealthWebView extends NanoHTTPD implements Terminable{
 	static final Logger logger = Logger.getLogger(HealthWebView.class);
-	public static EdgeKeeperAPI mEKClient;
+	public static EdgeKeeperAPI mEKClient = new EKClient();
 	
 	public HealthWebView() {
         super(EKConstants.HEALTH_VIEW_PORT);
@@ -50,7 +50,7 @@ public class HealthWebView extends NanoHTTPD implements Terminable{
 
     public static void main(String[] args) {
     	try {	
-			mEKClient = new EKClient();
+//			mEKClient = new EKClient();
 			logger.info("Start a Zookeeper client ...");	
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -59,8 +59,7 @@ public class HealthWebView extends NanoHTTPD implements Terminable{
     }
 
     @Override public Response serve(IHTTPSession session) {
-        Map<String, List<String>> decodedQueryParameters =
-            decodeParameters(session.getQueryParameterString());
+        Map<String, List<String>> decodedQueryParameters = decodeParameters(session.getQueryParameterString());
 
         StringBuilder sb = new StringBuilder();
         putHeader(sb);

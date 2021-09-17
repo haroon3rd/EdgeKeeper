@@ -25,7 +25,7 @@ public class EKMainLinux {
     public static void configLoggerWithPropertiesFile() {
 		// First configure Log4j configuration
 		try {
-			System.setProperty("log4j.configuration", new File(".", File.separatorChar+"log4j.properties").toURL().toString());
+			System.setProperty("log4j.configuration", new File(".", File.separatorChar+"log4j.properties").toURI().toURL().toString());
 			//System.setProperty("java.util.logging.config.file", new File(".", File.separatorChar+"logging.properties").toURL().toString());
 		} catch (MalformedURLException e2) {
 			// TODO Auto-generated catch block
