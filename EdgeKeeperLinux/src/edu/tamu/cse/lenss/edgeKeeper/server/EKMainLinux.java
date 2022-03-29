@@ -4,8 +4,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.logging.LogManager;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
@@ -25,7 +31,12 @@ public class EKMainLinux {
     public static void configLoggerWithPropertiesFile() {
 		// First configure Log4j configuration
 		try {
+			long millis = System.currentTimeMillis();
+			Date currentDate = new Date(millis);
+			DateFormat dateTime = new SimpleDateFormat("ddMMMyy-HHmmss");
+			
 			System.setProperty("log4j.configuration", new File(".", File.separatorChar+"log4j.properties").toURL().toString());
+			System.setProperty("log4jFileName", "edgeKeeper_log_" + dateTime.format(currentDate));
 			//System.setProperty("java.util.logging.config.file", new File(".", File.separatorChar+"logging.properties").toURL().toString());
 		} catch (MalformedURLException e2) {
 			// TODO Auto-generated catch block
@@ -45,8 +56,11 @@ public class EKMainLinux {
     }
     
 	public static void main(String[] args)  {
+		
 		configLoggerWithPropertiesFile();
 		Logger logger = Logger.getLogger(EKMainLinux.class);
+		long millis = System.currentTimeMillis();
+		
 		
 		EKProperties prop;
 		try {
@@ -55,6 +69,8 @@ public class EKMainLinux {
 			logger.fatal("Problem in loading properties file",e);
 			return;
 		}
+		
+		
 		
 		EKUtils gnsServiceUtils = new EKUtilsDesktop(prop); 
 		
