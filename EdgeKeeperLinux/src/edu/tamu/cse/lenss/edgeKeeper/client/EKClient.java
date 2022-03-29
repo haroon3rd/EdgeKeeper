@@ -1,10 +1,15 @@
 package edu.tamu.cse.lenss.edgeKeeper.client;
 
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MDFSMetadata;
@@ -12,15 +17,6 @@ import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.command.LScommand;
 import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
 import edu.tamu.cse.lenss.edgeKeeper.topology.TopoGraph;
 import edu.tamu.cse.lenss.edgeKeeper.topology.TopoParser;
-import edu.tamu.cse.lenss.edgeKeeper.topology.TopoUtils;
-import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
-import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
 /**
@@ -31,7 +27,7 @@ import java.util.concurrent.Executors;
  * @author sbhunia
  *
  */
-public class EKClient {
+public class EKClient implements EdgeKeeperAPI {
     static final Logger logger = Logger.getLogger(EKClient.class);
 	public static String SERVER_IP = "127.0.0.1";
 	//private static ExecutorService executorService = Executors.newFixedThreadPool(EKConstants.MAX_EKCLIENT_THREAD);
@@ -66,7 +62,7 @@ public class EKClient {
 	 * the public key of the certificate used for registration.
 	 * @return The GUID string 
 	 */
-	public static String getOwnGuid(){
+	public String getOwnGuid(){
 		String ownGuid = null;
 		try {
 			JSONObject reqJSON = new JSONObject();
@@ -93,7 +89,7 @@ public class EKClient {
 	 * This name is derived from the alias of the p12 certificate used in the registration.   
 	 * @return Account Name string
 	 */	
-	public static String getOwnAccountName(){
+	public String getOwnAccountName(){
 		String accountName = null;
 		try {
 			JSONObject reqJSON = new JSONObject();
@@ -118,7 +114,7 @@ public class EKClient {
 	 * converts the IP addresses with the corresponding GUID. 
 	 * @return TopoGraph
 	 */
-	public static TopoGraph getNetworkInfo(){
+	public TopoGraph getNetworkInfo(){
 		TopoGraph topo = null;
 		try {
 			JSONObject reqJSON = new JSONObject();
@@ -149,7 +145,7 @@ public class EKClient {
 	 * @param ownDuty What duty it is playing
 	 * @return true if the update is successful at the GNS server
 	 */
-	public static boolean addService(String ownService, String ownDuty) {
+	public boolean addService(String ownService, String ownDuty) {
 		String repResult;
 		try {
 			JSONObject reqJSON = new JSONObject();
@@ -181,7 +177,7 @@ public class EKClient {
 	 * @param targetService
 	 * @return true if the update is successful at the GNS server
 	 */
-	public static boolean removeService(String targetService){
+	public boolean removeService(String targetService){
 		boolean removeSuccess = false;
 		try {
 			JSONObject reqJSON = new JSONObject();
@@ -211,7 +207,7 @@ public class EKClient {
 	 * @return the list of IPs or [] if no record is found in GNS server.
 	 */
 	
-	public static List<String> getPeerGUIDs(String targetService, String targetDuty){
+	public List<String> getPeerGUIDs(String targetService, String targetDuty){
 		
 		List<String> guidList = new ArrayList<String>();
 		try {
@@ -248,7 +244,7 @@ public class EKClient {
 	 * @return the list of IPs or [] if no record is found in GNS server.
 	 */
 	
-	public static List<String> getPeerIPs(String targetService, String targetDuty){
+	public List<String> getPeerIPs(String targetService, String targetDuty){
 		
 		List<String> ipList = new ArrayList<String>();
 		try {
@@ -284,7 +280,7 @@ public class EKClient {
 	 * @return the list of host-names or [] if no record is found in GNS server.
 	 */
 	
-	public static List<String> getPeerNames(String targetService, String targetDuty){
+	public List<String> getPeerNames(String targetService, String targetDuty){
 		
 		List<String> nameList = new ArrayList<String>();
 		try {
@@ -320,7 +316,7 @@ public class EKClient {
 	 * @return List of IP addresses
 	 */
 
-	public static List<String> getIPbyGUID(String targetGUID){
+	public List<String> getIPbyGUID(String targetGUID){
 		
 		List<String> ipList = new ArrayList<String>();
 		try {
@@ -354,7 +350,7 @@ public class EKClient {
 	 * @return List of IP addresses
 	 */
 
-	public static List<String> getIPbyName(String targetName){
+	public List<String> getIPbyName(String targetName){
 		
 		List<String> ipList = new ArrayList<String>();
 		try {
@@ -386,7 +382,7 @@ public class EKClient {
 	 * @param accountName
 	 * @return GUID string
 	 */
-	public static String getGUIDbyAccountName(String accountName){
+	public String getGUIDbyAccountName(String accountName){
 		String guid = null;
 		try {
 			JSONObject reqJSON = new JSONObject();
@@ -413,7 +409,7 @@ public class EKClient {
 	 * @param guid
 	 * @return accountName
 	 */
-	public static String getAccountNamebyGUID(String guid){
+	public String getAccountNamebyGUID(String guid){
 		String accountName = null;
 		try {
 			JSONObject reqJSON = new JSONObject();
@@ -444,7 +440,7 @@ public class EKClient {
 	 * @param targetIp
 	 * @return AccountName
 	 */
-	public static List<String> getAccountNamebyIP(String targetIp){
+	public List<String> getAccountNamebyIP(String targetIp){
 		List<String> accountNameList = new ArrayList<String>();
 		try {
 			JSONObject reqJSON = new JSONObject();
@@ -476,7 +472,7 @@ public class EKClient {
 	 * @param ip
 	 * @return GUID string
 	 */
-	public static List<String> getGUIDbyIP(String ip){
+	public List<String> getGUIDbyIP(String ip){
 		List<String> guidList = new ArrayList<String>();
 		try {
 			JSONObject reqJSON = new JSONObject();
@@ -508,7 +504,7 @@ public class EKClient {
 	 * EK masters. 
 	 * @return String representing the Zookeeper server addresses and ports.
 	 */
-	public static String getZooKeeperConnectionString() {
+	public String getZooKeeperConnectionString() {
 		String zks = null;
 		try {
 			JSONObject reqJSON = new JSONObject();
@@ -532,7 +528,7 @@ public class EKClient {
 	 * This command delets all the GUID records at the local cluster
 	 * @return Whether the purge is successful or not
 	 */
-	public static boolean purgeNamingCluster() {
+	public boolean purgeNamingCluster() {
 		String repResult;
 		try {
 			JSONObject reqJSON = new JSONObject();
@@ -554,7 +550,7 @@ public class EKClient {
 		}	
 	}
 
-	public static List<String> getAllLocalGUID () {
+	public List<String> getAllLocalGUID () {
 		List<String> guidList = new ArrayList<String>();
 		try {
 			JSONObject reqJSON = new JSONObject();
@@ -576,7 +572,7 @@ public class EKClient {
 		return guidList;
 	}
 
-	public static List<String> getMergedGUID () {
+	public List<String> getMergedGUID () {
 		List<String> guidList = new ArrayList<String>();
 		try {
 			JSONObject reqJSON = new JSONObject();
@@ -598,7 +594,7 @@ public class EKClient {
 		return guidList;
 	}
 
-	public static JSONObject readGUID (String guid) {
+	public JSONObject readGUID (String guid) {
 		JSONObject record =null;
 		try {
 			JSONObject reqJSON = new JSONObject();
@@ -629,7 +625,7 @@ public class EKClient {
 	 * @param reqJSON
 	 * @return JSONObject or null
 	 */
-    public static boolean putAppStatus(String AppName, JSONObject reqJSON){
+    public boolean putAppStatus(String AppName, JSONObject reqJSON){
     	try {
     		logger.log(Level.ALL, "Request to server putAppStatus: " + reqJSON.toString() );
     		//put request fields in the json object
@@ -664,7 +660,7 @@ public class EKClient {
      * @param appName
      * @return JSONObject or null
      */
-    public static JSONObject getAppStatus(String targetGUID, String appName) {
+    public JSONObject getAppStatus(String targetGUID, String appName) {
     	try {
     		    		
     		//create a new json object for request
@@ -699,7 +695,7 @@ public class EKClient {
      * @param guid
      * @return JSONObject or null
      */
-	public static JSONObject getDeviceStatus(String targetGUID){
+	public JSONObject getDeviceStatus(String targetGUID){
 		try {
 			//create request json object
 			JSONObject reqJSON = new JSONObject();
@@ -733,7 +729,7 @@ public class EKClient {
 	 * @param
 	 * @return
 	 */
-	public static JSONObject getEdgeStatus(){
+	public JSONObject getEdgeStatus(){
 		try{
 			//make a request json object
 			JSONObject reqJSON = new JSONObject();
@@ -770,7 +766,7 @@ public class EKClient {
 	 * @param metadata
 	 * @return JSONObject
 	 */
-	public static JSONObject putMetadata(MDFSMetadata metadata){
+	public JSONObject putMetadata(MDFSMetadata metadata){
 		try {
 			//make a request json
 			JSONObject reqJSON = new JSONObject();
@@ -798,7 +794,7 @@ public class EKClient {
 	 * @param filePathMDFS
 	 * @return JSONObject
 	 */
-	public static JSONObject getMetadata(String filePathMDFS){
+	public JSONObject getMetadata(String filePathMDFS){
 		try{
 			//make a request json
 			JSONObject reqJSON = new JSONObject();
@@ -827,7 +823,7 @@ public class EKClient {
      * @param creatorGUID
      * @return JSONObject
      */
-	public static JSONObject mkdir(String folderPathMDFS, String creatorGUID, boolean isGlobal){
+	public JSONObject mkdir(String folderPathMDFS, String creatorGUID, boolean isGlobal){
 		try{
 			//make a request json
 			JSONObject reqJSON = new JSONObject();
@@ -948,7 +944,56 @@ public class EKClient {
 		}
 		return null;
 	}
-//======================================================================MOHAMMAD======================================================================================    
+//======================================================================Amran======================================================================================    
+
+
+	@Override
+	public String addService(String ownService, String ownDuty, String ip, int port) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public String addService(String ownService, String ownDuty, String ip) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public List<String> getPeerInfo(String targetService, String targetDuty) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public List<String> getPeerList(String targetService, String targetDuty) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public JSONObject getAppStatus(String targetGUID, String targetServiceName, String targetServiceID) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public String getSERVER_IP() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public void setSERVER_IP(String serverIP) {
+		// TODO Auto-generated method stub
+		
+	}
 
 
     

@@ -2,11 +2,12 @@ bin/
 build/
 tmp/
 logs/
+jar/
 
 cert_files
 clientKeyDB*/
 clientCert/
-
+Containers/
 .idea/
 .settings/
 
