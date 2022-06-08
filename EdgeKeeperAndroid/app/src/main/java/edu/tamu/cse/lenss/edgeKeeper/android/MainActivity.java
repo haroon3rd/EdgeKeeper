@@ -2,36 +2,36 @@ package edu.tamu.cse.lenss.edgeKeeper.android;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
 import android.app.Activity;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.net.wifi.WifiManager;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.widget.*;
-import android.view.*;
-import android.content.Context;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.GridView;
+import android.widget.Toast;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import edu.tamu.cse.lenss.edgeKeeper.client.EKClient;
+import edu.tamu.cse.lenss.edgeKeeper.client.EdgeKeeperAPI;
 import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
 import edu.tamu.cse.lenss.edgeKeeper.server.EdgeStatus;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
@@ -50,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
     private EKService mEKService;
     private boolean mBound = false;
     private boolean SERVICE_STARTED = false;
+
+    public static EdgeKeeperAPI mEKClient;
 
 
     enum ServiceStatus {STARTED,CONNECTED,TERMINATED}
@@ -308,7 +310,7 @@ public class MainActivity extends AppCompatActivity {
 
                         //get my name from EKClient
                         if(ValueStore.myName==null) {
-                            ValueStore.myName = EKClient.getOwnAccountName();
+                            ValueStore.myName = mEKClient.getOwnAccountName();
                         }
 
                         //HANDLE EDGE REPLICA STATUS INFORMATION HERE
@@ -326,7 +328,7 @@ public class MainActivity extends AppCompatActivity {
                                 for (String guid : replicaGUIDs) {
 
                                     //get name for each GUID
-                                    String name = EKClient.getAccountNamebyGUID(guid);
+                                    String name = mEKClient.getAccountNamebyGUID(guid);
 
                                     if (name != null) {
 
@@ -361,7 +363,7 @@ public class MainActivity extends AppCompatActivity {
                         //HANDLE TOPOLOGY INFORMATION HERE
                         try {
                             Set<String> ips = null;
-                            ips = EKClient.getNetworkInfo().getAllIPs();
+                            ips = mEKClient.getNetworkInfo().getAllIPs();
                             if (ips != null) {
                                 //iterate over each IP
                                 for (String ip : ips) {
@@ -369,7 +371,7 @@ public class MainActivity extends AppCompatActivity {
                                     System.out.println("xyz network info (ip): " + ips);
 
                                     //get all names for this IP
-                                    List<String> names = EKClient.getAccountNamebyIP(ip);
+                                    List<String> names = mEKClient.getAccountNamebyIP(ip);
 
                                     //check if not null or empty
                                     if (names != null && names.size() > 0) {

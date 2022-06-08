@@ -14,15 +14,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.tamu.cse.lenss.edgeKeeper.client.EKClient;
+import edu.tamu.cse.lenss.edgeKeeper.client.EdgeKeeperAPI;
 
 public class GVAdapter extends ArrayAdapter<GVItem> {
     public GVAdapter(@NonNull Context context, ArrayList<GVItem> courseModelArrayList) {
         super(context, 0, courseModelArrayList);
     }
+    public static EdgeKeeperAPI mEKClient;
 
     @NonNull
     @Override
@@ -160,10 +162,10 @@ public class GVAdapter extends ArrayAdapter<GVItem> {
             List<String> ips = null;
             try {
                 //get guid for this name
-                guid = EKClient.getGUIDbyAccountName(input.getNAME() + ".distressnet.org");
+                guid = mEKClient.getGUIDbyAccountName(input.getNAME() + ".distressnet.org");
 
                 //get ips by guid
-                ips = EKClient.getIPbyGUID(guid);
+                ips = mEKClient.getIPbyGUID(guid);
 
             } catch (Exception e) {
                 e.printStackTrace();
