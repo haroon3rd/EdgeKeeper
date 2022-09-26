@@ -27,7 +27,7 @@ public class ZKServerHandler implements Terminable{
     //EKProperties ekProperties;
     EKHandler eventHandler;
     //ExecutorService executor = Executors.newFixedThreadPool(1);
-    ZKServWorker rz;
+    EKServWorker rz;
 	public String ownServerIP;
 
     public ZKServerHandler(EKHandler eventHandler) {
@@ -152,7 +152,7 @@ public class ZKServerHandler implements Terminable{
 					// Radu: commented out
 					// Thread.sleep(1000);
 					logger.info("Trying to start new Zookeeper server");
-					rz = new ZKServWorker(zkProp, eventHandler, ownServerIP);
+					rz = new EKServWorker(zkProp, eventHandler, ownServerIP);
 					rz.run();
 				} else {
 					logger.info("This node not acting as EK master. Working in client mode");

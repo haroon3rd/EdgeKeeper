@@ -9,6 +9,7 @@ import org.apache.curator.framework.recipes.cache.TreeCacheEvent.Type;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+
 import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
 
 import java.util.ArrayList;
@@ -447,5 +448,9 @@ public class EKHandler extends Thread implements Terminable{
 		}
 		
 	}
+
+	// public void onZKServerStateChnage() {
+		
+	// }
 	
 }

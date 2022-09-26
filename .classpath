@@ -190,5 +190,6 @@
 	<classpathentry kind="lib" path="GNS-server-source/lib/spring-context-3.0.7.RELEASE.jar"/>
 	<classpathentry kind="lib" path="GNS-server-source/lib/spring-core-3.0.7.RELEASE.jar"/>
 	<classpathentry kind="lib" path="GNS-server-source/lib/spring-test-3.0.7.RELEASE.jar"/>
+	<classpathentry kind="lib" path="EdgeKeeperLinux/lib/jackson-0.9.1.jar"/>
 	<classpathentry kind="output" path="EdgeKeeperCommandLine/bin"/>
 </classpath>

@@ -24,7 +24,7 @@ public class YamlParser {
 		InputStream inputStream = this.getClass()
 				.getClassLoader()
 				.getResourceAsStream(System.getProperty("user.dir") + File.separatorChar + deployPath.getName() + File.separatorChar + list );
-		Map<String, Object> obj = yaml.load(inputStream);
+		Map<String, Object> obj = (Map<String, Object>) yaml.load(inputStream);
 		System.out.println("My YAML String is: " + obj);
 
 		return false;
@@ -36,7 +36,7 @@ public class YamlParser {
 			System.out.println(list);
 			InputStream inputStream = new FileInputStream(new File(System.getProperty("user.dir") + File.separatorChar + deployPath.getName() + File.separatorChar + list));
 			Yaml yaml = new Yaml();
-			Map<String, Object> composeFile = yaml.load(inputStream);
+			Map<String, Object> composeFile = (Map<String, Object>) yaml.load(inputStream);
 			//Map<String, Object> services = (Map<String, Object>) data.get("services");
 			Map<String, Object> services = extracted(composeFile, "services");
 			System.out.println("Services found : " + services.keySet());
