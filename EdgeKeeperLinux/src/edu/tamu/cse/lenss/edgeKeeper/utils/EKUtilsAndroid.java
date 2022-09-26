@@ -9,7 +9,10 @@ import java.util.Set;
 
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.log4j.Level;
-import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
+
+// import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
+import edu.tamu.cse.lenss.edgeKeeper.utils.ServerState;
+
 import org.json.JSONException;
 
 import android.content.Context;

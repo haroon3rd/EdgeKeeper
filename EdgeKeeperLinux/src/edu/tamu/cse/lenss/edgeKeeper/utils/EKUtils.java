@@ -33,8 +33,10 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.RollingFileAppender;
-import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
+// import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
+import edu.tamu.cse.lenss.edgeKeeper.utils.ServerState;
 import org.json.JSONObject;
+
 
 /**
  * This class contains miscleneous useful functionalities

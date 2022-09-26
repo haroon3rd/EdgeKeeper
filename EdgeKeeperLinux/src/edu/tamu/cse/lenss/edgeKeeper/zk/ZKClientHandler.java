@@ -22,8 +22,8 @@ import org.apache.curator.retry.RetryUntilElapsed;
 import org.apache.curator.utils.ZKPaths;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.ZooKeeper;
+// import org.apache.zookeeper.CreateMode;
+// import org.apache.zookeeper.ZooKeeper;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -171,12 +171,12 @@ public class ZKClientHandler implements Terminable {
 		logger.debug("Created new EK name record path");
 
 		
-		if (client.checkExists().forPath(ownZPath) != null) {
-			logger.info("Znode for this GUID already exist. Deliting the record");
-			client.delete().forPath(ownZPath);
-		}
-		client.create().withMode(CreateMode.EPHEMERAL).forPath(ownZPath, "new cluster".getBytes());
-		logger.debug("Created the Znode for own GUID");
+		// if (client.checkExists().forPath(ownZPath) != null) {
+		// 	logger.info("Znode for this GUID already exist. Deliting the record");
+		// 	client.delete().forPath(ownZPath);
+		// }
+		// client.create().withMode(CreateMode.EPHEMERAL).forPath(ownZPath, "new cluster".getBytes());
+		// logger.debug("Created the Znode for own GUID");
 	
 			
 		
@@ -213,7 +213,7 @@ public class ZKClientHandler implements Terminable {
 		 if( (client == null) || client.getState()!=CuratorFrameworkState.STARTED 
 				 || !client.getZookeeperClient().isConnected()) {
 			 logger.log(Level.ALL, "Zookeeper Client is not connected");
-			 throw new CuratorConnectionLossException();
+			//  throw new CuratorConnectionLossException();
 		 }
 	}
 
@@ -470,7 +470,7 @@ public class ZKClientHandler implements Terminable {
 			checkIfConnected();
 			byte[] rec = record.toString().getBytes();
 			//ownZNode.setData(rec);
-			client.setData().forPath(ownZPath, rec);
+			// client.setData().forPath(ownZPath, rec);
 			logger.debug("Update own data to Zookeeper: "+record.toString());
 			return true;
 		} catch (Exception e) {
@@ -501,11 +501,11 @@ public class ZKClientHandler implements Terminable {
      * @throws Exception
      */
     void checkandCreateMDFSRoot() throws Exception {
-    	if (client.checkExists().forPath(fileMetaDataPath) == null) {
-			logger.info("MDFS znode doesn't exist. creating the Znode");
-			client.create().forPath(fileMetaDataPath, "File metadata path".getBytes());
-			logger.debug("Created new MDFS Znode");
-		}
+    	// if (client.checkExists().forPath(fileMetaDataPath) == null) {
+		// 	logger.info("MDFS znode doesn't exist. creating the Znode");
+		// 	client.create().forPath(fileMetaDataPath, "File metadata path".getBytes());
+		// 	logger.debug("Created new MDFS Znode");
+		// }
     }
 
 //  /**
@@ -531,14 +531,14 @@ public class ZKClientHandler implements Terminable {
 		checkIfConnected();
 		checkandCreateMDFSRoot();
 		String metaDataPath = ZKPaths.makePath(fileMetaDataPath, id);
-		if (client.checkExists().forPath(metaDataPath) == null) {
-			logger.log(Level.ALL, "Creating metadata for path" + metaDataPath);
-			client.create().forPath(metaDataPath, metaData);
-			logger.log(Level.ALL, "Created new MetaData" + metaDataPath);
-		} else {
-			client.setData().forPath(metaDataPath, metaData);
-			logger.log(Level.ALL, "Modified data for path: " + metaDataPath);
-		}
+		// if (client.checkExists().forPath(metaDataPath) == null) {
+		// 	logger.log(Level.ALL, "Creating metadata for path" + metaDataPath);
+		// 	client.create().forPath(metaDataPath, metaData);
+		// 	logger.log(Level.ALL, "Created new MetaData" + metaDataPath);
+		// } else {
+		// 	client.setData().forPath(metaDataPath, metaData);
+		// 	logger.log(Level.ALL, "Modified data for path: " + metaDataPath);
+		// }
 	}
 
 	/**
@@ -566,7 +566,8 @@ public class ZKClientHandler implements Terminable {
 
 	public boolean checkMetadataExists(String id) throws Exception {
 		checkIfConnected();
-		if (client.checkExists().forPath(ZKPaths.makePath(fileMetaDataPath, id)) == null)
+		// if (client.checkExists().forPath(ZKPaths.makePath(fileMetaDataPath, id)) == null)
+		if(false)
 			return false;
 		else
 			return true;
@@ -648,7 +649,7 @@ public class ZKClientHandler implements Terminable {
 			if(lGuidMaster == null || !lGuidMaster.equals(ownGUID)) {
 				try {
 					String nZPath = ZKPaths.makePath(nameRecordPath, nGuid);
-					client.create().orSetData().withMode(CreateMode.EPHEMERAL).forPath(nZPath, nRec);
+					// client.create().orSetData().withMode(CreateMode.EPHEMERAL).forPath(nZPath, nRec);
 					logger.log(Level.ALL, "Updated neighbor to the local edge, GUID: "+nGuid);
 				} catch (Exception e) {
 					logger.warn("Could not update the data");

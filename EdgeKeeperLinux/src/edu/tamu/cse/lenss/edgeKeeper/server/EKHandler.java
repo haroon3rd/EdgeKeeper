@@ -10,7 +10,7 @@ import org.apache.curator.framework.state.ConnectionState;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
+// import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -38,6 +38,7 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 import edu.tamu.cse.lenss.edgeKeeper.zk.ZKServerHandler;
 import edu.tamu.cse.lenss.edgeKeeper.zk.ZKClientHandler;
 
+import edu.tamu.cse.lenss.edgeKeeper.utils.ServerState;
 
 /**
  * This class handles all the complexities for starting the Request servers,
