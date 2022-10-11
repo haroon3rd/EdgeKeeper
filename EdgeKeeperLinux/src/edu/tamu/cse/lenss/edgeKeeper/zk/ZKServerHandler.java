@@ -27,6 +27,7 @@ public class ZKServerHandler implements Terminable{
     //EKProperties ekProperties;
     EKHandler eventHandler;
     //ExecutorService executor = Executors.newFixedThreadPool(1);
+    // # Mehul CHANGES (ZKServWorker to EKServWorker)
     EKServWorker rz;
 	public String ownServerIP;
 
@@ -152,6 +153,7 @@ public class ZKServerHandler implements Terminable{
 					// Radu: commented out
 					// Thread.sleep(1000);
 					logger.info("Trying to start new Zookeeper server");
+                    // # Mehul CHANGES (ZKServWorker to EKServWorker)
 					rz = new EKServWorker(zkProp, eventHandler, ownServerIP);
 					rz.run();
 				} else {
