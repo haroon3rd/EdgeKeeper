@@ -187,6 +187,7 @@ public class CoordinatorClient implements Terminable{
     	DataOutputStream out = null;
     	try {
             cSocket = new Socket();
+			// Mehul: Error Here
             cSocket.connect(new InetSocketAddress(hostName, EKConstants.COORDINATOR_PORT), EKConstants.ClientConnectTimeout);
             cSocket.setSoTimeout(EKConstants.ClientSoTimeout);
             in = new DataInputStream (new BufferedInputStream(cSocket.getInputStream()));

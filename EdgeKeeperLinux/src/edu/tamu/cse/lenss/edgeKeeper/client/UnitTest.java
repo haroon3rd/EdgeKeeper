@@ -90,59 +90,59 @@ public class UnitTest {
 					//EKClient.getNetworkInfo();
 					
 					
-//					System.out.println("--------------------------------------------REGISTER--------------------------------------");
-//					String serviceID = mEKClient.addService("MStrom", "master", "192.168.1.111");
-//					System.out.println("-----------------" + serviceID + "-------------------------------------");
-//					
-//					System.out.println("--------------------------------------------REGISTER--------------------------------------");
-//					String serviceID2 = mEKClient.addService("MStrom", "master", "192.168.1.222");
-//					System.out.println("-----------------" + serviceID2 + "-------------------------------------");
-//					
+					System.out.println("--------------------------------------------REGISTER--------------------------------------");
+					String serviceID = mEKClient.addService("MStrom", "master", "192.168.1.111");
+					System.out.println("-----------------" + serviceID + "-------------------------------------");
+					
+					System.out.println("--------------------------------------------REGISTER--------------------------------------");
+					String serviceID2 = mEKClient.addService("MStrom", "master", "192.168.1.222");
+					System.out.println("-----------------" + serviceID2 + "-------------------------------------");
 					
 					
-//					System.out.println("--------------------------------------------REGISTER--------------------------------------");
-//					EKClient.addService("DistressNet-MStrom", "master");
-//					System.out.println("------------------------------------------------------------------------------------------");
+					
+					System.out.println("--------------------------------------------REGISTER--------------------------------------");
+					mEKClient.addService("DistressNet-MStorm", "master");
+					System.out.println("------------------------------------------------------------------------------------------");
 					
 					
-//					System.out.println("--------------------------------------------REGISTER--------------------------------------");
-//					EKClient.addService("DistressNet-MStrom", obj.toString());
-//					System.out.println("------------------------------------------------------------------------------------------");
+					System.out.println("--------------------------------------------REGISTER--------------------------------------");
+					mEKClient.addService("DistressNet-MStrom", obj.toString());
+					System.out.println("------------------------------------------------------------------------------------------");
 					
 					
-//					System.out.println("--------------------------------------------FETCH-INFO------------------------------------");
-//					List<String> peers = mEKClient.getPeerList("MStrom", "master");
-//					System.out.println("--------------------" + peers +"----------------------------------------------------------------------");
-//		
-//					
-//					JSONObject record = EKHandler.ekRecord.fetchRecord();
-//					System.out.println("----------------------------" + record.toString());
-//					
+					System.out.println("--------------------------------------------FETCH-INFO------------------------------------");
+					List<String> peers = mEKClient.getPeerList("MStrom", "master");
+					System.out.println("--------------------" + peers +"----------------------------------------------------------------------");
+		
+					
+					JSONObject record = EKHandler.ekRecord.fetchRecord();
+					System.out.println("----------------------------" + record.toString());
+					
 					
 					mEKClient.removeService("MStrom");
 					
 					System.out.println(mEKClient.getAccountNamebyGUID("01EC8149379E2B441EF982853B5781C93939B30F"));
 					
 					
-//					EKClient.getPeerGUIDs("DistressNet-MStrom", "master");
-//					EKClient.getPeerIPs("DistressNet-MStrom", "master");
-//					EKClient.getPeerNames("DistressNet-MStrom", "master");
-//					
-//					EKClient.getPeerGUIDs("DistressNet-MStrom", "client");
-//					EKClient.getPeerIPs("DistressNet-MStrom", "client");
-//					EKClient.getPeerNames("DistressNet-MStrom", "client");
-//					
-//					EKClient.getIPbyGUID(ownGUID);	
-//					EKClient.getIPbyName(ownName);
-//					EKClient.getGUIDbyAccountName(ownName);
-//					EKClient.getAccountNamebyGUID(ownGUID);
-//					
-//					EKClient.getGUIDbyIP("192.168.0.1");
-//					EKClient.getAccountNamebyIP("192.168.0.1");
-//
-//					EKClient.removeService("DistressNet-MStrom");
-//					
-//					EKClient.getZooKeeperConnectionString();
+					mEKClient.getPeerGUIDs("DistressNet-MStrom", "master");
+					mEKClient.getPeerIPs("DistressNet-MStrom", "master");
+					mEKClient.getPeerNames("DistressNet-MStrom", "master");
+					
+					mEKClient.getPeerGUIDs("DistressNet-MStrom", "client");
+					mEKClient.getPeerIPs("DistressNet-MStrom", "client");
+					mEKClient.getPeerNames("DistressNet-MStrom", "client");
+					
+					mEKClient.getIPbyGUID(ownGUID);	
+					mEKClient.getIPbyName(ownName);
+					mEKClient.getGUIDbyAccountName(ownName);
+					mEKClient.getAccountNamebyGUID(ownGUID);
+					
+					mEKClient.getGUIDbyIP("192.168.0.1");
+					mEKClient.getAccountNamebyIP("192.168.0.1");
+
+					mEKClient.removeService("DistressNet-MStrom");
+					
+					mEKClient.getZooKeeperConnectionString();
 
 					//while (true) {
 						//put();

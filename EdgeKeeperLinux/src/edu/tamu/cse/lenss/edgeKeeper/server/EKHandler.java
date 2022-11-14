@@ -31,7 +31,6 @@ import edu.tamu.cse.lenss.edgeKeeper.clusterHealth.ClusterHealthServer;
 import edu.tamu.cse.lenss.edgeKeeper.clusterHealth.HealthWebView;
 import edu.tamu.cse.lenss.edgeKeeper.dns.DNSServer;
 import edu.tamu.cse.lenss.edgeKeeper.topology.TopoHandler;
-import edu.tamu.cse.lenss.edgeKeeper.topology.TopoHandler;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKRecord;

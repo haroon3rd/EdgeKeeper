@@ -34,7 +34,7 @@ public class CoordinatorServer implements Runnable, Terminable{
             	cSocket = serverSocket.accept();
             	new CoordinationProcess(cSocket).start();
             }catch (IOException  e) {
-                logger.warn("Problem in accepting client socet", e);
+                logger.warn("Problem in accepting client socket", e);
             }
         }
 	}
