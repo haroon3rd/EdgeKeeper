@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.curator.framework.state.ConnectionState;
+// import org.apache.curator.framework.state.ConnectionState;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -63,7 +63,7 @@ public abstract class EKUtils {
 
 	public abstract void onGNSStateChnage(GNSClientHandler.ConnectionState connectionState);
 
-	public abstract void onCuratorStateChange(ConnectionState newState);
+	// public abstract void onCuratorStateChange(ConnectionState newState);
 
 	public abstract void onZKServerStateChange(ServerState newServStatus);
 

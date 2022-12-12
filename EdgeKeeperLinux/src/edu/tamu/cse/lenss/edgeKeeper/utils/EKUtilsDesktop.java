@@ -11,7 +11,7 @@ import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.curator.framework.state.ConnectionState;
+// import org.apache.curator.framework.state.ConnectionState;
 
 // import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
 import edu.tamu.cse.lenss.edgeKeeper.utils.ServerState;
@@ -108,11 +108,11 @@ public class EKUtilsDesktop extends EKUtils {
 		putNotice();
 	}
 
-	@Override
-	public void onCuratorStateChange(ConnectionState newState) {
-		zkClientState = newState.toString();
-		putNotice();
-	}
+	// @Override
+	// public void onCuratorStateChange(ConnectionState newState) {
+	// 	zkClientState = newState.toString();
+	// 	putNotice();
+	// }
 
 	@Override
 	public void onZKServerStateChange(ServerState newServStatus) {

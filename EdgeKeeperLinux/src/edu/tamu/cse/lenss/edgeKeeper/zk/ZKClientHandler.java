@@ -1,35 +1,13 @@
 package edu.tamu.cse.lenss.edgeKeeper.zk;
 
-
-import org.apache.curator.CuratorConnectionLossException;
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.recipes.cache.ChildData;
-import org.apache.curator.framework.recipes.cache.TreeCache;
-import org.apache.curator.framework.recipes.nodes.PersistentNode;
-import org.apache.curator.framework.recipes.nodes.PersistentTtlNode;
-import org.apache.curator.framework.state.ConnectionState;
-import org.apache.curator.framework.api.PathAndBytesable;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.framework.imps.CuratorFrameworkState;
-import org.apache.curator.retry.RetryUntilElapsed;
-import org.apache.curator.utils.ZKPaths;
+import java.io.*;
+import java.util.*;
+  
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-// MEHUL comments
-// import org.apache.zookeeper.CreateMode;
-// import org.apache.zookeeper.ZooKeeper;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.*;
+import org.json.simple.parser.JSONParser;
 
 import edu.tamu.cse.lenss.edgeKeeper.dns.DNSServer;
 import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
@@ -37,10 +15,8 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKRecord;
 import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
-import edu.tamu.cse.lenss.edgeKeeper.zk.EKPaths;
 
-import java.io.File;  
-import java.io.FileWriter; 
+import edu.tamu.cse.lenss.edgeKeeper.zk.ChildData;
 
 public class ZKClientHandler implements Terminable{
 
@@ -48,34 +24,53 @@ public class ZKClientHandler implements Terminable{
 	public static final String ekClusterPath = "/ek_cluster";
     public static final String fileMetaDataPath = ekClusterPath+"/mdfs";
     public static final String nameRecordPath = ekClusterPath+"/guids";
-	//private static final String healthLeaderPath = ekClusterPath+"/healthLeader";
 
 	public static final Logger logger = Logger.getLogger(ZKClientHandler.class);
-	CuratorFramework client;
-	TreeCache cache;
 
 	String ownGUID;
 	String ownZPath;
-	//PersistentNode ownZNode;
+
 	EKHandler ekHandler;
+
+	Map<String,String[]> map;
 	File fileObj;
-	
+	String filename;
+
 	public ZKClientHandler( EKHandler eventHandler) {
     	this.ownGUID = EKHandler.getGNSClientHandler().getOwnGUID();
     	this.ekHandler = eventHandler;
-		this.ownZPath = EKPaths.makePath(nameRecordPath, ownGUID);
+		this.ownZPath = nameRecordPath + ownGUID;
 
-		// Mehul Changes: new file created
-		fileObj = new File(this.ownGUID + ".log");
+		this.map = new HashMap<String, String[]>();
+		this.filename = ownGUID + ".log";
+
+		this.fileObj = new File(this.filename);
+
+		// populate map using the file
 		try{
 			boolean ret = fileObj.createNewFile();
 			if(ret)
 				logger.debug("Log file created: " + fileObj.getCanonicalPath());
 			else{
-				FileWriter fw = new FileWriter(fileObj, false);
-				fw.flush();
-				fw.close();
-				logger.debug("Log file exists and truncated: " + fileObj.getCanonicalPath());
+				BufferedReader br = new BufferedReader(new FileReader(this.fileObj));
+            	String line = null;
+				while ((line = br.readLine()) != null) {
+					String[] parts = line.split(":",2);
+					String key = parts[0].trim();
+					String array = parts[1].trim();										
+					array = array.substring(1, array.length() - 1);
+					parts = array.split(", ",2);
+					String path = parts[0].trim();
+					String record = parts[1].trim();
+					String[] strs = new String[]{path, record};
+					logger.debug("putting in map: key>" + key + "< , path >" + strs[0] + "< , arec>" + strs[1] + "<\n");
+					this.map.put(key, strs);
+				}
+				logger.debug("Log file exists and read from: " + fileObj.getCanonicalPath());
+				for(Map.Entry<String, String[]> entry: this.map.entrySet()){
+					logger.debug(entry.getKey() + ": [" + entry.getValue()[0] + ", " + entry.getValue()[1] + "]\n");
+				}				
+				br.close();
 			}
 		}
 		catch (IOException e){  
@@ -86,453 +81,232 @@ public class ZKClientHandler implements Terminable{
 	}
 	
 	@Override
-	public void run() {
-		//restartCurator();
+	public void run(){
+		;
 	}
 
     public void restartCurator(String zkServerString){
-    	
-        // Close the client
-        this.terminate();
-
-        //Now establish new client
-        //RetryNTimes retryNTimes = new RetryNTimes(2, 100);
-        
-        //ExponentialBackoffRetry retry = new ExponentialBackoffRetry(500, 4);
-        RetryUntilElapsed retry = new RetryUntilElapsed(10000, 5000);
-
-        // The simplest way to getEdgeStatus a CuratorFramework instance. This will use default values.
-        // The only required arguments are the connection string and the retry policy
-        //return CuratorFrameworkFactory.newClient(connectionString, retryPolicy);
-        //client = CuratorFrameworkFactory.newClient(zkServerString, retry);
-        client = CuratorFrameworkFactory.newClient(zkServerString, retry);
-        
-        
-        client.getUnhandledErrorListenable().addListener((message, e) -> {
-            //ekHandler.curatorError(message,e);
-        	logger.log(Level.ALL,"curator error=" + message, e);
-        	
-        });
-        client.getConnectionStateListenable().addListener((c, newState) -> {
-            logger.log(Level.ALL, "curator event state=" + newState);
-            ekHandler.curatorStateChange(c, newState);
-            
-            switch(newState) {
-            case CONNECTED:
-            case RECONNECTED:
-            	logger.info("Zookeeper connection established. Starting to cache.");
-            	
-            	try {
-            		this.createOwnZnode();
-					this.updateCurrentRecord();
-	            	this.startTreeCaching();
-	            	
-	            	//EKHandler.getClusterLeaderHandler().initialize(this.client);
-				} catch (Exception e1) {
-					logger.fatal("Problem in creating own name record.", e1);
-				}
-            	break;
-            case LOST:
-				/*
-				 * Todeal with disconnection issues, when a connection is lost, it is better to
-				 * restart the client.
-				 */
-            	logger.info("Lost Zookeeper session. Terminating");
-            	this.terminate();
-            	//restartCurator();
-            	//EKHandler.coordinatorClient.reconfigure();
-            	
-            	break;
-            case READ_ONLY:
-            case SUSPENDED:
-            	logger.error("Zookeeper client connection lost. stopping the cache");
-            	this.cache.close();
-            	//EKHandler.getClusterLeaderHandler().terminate();
-            	break;
-            default:
-            	logger.error("Unrecognized client State"+ newState);
-            }
-        });
-        
-        logger.info("Starting ZKClient for server="+zkServerString);
-        client.start();
-        ekHandler.curatorStateChange(client, ConnectionState.LOST);
+		;
     }
 
     @Override
 	public void terminate() {
-		if(cache!= null) {
-			logger.log(Level.ALL,"closing cache");
-			this.cache.close();
-		}
-		if (client!=null) {
-			logger.log(Level.ALL,"closing Zookeeper client");
-			this.client.close();
-		}
-		ekHandler.curatorStateChange(client, ConnectionState.LOST);
-		logger.info("Terminated "+this.getClass().getSimpleName());
+		;
 	}
 
     
     
     void createOwnZnode() throws Exception {
-//    	if (client.checkExists().forPath(ekClusterPath) == null) {
-//			logger.info("EK cluster doen's exist. creating one");
-//			
-//		}
-    	
-    	client.create().orSetData().forPath(ekClusterPath, "new EK cluster".getBytes());
-		logger.debug("Created new EK cluster");
-    	
-		// Now create the root cluster for EK if it doesn't exist already
-//		if (client.checkExists().forPath(nameRecordPath) == null) {
-//			logger.info("EK cluster name record path doen's exist. creating one");
-//			client.create().forPath(nameRecordPath, "new cluster".getBytes());
-//			logger.debug("Created new EK name record path");
-//		}
-		
-		client.create().orSetData().forPath(nameRecordPath, "new cluster".getBytes());
-		logger.debug("Created new EK name record path");
-
-		// # Mehul CHANGES
-		// if (client.checkExists().forPath(ownZPath) != null) {
-		// 	logger.info("Znode for this GUID already exist. Deliting the record");
-		// 	client.delete().forPath(ownZPath);
-		// }
-		
-		// # MEHUL CHANGES
-		// client.create().withMode(EKCreateMode.EPHEMERAL).forPath(ownZPath, "new cluster".getBytes());
-		logger.debug("Created the Znode for own GUID");
-			
+		;
     }
 
     
     void startTreeCaching(){
-    	if(this.cache!=null){
-        	logger.debug("closing existing GUID cache");
-        	this.cache.close();
-        }
-    	
-    	this.cache = TreeCache.newBuilder(client, nameRecordPath).setCacheData(true).build();
-        this.cache.getListenable().addListener((c, event) -> {
-        	//ekHandler.treeCacheEvent(event.getType());
-        	logger.log(Level.ALL, "Cache client state change. New stat="+event.getType());
-        });
-        
-        try {
-			this.cache.start();
-			logger.info("Started caching the EK cluster updates");
-		} catch (Exception e) {
-			logger.fatal("Could not start the EK cashing through Treecaching ", e);
-		}
-    }
-
-    
-    
-    /**
-	 * This function throws an error if the Zookeeper client is not connected. 
-	 * @throws Exception
-	 */
-
-	public void checkIfConnected() throws Exception {	
-		if( (client == null) || client.getState()!=CuratorFrameworkState.STARTED 	
-				|| !client.getZookeeperClient().isConnected()) {	
-			logger.log(Level.ALL, "Zookeeper Client is not connected");	
-			// # MEHUL CHANGES
-			// throw new CuratorConnectionLossException();	
-		}	
-   }
-
-	public boolean isConnected() {
-		try {
-			this.checkIfConnected();
-			return true;
-		} catch (Exception e) {
-			return false;
-		}
+		;
 	}
 
-//	/**
-//	 * This function throws an error if the Zookeeper client is not connected. 
-//	 * @throws Exception
-//	 */
-//	public void checkIfConnected() throws Exception {
-//		if( client.getState()==CuratorFrameworkState.STARTED 
-//				&& client.getZookeeperClient().isConnected()) {
-//			 logger.log(Level.ALL, "Zookeeper Client is not connected.");
-//			 throw new CuratorConnectionLossException();
-//		 }
-//	}
-//
-//	public boolean isConnected() {
-//		if(this.client == null)
-//			return false;
-//		else
-//			;
-////		try {
-////			this.checkIfConnected();
-////			return true;
-////		} catch (Exception e) {
-////			return false;
-////		}
-//	}
-    
+	public boolean isConnected() {
+			return true;
+	}
 
 	
-	/***********DNS**********************************************************************************/
-	/**
-	 * This function is used by DNS name resolving service. It returns the entire name record associated with the 
-	 * accountName.
-	 * @param accountName
-	 * @return
-	 */
+/***********DNS**********************************************************************************/
+/**
+* This function is used by DNS name resolving service. It returns the entire name record associated with the 
+* accountName.
+* @param accountName
+* @return
+*/
 	public JSONObject getRecordbyAccountName(String accountName) {
+		if(this.map == null) {
+			logger.log(Level.ALL,"Cache is not initialized");
+			return null;
+		}
+		for (String guid : this.map.keySet()) {
+			try {
+				JSONObject guidData = new JSONObject (this.map.get(guid)[1]);
+				if (guidData.getString(EKRecord.ACCOUNTNAME_FIELD).equals(accountName)) {
+					logger.log(Level.ALL, "Found AccountName: "+accountName+" GUID record: "+guidData.toString());
+					return guidData;
+				}
+			} catch (JSONException | NullPointerException e) {
+				//logger.log(Level.ALL, "");
+			}
+		}
+		logger.log(Level.ALL, "Could not find accountName: "+accountName);
 		return null;
-		// # Mehul Changes
-		// Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);
-		// if(map == null) {
-		// 	logger.log(Level.ALL,"Cache is not initialized");
-		// 	return null;
-		// }
-		// for (String guid : map.keySet()) {
-		// 	try {
-		// 		JSONObject guidData = parseBytetoJSON( map.get(guid).getData());
-		// 		if (guidData.getString(EKRecord.ACCOUNTNAME_FIELD).equals(accountName)) {
-		// 			logger.log(Level.ALL, "Found AccountName: "+accountName+" GUID record: "+guidData.toString());
-		// 			return guidData;
-		// 		}
-		// 	} catch (JSONException | NullPointerException e) {
-		// 		//logger.log(Level.ALL, "");
-		// 	}
-		// }
-		// logger.log(Level.ALL, "Could not find accountName: "+accountName);
-		// return null;
 	}
 	/************Naming*******************************************************************************/
 
-	private JSONObject parseBytetoJSON(byte[] data) {
-		String dataStr = new String(data);
-		JSONObject jobj = null;
-		try {
-			jobj=new JSONObject(dataStr);
-		} catch (JSONException e) {
-			logger.log(Level.ALL,"Problem in parsing GUID data from Zookeepr. Data:"+dataStr);
-		}
-		return jobj;
-	}
-
 	public JSONArray getAllLocalGUIDs() {
 		JSONArray guidJArray = new JSONArray();
+		for (String guid : this.map.keySet()) {
+			try{
+				JSONObject record = new JSONObject (this.map.get(guid)[1]);
+				if(EKHandler.edgeStatus.masterGUID.equals(record.getString(EKRecord.MASTER_GUID)))
+					guidJArray.put(guid);
+			}catch (JSONException e) {
+			}
+		}
+		
+		logger.log(Level.ALL, "All GUIDS: " + guidJArray.toString());
 		return guidJArray;
-		// # Mehul Changes
-		// try {
-		// 	Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);
-		// 	for (String guid : map.keySet()) {
-		// 		try {
-		// 			JSONObject record = parseBytetoJSON(map.get(guid).getData());
-		// 			if(EKHandler.edgeStatus.masterGUID.equals(record.getString(EKRecord.MASTER_GUID)))
-		// 				guidJArray.put(guid);
-		// 		} catch (JSONException e) {
-		// 		}
-		// 	}
-		// }catch(NullPointerException e) {
-		// 	logger.log(Level.ALL, "Problem in accessing the local records", e);
-		// }
-		// logger.log(Level.ALL, "All GUIDS: " +guidJArray.toString());
-		// return guidJArray;
 	}
 	
 	public JSONArray getMergedGUIDs() {
 		JSONArray guidJArray = new JSONArray();
+		try {
+			for (String guid : this.map.keySet()) {
+				guidJArray.put(guid);
+			}
+		}catch(NullPointerException e) {
+			logger.log(Level.ALL, "Problem in accessing the local records", e);
+		}
+		logger.log(Level.ALL, "All GUIDS: " +guidJArray.toString());
 		return guidJArray;
-		// # Mehul Changes
-		// try {
-		// 	Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);
-		// 	for (String guid : map.keySet()) {
-		// 		guidJArray.put(guid);
-		// 	}
-		// }catch(NullPointerException e) {
-		// 	logger.log(Level.ALL, "Problem in accessing the local records", e);
-		// }
-		// logger.log(Level.ALL, "All GUIDS: " +guidJArray.toString());
-		// return guidJArray;
 	}
 
 	
 	public boolean purgeNamingCluster() {
-		return false;
-		// # Mehul Changes
-		// logger.info("Purging the Naming Cluster");
-		// try {
-		// 	Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);
-		// 	for (String guid : map.keySet()) {
-		// 		logger.log(Level.ALL,"Deleting :"+guid);
-		// 		String target = ZKPaths.makePath(nameRecordPath, guid);
-		// 		this.client.delete().forPath(target);
-		// 	}
-		// 	return true;
-		// }catch(Exception e) {
-		// 	logger.error("Failed to purge local edgeKeeper cluster",e);
-		// 	return false;
-		// }
+		return true;
 	}
 
 	public JSONObject readGUID(String guid) {
+		if(this.map == null) {
+			logger.log(Level.ALL,"Cache is not initialized");
+			return null;
+		}
 		JSONObject record = null;
+		try {
+			record = new JSONObject (this.map.get(guid)[1]);
+		} catch (JSONException e) {
+			logger.log(Level.ALL,"GUID "+ guid+ " could not be found or read");
+		}
+		logger.log(Level.ALL, "Record for guid "+guid+" is "+record.toString());
 		return record;
-		// # Mehul Changes
-		// Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);
-		// if(map == null) {
-		// 	logger.log(Level.ALL,"Cache is not initialized");
-		// 	return null;
-		// }
-		// JSONObject record = null;;
-		// try {
-		// 	record = parseBytetoJSON(map.get(guid).getData());			
-		// } catch (NullPointerException e) {
-		// 	logger.log(Level.ALL,"GUID "+ guid+ " could not be found");
-		// }
-		// logger.log(Level.ALL, "Record for guid "+guid+" is "+record.toString());
-		// return record;
 	}
 	
 	public List<String> getPeerGUIDs(String service, String duty) {
+		if(this.map == null) {
+			logger.log(Level.ALL,"Map is not initialized");
+			return null;
+		}
 		List<String> peerGUIDs = new ArrayList<String>();
+		for (String guid : this.map.keySet()) {
+			try {
+				JSONObject guidData = new JSONObject (this.map.get(guid)[1]);
+				if (guidData.getString(service).equals(duty)) {
+					peerGUIDs.add(guid);
+					//logger.log(Level.ALL, "GUID "+guid+" contains "+service);
+				}
+			} catch (JSONException e) {
+				//logger.log(Level.ALL, "The "+service+" fild does not exist in "+guid, e);
+			}
+		}
+		logger.log(Level.ALL, "Service: "+service+", duty: "+duty+" matches for the GUIDS" +peerGUIDs);
 		return peerGUIDs;
-		// # Mehul Changes
-		// Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);
-		// if(map == null) {
-		// 	logger.log(Level.ALL,"Cache is not initialized");
-		// 	return null;
-		// }
-		// List<String> peerGUIDs = new ArrayList<String>();
-		// for (String guid : map.keySet()) {
-		// 	try {
-		// 		JSONObject guidData = parseBytetoJSON( map.get(guid).getData());
-		// 		if (guidData.getString(service).equals(duty)) {
-		// 			peerGUIDs.add(guid);
-		// 			//logger.log(Level.ALL, "GUID "+guid+" contains "+service);
-		// 		}
-		// 	} catch (JSONException | NullPointerException e) {
-		// 		//logger.log(Level.ALL, "The "+service+" fild does not exist in "+guid, e);
-		// 	}
-		// }
-		// logger.log(Level.ALL, "Service: "+service+", duty: "+duty+" matches for the GUIDS" +peerGUIDs);
-		// return peerGUIDs;
 	}
 
 
 	public String getGUIDbyAccountName(String accountName) {
-		return ownGUID;
-		// # Mehul Changes
-		// Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);
-		// if(map == null) {
-		// 	logger.log(Level.ALL,"Cache is not initialized");
-		// 	return null;
-		// }
-		// for (String guid : map.keySet()) {
-		// 	try {
-		// 		JSONObject guidData = parseBytetoJSON( map.get(guid).getData());
-		// 		if (guidData.getString(EKRecord.ACCOUNTNAME_FIELD).equals(accountName)) {
-		// 			logger.log(Level.ALL, "GUID "+guid+" matches the account name "+accountName);
-		// 			return guid;
-		// 		}
-		// 	} catch (JSONException | NullPointerException e) {
-		// 		//logger.log(Level.ALL, "The accountname "+accountName+" does not match for GUID "+guid, e);
-		// 	}
-		// }
-		// logger.log(Level.ALL, "The accountname not found. "+accountName);
-		// return null;
+		if(this.map == null) {
+			logger.log(Level.ALL,"Cache is not initialized");
+			return null;
+		}
+		for (String guid : map.keySet()) {
+			try {
+				JSONObject guidData = new JSONObject (this.map.get(guid)[1]);
+				if (guidData.getString(EKRecord.ACCOUNTNAME_FIELD).equals(accountName)) {
+					logger.log(Level.ALL, "GUID "+guid+" matches the account name "+accountName);
+					return guid;
+				}
+			} catch (JSONException | NullPointerException e) {
+				//logger.log(Level.ALL, "The accountname "+accountName+" does not match for GUID "+guid, e);
+			}
+		}
+		logger.log(Level.ALL, "The accountname not found. "+accountName);
+		return null;
 	}
 		
 	public List<String> getIPsFromGuid(String guid) {
 		List<String> ipList=new ArrayList<String>();
+		try {
+			if(this.map == null) {
+				logger.log(Level.ALL,"Cache is not initialized");
+				return null;
+			}
+			JSONObject jobj = new JSONObject (this.map.get(guid)[1]);
+			JSONArray jarr = jobj.getJSONObject(EKRecord.A_RECORD_FIELD).getJSONArray(EKRecord.RECORD_FIELD);
+			for (int i =0; i< jarr.length(); i++)
+				ipList.add(jarr.getString(i));
+		} catch (JSONException | NullPointerException e) {
+			logger.log(Level.ALL,"Can not find IP information for GUID: "+guid,e);
+		}
+		logger.log(Level.ALL, "The IPs for guid: "+guid+" are: "+ipList);
 		return ipList;
-		// # Mehul Changes
-		// try {
-		// 	Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);
-		// 	if(map == null) {
-		// 		logger.log(Level.ALL,"Cache is not initialized");
-		// 		return null;
-		// 	}
-		// 	JSONObject jobj = parseBytetoJSON(map.get(guid).getData());
-		// 	JSONArray jarr = jobj.getJSONObject(EKRecord.A_RECORD_FIELD).getJSONArray(EKRecord.RECORD_FIELD);
-		// 	for (int i =0; i< jarr.length(); i++)
-		// 		ipList.add(jarr.getString(i));
-		// } catch (JSONException | NullPointerException e) {
-		// 	logger.log(Level.ALL,"Can not find IP information for GUID: "+guid,e);
-		// }
-		// logger.log(Level.ALL, "The IPs for guid: "+guid+" are: "+ipList);
-		// return ipList;
 	}
 
 
 	public String getAccountNamebyGUID(String guid) {
+		if(this.map == null) {
+			logger.log(Level.ALL,"Map is not initialized");
+			return null;
+		}
 		String accountName = null;
+		try {
+			JSONObject jobj = new JSONObject (this.map.get(guid)[1]);
+			accountName = jobj.getString(EKRecord.ACCOUNTNAME_FIELD);
+		} catch (JSONException | NullPointerException e) {
+			logger.warn("GUID "+ guid+ " does not contain account name field");
+		}
+		logger.log(Level.ALL, "Account name for guid "+guid+" is "+accountName);
 		return accountName;
-		// # Mehul Varma
-		// Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);
-		// if(map == null) {
-		// 	logger.log(Level.ALL,"Cache is not initialized");
-		// 	return null;
-		// }
-		// String accountName = null;
-		// try {
-		// 	JSONObject jobj = parseBytetoJSON(map.get(guid).getData());
-		// 	accountName = jobj.getString(EKRecord.ACCOUNTNAME_FIELD);
-		// } catch (JSONException | NullPointerException e) {
-		// 	logger.warn("GUID "+ guid+ " does not contain account name field");
-		// }
-		// logger.log(Level.ALL, "Account name for guid "+guid+" is "+accountName);
-		// return accountName;
 	}
 
 
 	public List<String> getGUIDbyIP(String ip) {
+		logger.log(Level.ALL, "Trying to fetch GUID for IP:"+ip);
+		if(this.map == null) {
+			logger.log(Level.ALL,"Cache is not initialized");
+			return null;
+		}
 		List<String> peerGUIDs = new ArrayList<String>();
+		for (String guid : this.map.keySet()) {
+			try {
+				JSONObject guidData = new JSONObject (this.map.get(guid)[1]);
+				JSONArray jarr = guidData.getJSONObject(EKRecord.A_RECORD_FIELD).getJSONArray(EKRecord.RECORD_FIELD);
+				for (int i =0; i< jarr.length(); i++)
+					if(ip.equals(jarr.getString(i))) {
+						peerGUIDs.add(guid);
+				}		
+			} catch (JSONException | NullPointerException e) {
+				logger.log(Level.ALL, "Problem in parsing the GUID data for GUID "+guid, e);
+			}
+		}
+		logger.log(Level.ALL, "IP: "+ip+" matches GUID: "+peerGUIDs);
 		return peerGUIDs;
-		// # Mehul Changes
-		// logger.log(Level.ALL, "Trying to fetch GUID for IP:"+ip);
-		// Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);
-		// if(map == null) {
-		// 	logger.log(Level.ALL,"Cache is not initialized");
-		// 	return null;
-		// }
-		// List<String> peerGUIDs = new ArrayList<String>();
-		// for (String guid : map.keySet()) {
-		// 	try {
-		// 		JSONObject guidData = parseBytetoJSON( map.get(guid).getData());
-		// 		JSONArray jarr = guidData.getJSONObject(EKRecord.A_RECORD_FIELD).getJSONArray(EKRecord.RECORD_FIELD);
-		// 		for (int i =0; i< jarr.length(); i++)
-		// 			if(ip.equals(jarr.getString(i))) {
-		// 				peerGUIDs.add(guid);
-		// 		}		
-		// 	} catch (JSONException | NullPointerException e) {
-		// 		logger.log(Level.ALL, "Problem in parsing the GUID data for GUID "+guid, e);
-		// 	}
-		// }
-		// logger.log(Level.ALL, "IP: "+ip+" matches GUID: "+peerGUIDs);
-		// return peerGUIDs;
 	}
 
 	public boolean update(JSONObject record) {
 		try {
-			checkIfConnected();
-			byte[] rec = record.toString().getBytes();
-			// ownZNode.setData(rec);
-			// # Mehul CHANGES
-			//client.setData().forPath(ownZPath, rec);
-			// store in a file JSON, key-value, GUID-update
-			FileWriter fw = new FileWriter(fileObj, false);
-			fw.write("record:" + record.toString() + ", ownZPath:" + ownZPath + ", rec:" + rec + "\n\n");
-			fw.close();
+			// Updating a record in file todo 
+			String[] arr = new String[] {ownZPath, record.toString()};
+			map.put(ownGUID, arr);
 
-			logger.debug("-- Update own data to Zookeeper -- : "+record.toString());
-			return true;
-		} catch (Exception e) {
-			logger.warn("Could not update the data");
+            BufferedWriter bf = new BufferedWriter(new FileWriter(this.fileObj));
+
+			for(Map.Entry<String, String[]> entry: this.map.entrySet()){
+				bf.write(entry.getKey() + ": [" + entry.getValue()[0] + ", " + entry.getValue()[1] + "]");
+				bf.newLine();
+			}
+			bf.flush();
+			bf.close();
+		}
+		catch (IOException e) {
+			e.printStackTrace();
 			return false;
 		}
+		return true;
 	}
 
 	public boolean updateCurrentRecord() {
@@ -541,7 +315,7 @@ public class ZKClientHandler implements Terminable{
 	}
 	
 	public String getZKConnString() {
-		return this.client.getZookeeperClient().getCurrentConnectionString();
+		return null;
 	}
 	
 
@@ -557,7 +331,9 @@ public class ZKClientHandler implements Terminable{
      * @throws Exception
      */
     void checkandCreateMDFSRoot() throws Exception {
-		// # Mehul CHANGES
+		// Don't this there is need for this function
+		// String path = "/ek_cluster/mdfs/";
+		// Mehul Questons! 
     	// if (client.checkExists().forPath(fileMetaDataPath) == null) {
 		// 	logger.info("MDFS znode doesn't exist. creating the Znode");
 		// 	client.create().forPath(fileMetaDataPath, "File metadata path".getBytes());
@@ -585,18 +361,11 @@ public class ZKClientHandler implements Terminable{
 	 * @throws Exception
 	 */
 	public void storeMDFSMetadata(String id, byte[] metaData) throws Exception {
-		checkIfConnected();
-		checkandCreateMDFSRoot();
-		String metaDataPath = ZKPaths.makePath(fileMetaDataPath, id);
-		// # Mehul CHANGES
-		// if (client.checkExists().forPath(metaDataPath) == null) {
-		// 	logger.log(Level.ALL, "Creating metadata for path" + metaDataPath);
-		// 	client.create().forPath(metaDataPath, metaData);
-		// 	logger.log(Level.ALL, "Created new MetaData" + metaDataPath);
-		// } else {
-		// 	client.setData().forPath(metaDataPath, metaData);
-		// 	logger.log(Level.ALL, "Modified data for path: " + metaDataPath);
-		// }
+		// put byte array as string in data for key==id
+		String path = fileMetaDataPath + "/" + id;
+		String[] arr = new String[] {path, metaData.toString()};
+		this.map.put(id,arr);
+		logger.log(Level.ALL, "MDFS data for path: " + path);
 	}
 
 	/**
@@ -607,8 +376,8 @@ public class ZKClientHandler implements Terminable{
 	 * @throws Exception
 	 */
 	public byte[] retrieveMDFSMetadata(String id) throws Exception {
-		checkIfConnected();
-		return client.getData().forPath(ZKPaths.makePath(fileMetaDataPath, id));
+		// get byte array for key==id
+		return this.map.get(id)[0].getBytes();
 	}
 
 	/**
@@ -618,18 +387,15 @@ public class ZKClientHandler implements Terminable{
 	 * @throws Exception
 	 */
 	public void deleteMDFSMetaData(String id) throws Exception {
-		checkIfConnected();
-		client.delete().forPath(ZKPaths.makePath(fileMetaDataPath, id));
+		// remove entry in map
+		this.map.remove(id);
 	}
 
 	public boolean checkMetadataExists(String id) throws Exception {
-		checkIfConnected();
-		// # Mehul CHANGES
-		// if (client.checkExists().forPath(ZKPaths.makePath(fileMetaDataPath, id)) == null)
-		if(false)
-			return false;
-		else
+		// check if id in map
+		if(this.map.containsKey(id))
 			return true;
+		return false;	
 	}
 
 	/***************
@@ -666,13 +432,6 @@ public class ZKClientHandler implements Terminable{
 		}
 		
 		logger.log(Level.ALL, "Merging GUID data from another edge"+guidMergeData.toString());
-		Map<String,ChildData> map = null;
-		try {
-			map =  cache.getCurrentChildren(nameRecordPath);
-		} catch(Exception e) {
-			logger.log(Level.ALL, "Merger failed as the current cache is null due to ZK client not connected.");
-			return;
-		}
 		
 //		/*
 //		 * Create a separate client for updating neighbor edge GUID. This way, these GUIDs will have a time limit 
@@ -701,13 +460,14 @@ public class ZKClientHandler implements Terminable{
 			*/
 			String lGuidMaster = null;
 			try {
-				JSONObject lGuidData = parseBytetoJSON( map.get(nGuid).getData());
+				JSONObject lGuidData = new JSONObject (this.map.get(nGuid)[1]);
 				lGuidMaster = lGuidData.getString(EKRecord.MASTER_GUID);
 			}catch(Exception e ) {
 			}
 			if(lGuidMaster == null || !lGuidMaster.equals(ownGUID)) {
 				try {
-					String nZPath = ZKPaths.makePath(nameRecordPath, nGuid);
+					// # Mehul Questions!
+					// String nZPath = ZKPaths.makePath(nameRecordPath, nGuid);
 					// # Mehul CHANGES
 					// client.create().orSetData().withMode(CreateMode.EPHEMERAL).forPath(nZPath, nRec);
 					logger.log(Level.ALL, "Updated neighbor to the local edge, GUID: "+nGuid);
@@ -723,20 +483,14 @@ public class ZKClientHandler implements Terminable{
 	
 	public JSONObject prepareMergeData() {
 		logger.log(Level.ALL, "Preparing GUID data record for edge merger");
-		Map<String,ChildData> map = null;
-		try {
-			map =  cache.getCurrentChildren(nameRecordPath);
-		} catch(Exception e) {
-			logger.log(Level.ALL, "Could not fetch GUID informations as the cache is null");
-		}
-		if(map == null || map.isEmpty()) {
+		if(this.map == null || this.map.isEmpty()) {
 			logger.log(Level.ALL,"Cache is not initialized returning null");
 			return null;
 		}
 		JSONObject mergeJObj = new JSONObject();
 		for (String guid : map.keySet()) {
 			try {
-				JSONObject guidData = parseBytetoJSON( map.get(guid).getData());
+				JSONObject guidData = new JSONObject (this.map.get(guid)[1]);
 				/*
 				 * Check if the node belongs to local edge by comparing its master GUID. Add this GUID record to the 
 				 * merger data only if the node belongs to the local edge. Alos, for node belonging to 
@@ -746,8 +500,9 @@ public class ZKClientHandler implements Terminable{
 				}
 				else { // clean the stale GUID records of neighbors
 					if( System.currentTimeMillis() > guidData.getLong(EKRecord.updateTime) + 2*EKConstants.GUID_MERGE_INTERVAL) {
-//						logger.debug("GUID record for "+guid+" is stale. Deleting it from current edge");
-						client.delete().inBackground().forPath(ZKPaths.makePath(nameRecordPath, guid));
+						// logger.debug("GUID record for "+guid+" is stale. Deleting it from current edge");
+						// Mehul Questions!
+						// client.delete().inBackground().forPath(ZKPaths.makePath(nameRecordPath, guid));
 					}
 				}
 			} catch (Exception e) {

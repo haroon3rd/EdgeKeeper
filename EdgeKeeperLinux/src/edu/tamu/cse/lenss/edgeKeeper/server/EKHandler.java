@@ -3,10 +3,10 @@ package edu.tamu.cse.lenss.edgeKeeper.server;
 
 //import javax.jmdns.*;
 
-import org.apache.curator.framework.CuratorFramework;
+// import org.apache.curator.framework.CuratorFramework;
 
-import org.apache.curator.framework.recipes.cache.TreeCacheEvent.Type;
-import org.apache.curator.framework.state.ConnectionState;
+// import org.apache.curator.framework.recipes.cache.TreeCacheEvent.Type;
+// import org.apache.curator.framework.state.ConnectionState;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -383,16 +383,16 @@ public class EKHandler extends Thread implements Terminable{
 		logger.info("Curator client error", e);
 	}
 
-	public void curatorStateChange(CuratorFramework c, ConnectionState newState) {
-		ekUtils.onCuratorStateChange(newState);
-		//logger.info("CUrator client state changed to  "+newState.toString());
-//		if(newState==ConnectionState.CONNECTED || newState == ConnectionState.RECONNECTED) {
-//			logger.info("Zookeeper client reconnected. Trying to update the current record "+this+zkClientHandler+this.zkServerHandler+ekRecord);
-//			this.zkClientHandler.update(ekRecord.fetchRecord());
-//		}
+// 	public void curatorStateChange(CuratorFramework c, ConnectionState newState) {
+// 		// ekUtils.onCuratorStateChange(newState);
+// 		//logger.info("CUrator client state changed to  "+newState.toString());
+// //		if(newState==ConnectionState.CONNECTED || newState == ConnectionState.RECONNECTED) {
+// //			logger.info("Zookeeper client reconnected. Trying to update the current record "+this+zkClientHandler+this.zkServerHandler+ekRecord);
+// //			this.zkClientHandler.update(ekRecord.fetchRecord());
+// //		}
 		
 		
-	}
+// 	}
 
 //	public void treeCacheEvent(Type eventType) {
 //		switch (eventType) {

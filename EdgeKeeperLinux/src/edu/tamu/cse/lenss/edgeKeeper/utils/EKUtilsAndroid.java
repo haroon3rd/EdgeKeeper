@@ -7,7 +7,7 @@ import java.net.InetAddress;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.curator.framework.state.ConnectionState;
+// import org.apache.curator.framework.state.ConnectionState;
 import org.apache.log4j.Level;
 
 // import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
@@ -146,11 +146,11 @@ public class EKUtilsAndroid extends EKUtils{
 		
 	}
 
-	@Override
-	public void onCuratorStateChange(ConnectionState newState) {
-		// TODO Auto-generated method stub
+	// @Override
+	// public void onCuratorStateChange(ConnectionState newState) {
+	// 	// TODO Auto-generated method stub
 		
-	}
+	// }
 
 	@Override
 	public void onZKServerStateChange(ServerState newServStatus) {
