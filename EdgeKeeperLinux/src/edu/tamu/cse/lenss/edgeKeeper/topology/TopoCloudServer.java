@@ -8,14 +8,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.UUID;
 
-import javax.lang.model.element.ElementKind;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
-import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils.NetworkInterfaceType;
 import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;

@@ -1,17 +1,16 @@
 package edu.tamu.cse.lenss.edgeKeeper.server;
 
-import org.apache.log4j.Logger;
-
-import edu.tamu.cse.lenss.edgeKeeper.dns.DNSServer;
-import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
-import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
-
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import org.apache.log4j.Logger;
+
+import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
+import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 
 /**
  * This class is responsible for running a server to which the client applications communicate.

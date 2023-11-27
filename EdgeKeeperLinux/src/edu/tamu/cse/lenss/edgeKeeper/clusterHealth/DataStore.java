@@ -1,12 +1,20 @@
 package edu.tamu.cse.lenss.edgeKeeper.clusterHealth;
 
 
-import java.util.*;
-import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
-import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
+
+import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
+import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
 
 //this class contains all the health information that the ClusterHealthServer.java receives.
 public class DataStore {

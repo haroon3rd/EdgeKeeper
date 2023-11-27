@@ -1,19 +1,19 @@
 package edu.tamu.cse.lenss.edgeKeeper.fileMetaData.command;
 
 
-import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MDFSMetadata;
-import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MetaDataHandler;
-import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
-import org.apache.log4j.Level;
-import org.bouncycastle.cert.ocsp.Req;
-import org.json.JSONException;
+import static edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MDFSMetadata.delEmptyStr;
+import static edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MetaDataHandler.checkExists;
+import static edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MetaDataHandler.retrieveMetadata;
+import static edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MetaDataHandler.storeMetaData;
 
 import java.io.File;
-import java.util.Arrays;
 
-import static edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MDFSMetadata.delEmptyStr;
-import static edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MetaDataHandler.*;
-import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.command.MKDIRcommand.*;
+import org.apache.log4j.Level;
+import org.json.JSONException;
+
+import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MDFSMetadata;
+import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.command.MKDIRcommand.pair_mkdir;
+import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
 
 public class PUTcommand {
 

@@ -14,7 +14,6 @@ import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.R.bool;
 import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MetaDataHandler;
 import edu.tamu.cse.lenss.edgeKeeper.server.EdgeStatus.ReplicaStatus;
 import edu.tamu.cse.lenss.edgeKeeper.topology.TopoGraph;

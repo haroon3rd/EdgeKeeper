@@ -1,6 +1,15 @@
 package edu.tamu.cse.lenss.edgeKeeper.server;
 
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+
 //import javax.jmdns.*;
 
 // import org.apache.curator.framework.CuratorFramework;
@@ -9,22 +18,6 @@ package edu.tamu.cse.lenss.edgeKeeper.server;
 // import org.apache.curator.framework.state.ConnectionState;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
-// # Mehul CHANGES
-// import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
-import edu.tamu.cse.lenss.edgeKeeper.utils.ServerState;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import edu.tamu.cse.lenss.edgeKeeper.clusterHealth.ClusterHealthClient;
 import edu.tamu.cse.lenss.edgeKeeper.clusterHealth.ClusterHealthServer;
@@ -35,9 +28,12 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKRecord;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
+// # Mehul CHANGES
+// import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
+import edu.tamu.cse.lenss.edgeKeeper.utils.ServerState;
 import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
-import edu.tamu.cse.lenss.edgeKeeper.zk.ZKServerHandler;
 import edu.tamu.cse.lenss.edgeKeeper.zk.ZKClientHandler;
+import edu.tamu.cse.lenss.edgeKeeper.zk.ZKServerHandler;
 
 
 /**

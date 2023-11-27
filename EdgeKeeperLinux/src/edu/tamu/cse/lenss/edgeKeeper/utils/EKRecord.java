@@ -1,5 +1,7 @@
 package edu.tamu.cse.lenss.edgeKeeper.utils;
 
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
@@ -7,8 +9,6 @@ import org.json.JSONObject;
 import org.xbill.DNS.Type;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
-
-import java.util.concurrent.locks.ReentrantLock;
 
 public class EKRecord {
 	public static final Logger logger = Logger.getLogger(EKRecord.class);

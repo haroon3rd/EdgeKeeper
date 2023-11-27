@@ -2,10 +2,10 @@ package edu.tamu.cse.lenss.edgeKeeper.topology;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import edu.tamu.cse.lenss.edgeKeeper.dns.DNSServer;
 import edu.tamu.cse.lenss.edgeKeeper.topology.TopoNode.NodeType;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
 

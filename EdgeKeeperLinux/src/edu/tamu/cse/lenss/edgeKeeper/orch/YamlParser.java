@@ -24,6 +24,7 @@ public class YamlParser {
 		InputStream inputStream = this.getClass()
 				.getClassLoader()
 				.getResourceAsStream(System.getProperty("user.dir") + File.separatorChar + deployPath.getName() + File.separatorChar + list );
+		@SuppressWarnings("unchecked")
 		Map<String, Object> obj = (Map<String, Object>) yaml.load(inputStream);
 		System.out.println("My YAML String is: " + obj);
 

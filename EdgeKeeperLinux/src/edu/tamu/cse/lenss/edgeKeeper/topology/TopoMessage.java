@@ -5,11 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.util.Map;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 
 import edu.tamu.cse.lenss.edgeKeeper.utils.Base64;
 

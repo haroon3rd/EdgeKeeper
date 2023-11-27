@@ -6,12 +6,9 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.logging.LogManager;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;

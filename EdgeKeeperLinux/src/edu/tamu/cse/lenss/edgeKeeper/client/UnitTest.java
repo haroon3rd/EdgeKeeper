@@ -1,8 +1,6 @@
 package edu.tamu.cse.lenss.edgeKeeper.client;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Level;
@@ -13,7 +11,6 @@ import org.json.JSONObject;
 import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
 import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
-import net.minidev.json.JSONArray;
 
 public class UnitTest {
 	static  Logger logger = Logger.getLogger(UnitTest.class);

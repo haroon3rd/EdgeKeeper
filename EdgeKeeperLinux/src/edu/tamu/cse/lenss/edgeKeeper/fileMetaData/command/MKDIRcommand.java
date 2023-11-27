@@ -1,16 +1,20 @@
 package edu.tamu.cse.lenss.edgeKeeper.fileMetaData.command;
 
-import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MDFSMetadata;
-import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
-import org.apache.log4j.Level;
-import org.json.JSONException;
+import static edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MDFSMetadata.delEmptyStr;
+import static edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MetaDataHandler.createUUID;
+import static edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MetaDataHandler.retrieveMetadata;
+import static edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MetaDataHandler.storeMetaData;
+import static edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MetaDataHandler.uuid_root;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MDFSMetadata.delEmptyStr;
-import static edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MetaDataHandler.*;
+import org.apache.log4j.Level;
+import org.json.JSONException;
+
+import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MDFSMetadata;
+import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
 
 public class MKDIRcommand {
 

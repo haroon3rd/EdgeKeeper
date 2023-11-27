@@ -1,9 +1,7 @@
 package edu.tamu.cse.lenss.edgeKeeper.zk;
 
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 // import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;

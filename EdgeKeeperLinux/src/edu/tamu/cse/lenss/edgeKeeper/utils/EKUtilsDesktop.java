@@ -11,11 +11,6 @@ import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Set;
 
-// import org.apache.curator.framework.state.ConnectionState;
-
-// import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
-import edu.tamu.cse.lenss.edgeKeeper.utils.ServerState;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.xbill.DNS.ResolverConfig;

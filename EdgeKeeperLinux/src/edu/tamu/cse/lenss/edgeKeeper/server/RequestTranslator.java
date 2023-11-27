@@ -8,6 +8,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Level;
@@ -17,15 +24,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.tamu.cse.lenss.edgeKeeper.clusterHealth.ClusterHealthClient;
-import edu.tamu.cse.lenss.edgeKeeper.dns.DNSServer;
 import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MetaDataHandler;
 import edu.tamu.cse.lenss.edgeKeeper.topology.TopoParser;
-import edu.tamu.cse.lenss.edgeKeeper.topology.TopoUtils;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
 import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
-
-import java.util.ArrayList;
-import java.util.concurrent.*;
 
 /**
  * This class is responsible for deling with the service request from the client.

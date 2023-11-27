@@ -3,17 +3,12 @@ package edu.tamu.cse.lenss.edgeKeeper.clusterHealth;
 
 
 
-import fi.iki.elonen.NanoHTTPD;
-import fi.iki.elonen.util.ServerRunner;
-
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -24,10 +19,7 @@ import javax.imageio.ImageIO;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-
 
 import edu.tamu.cse.lenss.edgeKeeper.client.EKClient;
 import edu.tamu.cse.lenss.edgeKeeper.client.EdgeKeeperAPI;
@@ -35,10 +27,10 @@ import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
 import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
 import edu.tamu.cse.lenss.edgeKeeper.topology.TopoUtils;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
-import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
-import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtilsDesktop;
 import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
+import fi.iki.elonen.NanoHTTPD;
+import fi.iki.elonen.util.ServerRunner;
 
 public class HealthWebView extends NanoHTTPD implements Terminable{
 	static final Logger logger = Logger.getLogger(HealthWebView.class);

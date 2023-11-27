@@ -2,7 +2,9 @@ package edu.tamu.cse.lenss.edgeKeeper.topology;
 
 import java.io.Serializable;
 import java.util.Map;
+
 import org.apache.log4j.Level;
+
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils.NetworkInterfaceType;
 
 public class TopoNode implements Serializable{

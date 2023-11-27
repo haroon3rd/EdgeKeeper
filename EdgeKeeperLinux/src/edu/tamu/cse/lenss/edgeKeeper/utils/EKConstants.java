@@ -1,7 +1,5 @@
 package edu.tamu.cse.lenss.edgeKeeper.utils;
 
-import java.net.SocketImpl;
-
 public class EKConstants {
     
 	public static final String HOME_DIR_ANDR = "/distressnet/edge_keeper/";

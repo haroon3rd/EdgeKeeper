@@ -9,11 +9,8 @@ import java.util.Set;
 
 // import org.apache.curator.framework.state.ConnectionState;
 import org.apache.log4j.Level;
-
-// import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
-import edu.tamu.cse.lenss.edgeKeeper.utils.ServerState;
-
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.content.Context;
 import android.content.Intent;
@@ -29,8 +26,6 @@ import android.os.Environment;
 import android.os.StatFs;
 import android.preference.PreferenceManager;
 import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
-
-import org.json.JSONObject;
 
 public class EKUtilsAndroid extends EKUtils{
 	

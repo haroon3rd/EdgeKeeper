@@ -3,7 +3,6 @@ package edu.tamu.cse.lenss.edgeKeeper.dns;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;

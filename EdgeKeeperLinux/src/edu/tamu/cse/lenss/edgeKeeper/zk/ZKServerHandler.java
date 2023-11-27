@@ -1,21 +1,18 @@
 package edu.tamu.cse.lenss.edgeKeeper.zk;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import edu.tamu.cse.lenss.edgeKeeper.dns.DNSServer;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
 import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;

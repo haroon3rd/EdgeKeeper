@@ -18,10 +18,8 @@ import edu.tamu.cse.lenss.edgeKeeper.topology.TopoGraph;
 import edu.tamu.cse.lenss.edgeKeeper.topology.TopoLink;
 import edu.tamu.cse.lenss.edgeKeeper.topology.TopoNode;
 import edu.tamu.cse.lenss.edgeKeeper.topology.TopoNode.NodeType;
-import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
-import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils.NetworkInterfaceType;
 
 public class EdgeStatus {
 	enum ReplicaStatus{

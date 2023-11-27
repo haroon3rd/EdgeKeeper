@@ -5,10 +5,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,7 +18,6 @@ import edu.tamu.cse.lenss.edgeKeeper.topology.TopoNode.NodeType;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
-import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtilsAndroid;
 import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 
 /**

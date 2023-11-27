@@ -1,7 +1,9 @@
 package edu.tamu.cse.lenss.edgeKeeper.client;
 import java.io.IOException;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
 /**
  * This class is created for TopoGraph applications to register and deregister services at GNS.

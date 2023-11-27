@@ -23,7 +23,6 @@ import org.xbill.DNS.Section;
 
 import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
-import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
 import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 
 public class DNSWorker implements  Terminable{

@@ -3,14 +3,13 @@ package edu.tamu.cse.lenss.edgeKeeper.fileMetaData;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 //this class works as the linux inode for a file or directory.
 //if this class is used for file metadata, then getFileConstructor() is used.

@@ -1,7 +1,5 @@
 package edu.tamu.cse.lenss.edgeKeeper.fileMetaData;
 
-import org.apache.log4j.Level;
-
 import java.util.ArrayList;
 import java.util.List;
 

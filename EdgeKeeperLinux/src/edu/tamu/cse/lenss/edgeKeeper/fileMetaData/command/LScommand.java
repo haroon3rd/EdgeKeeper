@@ -1,19 +1,21 @@
 package edu.tamu.cse.lenss.edgeKeeper.fileMetaData.command;
 
 
-import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MDFSMetadata;
-import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
+import static edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MDFSMetadata.delEmptyStr;
+import static edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MetaDataHandler.retrieveMetadata;
+import static edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MetaDataHandler.uuid_mergeData;
+import static edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MetaDataHandler.uuid_root;
+
+import java.io.File;
+import java.util.Iterator;
+import java.util.List;
+
 import org.apache.log4j.Level;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import static edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MDFSMetadata.delEmptyStr;
-import static edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MetaDataHandler.*;
+import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MDFSMetadata;
+import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
 
 public class LScommand {
 

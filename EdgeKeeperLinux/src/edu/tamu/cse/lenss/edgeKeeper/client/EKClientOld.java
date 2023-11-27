@@ -1,10 +1,15 @@
 package edu.tamu.cse.lenss.edgeKeeper.client;
 
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MDFSMetadata;
@@ -12,15 +17,6 @@ import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.command.LScommand;
 import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
 import edu.tamu.cse.lenss.edgeKeeper.topology.TopoGraph;
 import edu.tamu.cse.lenss.edgeKeeper.topology.TopoParser;
-import edu.tamu.cse.lenss.edgeKeeper.topology.TopoUtils;
-import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
-import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
 /**

@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.jgrapht.graph.DefaultWeightedEdge;
+
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
 
 public class TopoLink extends DefaultWeightedEdge implements Serializable {
