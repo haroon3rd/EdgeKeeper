@@ -1,7 +1,7 @@
 package edu.tamu.cse.lenss.edgeKeeper.server;
 
 
-//import javax.jmdns.*;
+import javax.jmdns.*;
 
 import org.apache.curator.framework.CuratorFramework;
 
@@ -35,6 +35,7 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.EKRecord;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
 import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 import edu.tamu.cse.lenss.edgeKeeper.zk.ZKServerHandler;
+import edu.tamu.cse.lenss.edgekeeper.jmmDNSPlus.JmmDNSPlusHandler;
 import edu.tamu.cse.lenss.edgeKeeper.zk.ZKClientHandler;
 
 
@@ -66,7 +67,7 @@ public class EKHandler extends Thread implements Terminable{
 	public static CoordinatorServer coordinatorServer;
 	public static CoordinatorClient coordinatorClient;
 
-	
+	static JmmDNSPlusHandler jmmDNSPlusHandler;
 	
      
     ExecutorService executorService;
@@ -111,6 +112,11 @@ public class EKHandler extends Thread implements Terminable{
     
     public static TopoHandler getTopoHandler() {
     	return topoHandler;
+    }
+    
+    
+    public static JmmDNSPlusHandler getJmmDNSPlusHandler() {
+    	return jmmDNSPlusHandler;
     }
     
 //    public static ClusterLeaderHandler getClusterLeaderHandler () {
@@ -179,14 +185,17 @@ public class EKHandler extends Thread implements Terminable{
 			coordinatorClient = new CoordinatorClient();
 			this.terminableTasks.add(coordinatorClient);
 			
-	    	//Now start ZK CLient
-			zkClientHandler = new ZKClientHandler(this);
-			this.terminableTasks.add(zkClientHandler);
-			
-			//First start Zookeeper servers
+	    	//First start Zookeeper servers
 			zkServerHandler = new ZKServerHandler(this);
 			this.terminableTasks.add(zkServerHandler);
 
+			//Now start ZK CLient
+			zkClientHandler = new ZKClientHandler(this);
+			this.terminableTasks.add(zkClientHandler);
+			
+			//Then start JmmDNS
+			jmmDNSPlusHandler = new JmmDNSPlusHandler();
+			this.terminableTasks.add(jmmDNSPlusHandler);
 
 			this.clusterHealthClient = new ClusterHealthClient();
 			this.terminableTasks.add(clusterHealthClient);
