@@ -27,6 +27,7 @@ import edu.tamu.cse.lenss.edgeKeeper.clusterHealth.ClusterHealthClient;
 import edu.tamu.cse.lenss.edgeKeeper.clusterHealth.ClusterHealthServer;
 import edu.tamu.cse.lenss.edgeKeeper.clusterHealth.HealthWebView;
 import edu.tamu.cse.lenss.edgeKeeper.dns.DNSServer;
+import edu.tamu.cse.lenss.edgeKeeper.jmmDNSPlus.JmmDNSPlusHandler;
 import edu.tamu.cse.lenss.edgeKeeper.topology.TopoHandler;
 import edu.tamu.cse.lenss.edgeKeeper.topology.TopoHandler;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
@@ -35,7 +36,6 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.EKRecord;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
 import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 import edu.tamu.cse.lenss.edgeKeeper.zk.ZKServerHandler;
-import edu.tamu.cse.lenss.edgekeeper.jmmDNSPlus.JmmDNSPlusHandler;
 import edu.tamu.cse.lenss.edgeKeeper.zk.ZKClientHandler;
 
 
@@ -158,12 +158,12 @@ public class EKHandler extends Thread implements Terminable{
 		ekProperties.setGUID(ownGUID);
 		ekRecord.updateField(EKRecord.ACCOUNTNAME_FIELD, ekProperties.getAccountName());
 
-		// Radu: commented out
-		// try {
-			// sleep(2000); // This sleep is necessary to ensure that all the terminable tasks are properly terminated during restart
-		//} catch (InterruptedException e1) {
-		//	logger.error("Sleep interrupted",e1);
-		//}
+		 //Radu: commented out
+		 try {
+			 sleep(2000); // This sleep is necessary to ensure that all the terminable tasks are properly terminated during restart
+		} catch (InterruptedException e1) {
+			logger.error("Sleep interrupted",e1);
+		}
 		
 		edgeStatus = new EdgeStatus();
 		

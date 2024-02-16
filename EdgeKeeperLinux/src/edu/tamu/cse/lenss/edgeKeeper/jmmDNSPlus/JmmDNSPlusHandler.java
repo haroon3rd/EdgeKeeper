@@ -1,4 +1,4 @@
-package edu.tamu.cse.lenss.edgekeeper.jmmDNSPlus;
+package edu.tamu.cse.lenss.edgeKeeper.jmmDNSPlus;
 
 import org.apache.log4j.Logger;
 
@@ -13,9 +13,9 @@ public class JmmDNSPlusHandler extends Thread implements Terminable  {
     private String serviceName = "desktop_instance";
     private String serviceText = "GUID000AAA";
     int servicePort = 0;
-    JmmDNS registry;
-    ServiceInfo serviceInfo;
-    SampleListener sampleListener;
+    private JmmDNS registry;
+    private ServiceInfo serviceInfo;
+    private SampleListener sampleListener;
 
 //    public JmmDNSPlusHandler(EKHandler ekHandler) {
 //		// TODO Auto-generated constructor stub
@@ -48,12 +48,16 @@ public class JmmDNSPlusHandler extends Thread implements Terminable  {
             logger.debug("AMRAN_JMMDNS" + serviceType +" "+ serviceName +" "+ servicePort);
             
             serviceInfo = ServiceInfo.create(serviceType, serviceName, servicePort, 1, 1, false,  encodeServiceText(serviceText));
-
+            
+            logger.debug("AMRAN_JMMDNS - Trying to register: " + serviceInfo);
+            
             //register service
             registry.registerService(serviceInfo);
+            logger.debug("AMRAN_JMMDNS - Registred with info: " + serviceInfo);
 
             //add service listener
             registry.addServiceListener(serviceType, sampleListener);
+            logger.debug("AMRAN_JMMDNS - Adding service listener");
 
         }catch (Exception e){
             e.printStackTrace();
