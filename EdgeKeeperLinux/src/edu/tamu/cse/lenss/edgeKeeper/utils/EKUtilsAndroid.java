@@ -8,7 +8,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.curator.framework.state.ConnectionState;
+import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
+import org.apache.log4j.RollingFileAppender;
 import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
 import org.json.JSONException;
 
@@ -28,6 +32,9 @@ import android.preference.PreferenceManager;
 import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
 
 import org.json.JSONObject;
+
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 public class EKUtilsAndroid extends EKUtils{
 	
@@ -204,7 +211,28 @@ public class EKUtilsAndroid extends EKUtils{
 	 * @param context
 	 * @throws IOException
 	 */
-	public static void initLoggerAndroid(Context context) throws IOException {
+	
+	public static void initLogger(String loggerFilePath, Level logLevel) throws IOException {
+	// First let the logger show the messages to System.out
+	Logger rootLogger = Logger.getRootLogger();
+	rootLogger.removeAllAppenders();
+	rootLogger.setLevel(logLevel);
+	rootLogger.addAppender(new ConsoleAppender(new PatternLayout("[%-5p] %d (%c{1}): %m%n"), "System.out"));
+
+	logger.info("Trying to initialize logger with " + logLevel + " mode at " + loggerFilePath);
+	PatternLayout layout = new PatternLayout("[%-5p] %d (%c{1}): %m%n");
+	RollingFileAppender appender = new RollingFileAppender(layout, loggerFilePath);
+	appender.setName("myFirstLog");
+	appender.setMaxFileSize("100MB");
+	appender.activateOptions();
+	rootLogger.addAppender(appender);
+	rootLogger.info("\n\n======================== New Logger Initialized ============================");
+	rootLogger.info("Logfile with level " + logLevel + " Stored at: " + loggerFilePath);
+}
+    
+    
+    
+    public static void initLoggerAndroid(Context context) throws IOException {
 
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 

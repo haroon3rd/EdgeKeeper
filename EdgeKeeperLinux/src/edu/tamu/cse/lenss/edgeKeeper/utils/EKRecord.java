@@ -1,17 +1,23 @@
 package edu.tamu.cse.lenss.edgeKeeper.utils;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Level;
+//import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import org.xbill.DNS.Type;
 
+import edu.tamu.cse.lenss.edgeKeeper.server.RequestResolver;
 import edu.umass.cs.gnscommon.GNSProtocol;
 
 import java.util.concurrent.locks.ReentrantLock;
 
 public class EKRecord {
-	public static final Logger logger = Logger.getLogger(EKRecord.class);
+//	public static final Logger logger = Logger.getLogger(EKRecord.class);
+	public static final Logger logger = LoggerFactory.getLogger(EKRecord.class.getName());
 
 	
 	public String guid = null;
@@ -53,7 +59,7 @@ public class EKRecord {
 			this.record.put(key, value);
 			this.record.put(updateTime, System.currentTimeMillis());
 			result=true;
-			logger.log(Level.ALL, "Updated record= "+this.record.toString());
+			logger.trace( "Updated record= "+this.record.toString());
 		} catch (JSONException| NullPointerException e) {
 			logger.warn("Problem in updating record. ",e);
 			result = false;
@@ -76,7 +82,7 @@ public class EKRecord {
 			this.record.remove(key);
 			this.record.put(updateTime, System.currentTimeMillis());
 			result=true;
-			logger.log(Level.ALL, "Updated record= "+this.record.toString());
+			logger.trace("Updated record= "+this.record.toString());
 		} catch (JSONException| NullPointerException e) {
 			logger.warn("Problem in updating record. ",e);
 			result = false;
@@ -96,7 +102,7 @@ public class EKRecord {
 		// We are doing this to make sure the JSOn is deeply copied.
 		try {
 			jRecord = new JSONObject(this.record.toString());
-			logger.log(Level.ALL, "fetched record: "+jRecord.toString());
+			logger.trace( "fetched record: "+jRecord.toString());
 		} catch (JSONException | NullPointerException e) {
 			logger.warn("Problem in fetching ownrecord.");
 		} finally {

@@ -28,13 +28,15 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.curator.framework.state.ConnectionState;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.RollingFileAppender;
+//import org.apache.log4j.ConsoleAppender;
+//import org.apache.log4j.Level;
+//import org.apache.log4j.Logger;
+//import org.apache.log4j.PatternLayout;
+//import org.apache.log4j.RollingFileAppender;
 import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class contains miscleneous useful functionalities
@@ -43,7 +45,8 @@ import org.json.JSONObject;
  *
  */
 public abstract class EKUtils {
-	public static final Logger logger = Logger.getLogger(EKUtils.class);
+//	public static final Logger logger = Logger.getLogger(EKUtils.class);
+	public static final Logger logger = LoggerFactory.getLogger(EKUtils.class.getName());
 	EKProperties ekProp;
 
 	public static final String availableJVMmemory = "availableJVMmemory";
@@ -158,7 +161,7 @@ public abstract class EKUtils {
 			in = new BufferedReader(new InputStreamReader(whatismyip.openStream()));
 			ipAddress = in.readLine(); // you getEdgeStatus the IP as a String
 		} catch (IOException e) {
-			logger.log(Level.ALL, "Problem in fetching the real IP");
+			logger.trace("Problem in fetching the real IP");
 		} finally {
 			if (in != null) {
 				try {
@@ -289,7 +292,7 @@ public abstract class EKUtils {
 
 			}
 		}
-		logger.log(Level.ALL, "Obtained list of ips from ARP: " + ips);
+		logger.trace("Obtained list of ips from ARP: " + ips);
 		return ips;
 	}
 
@@ -307,23 +310,23 @@ public abstract class EKUtils {
 	 * @param logLevel
 	 * @throws IOException
 	 */
-	public static void initLogger(String loggerFilePath, Level logLevel) throws IOException {
-		// First let the logger show the messages to System.out
-		Logger rootLogger = Logger.getRootLogger();
-		rootLogger.removeAllAppenders();
-		rootLogger.setLevel(logLevel);
-		rootLogger.addAppender(new ConsoleAppender(new PatternLayout("[%-5p] %d (%c{1}): %m%n"), "System.out"));
-
-		logger.info("Trying to initialize logger with " + logLevel + " mode at " + loggerFilePath);
-		PatternLayout layout = new PatternLayout("[%-5p] %d (%c{1}): %m%n");
-		RollingFileAppender appender = new RollingFileAppender(layout, loggerFilePath);
-		appender.setName("myFirstLog");
-		appender.setMaxFileSize("100MB");
-		appender.activateOptions();
-		rootLogger.addAppender(appender);
-		rootLogger.info("\n\n======================== New Logger Initialized ============================");
-		rootLogger.info("Logfile with level " + logLevel + " Stored at: " + loggerFilePath);
-	}
+//	public static void initLogger(String loggerFilePath, Level logLevel) throws IOException {
+//		// First let the logger show the messages to System.out
+//		Logger rootLogger = Logger.getRootLogger();
+//		rootLogger.removeAllAppenders();
+//		rootLogger.setLevel(logLevel);
+//		rootLogger.addAppender(new ConsoleAppender(new PatternLayout("[%-5p] %d (%c{1}): %m%n"), "System.out"));
+//
+//		logger.info("Trying to initialize logger with " + logLevel + " mode at " + loggerFilePath);
+//		PatternLayout layout = new PatternLayout("[%-5p] %d (%c{1}): %m%n");
+//		RollingFileAppender appender = new RollingFileAppender(layout, loggerFilePath);
+//		appender.setName("myFirstLog");
+//		appender.setMaxFileSize("100MB");
+//		appender.activateOptions();
+//		rootLogger.addAppender(appender);
+//		rootLogger.info("\n\n======================== New Logger Initialized ============================");
+//		rootLogger.info("Logfile with level " + logLevel + " Stored at: " + loggerFilePath);
+//	}
 
 	public static String sha256(byte[] message) {
 		try {
@@ -331,7 +334,7 @@ public abstract class EKUtils {
 			byte[] hash = digest.digest(message);
 			return Base64.getEncoder().encodeToString(hash);
 		} catch (Exception ex) {
-			logger.log(Level.ERROR, "Problem creating messageDigest sha, ", ex);
+			logger.error("Problem creating messageDigest sha, ", ex);
 			throw new RuntimeException(ex);
 		}
 	}

@@ -2,22 +2,26 @@ package edu.tamu.cse.lenss.edgeKeeper.server;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.List;
+import java.util.Set;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.tamu.cse.lenss.edgeKeeper.dns.DNSServer;
+//import org.apache.log4j.Level;
+//import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKRecord;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
 import edu.tamu.cse.lenss.edgeKeeper.zk.ZKClientHandler;
 
 public class RequestResolver{
-	public static final Logger logger = Logger.getLogger(RequestResolver.class);
+//	public static final Logger logger = Logger.getLogger(RequestResolver.class);
+	public static final Logger logger = LoggerFactory.getLogger(RequestResolver.class.getName());
 
 	
 	GNSClientHandler gnsClientHandler;
@@ -101,7 +105,7 @@ public class RequestResolver{
 	public boolean updateIP(Set<String> ownIPs) {
 		boolean result;
 		try {
-	        logger.log(Level.ALL," Trying to update own IP to the GNS server");
+	        logger.trace(" Trying to update own IP to the GNS server");
 	        
 	        JSONArray ownAddrJArray = new JSONArray();
 	        for (String addr: ownIPs)
@@ -142,50 +146,50 @@ public class RequestResolver{
 
 	public  JSONArray getPeerGUIDs(String service, String duty) {
 		List<String> local = zkClientHandler.getPeerGUIDs(service, duty);
-		logger.log(Level.ALL, "Local query returns: "+local);
+		logger.trace("Local query returns: "+local);
 		
 		List<String> global = gnsClientHandler.getPeerGUIDs(service, duty);
-			logger.log(Level.ALL, "Global query returnes: "+global);
+			logger.trace("Global query returnes: "+global);
 		
 		return jArrayMerge(local, global);
 	}
 
 	public JSONArray getIPsFromGuid(String guid) {
 		List<String> local = zkClientHandler.getIPsFromGuid(guid);
-		logger.log(Level.ALL, "Local query returns: "+local);
+		logger.trace("Local query returns: "+local);
 		
 		List<String> global = gnsClientHandler.getIPsFromGuid(guid);
-		logger.log(Level.ALL, "Global query returnes: "+global);
+		logger.trace("Global query returnes: "+global);
 		
 		return jArrayMerge(local, global);
 	}
 
 	public String getAccountNamebyGUID(String guid) {
 		String local = zkClientHandler.getAccountNamebyGUID( guid);
-		logger.log(Level.ALL, "Local query returns: "+local);
+		logger.trace("Local query returns: "+local);
 		
 		String global = gnsClientHandler.getAccountNamebyGUID( guid);
-			logger.log(Level.ALL, "Global query returnes: "+global);
+			logger.trace("Global query returnes: "+global);
 		
 		return compareAndAction(local,global);
 	}
 	
 	public String getGUIDbyAccountName(String AccountName) {
 		String local = zkClientHandler.getGUIDbyAccountName( AccountName);
-		logger.log(Level.ALL, "Local query returns: "+local);
+		logger.trace("Local query returns: "+local);
 		
 		String global = gnsClientHandler.getGUIDbyAccountName( AccountName);
-			logger.log(Level.ALL, "Global query returnes: "+global);
+			logger.trace("Global query returnes: "+global);
 		
 		return compareAndAction(local,global);
 	}
 
 	public JSONArray getGUIDbyIP(String ip) {
 		List<String> local = zkClientHandler.getGUIDbyIP(ip);
-		logger.log(Level.ALL, "Local query returns: "+local);
+		logger.trace("Local query returns: "+local);
 		
 		List<String> global = gnsClientHandler.getGUIDbyIP(ip);
-			logger.log(Level.ALL, "Global query returnes: "+global);
+			logger.trace("Global query returnes: "+global);
 		
 		return jArrayMerge(local, global);
 	}
@@ -229,7 +233,7 @@ public class RequestResolver{
 				logger.debug("Problem with JSON", e);
 			}
 		}
-		logger.log(Level.DEBUG, "Service: "+service+" Duty: "+duty+" peer IPS: "+ result);
+		logger.debug("Service: "+service+" Duty: "+duty+" peer IPS: "+ result);
 		return result;
 	}
 
@@ -245,7 +249,7 @@ public class RequestResolver{
 			}
 			
 		}
-		logger.log(Level.DEBUG, "Service: "+service+" Duty: "+duty+" peer Names:: "+ result);
+		logger.debug("Service: "+service+" Duty: "+duty+" peer Names:: "+ result);
 		return result;
 	}
 
@@ -260,7 +264,7 @@ public class RequestResolver{
 				logger.debug("Problem with JSON", e);
 			}
 		}
-		logger.log(Level.DEBUG, " Accountnames for IP: "+ip+ " Names: "+ result);
+		logger.debug(" Accountnames for IP: "+ip+ " Names: "+ result);
 		return result;
 	}
 	public JSONArray getIPsFromAccountName(String name) {

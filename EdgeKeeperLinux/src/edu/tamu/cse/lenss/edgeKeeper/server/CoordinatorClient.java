@@ -9,12 +9,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
+//import org.apache.log4j.Level;
+//import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import android.R.bool;
 import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MetaDataHandler;
 import edu.tamu.cse.lenss.edgeKeeper.server.EdgeStatus.ReplicaStatus;
 import edu.tamu.cse.lenss.edgeKeeper.topology.TopoGraph;
@@ -27,8 +28,9 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
 import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 
 public class CoordinatorClient implements Terminable{
-    static final Logger logger = Logger.getLogger(CoordinatorClient.class);
-    boolean isTerminated;
+//    static final Logger logger = Logger.getLogger(CoordinatorClient.class);
+	static final Logger logger = LoggerFactory.getLogger(CoordinatorClient.class.getName());
+	boolean isTerminated;
     
 	private long GUID_MERGE_INTERVAL;
 	private long MDFS_MERGE_INTERVAL;
@@ -47,11 +49,11 @@ public class CoordinatorClient implements Terminable{
 			
 			try {
 				if (EKHandler.getZKClientHandler().isConnected() && !EdgeStatus.selfMaster()) {
-					logger.log(Level.ALL, "Slave is connected with the master. Not changing any configuration");
+					logger.trace( "Slave is connected with the master. Not changing any configuration");
 				}
 				else {
 					boolean isStatusChanged = true;
-					logger.log(Level.ALL, "Trying to reconfigure the EdgeStatus");
+					logger.trace( "Trying to reconfigure the EdgeStatus");
 					while(!isTerminated) {
 						if(EdgeStatus.selfMaster()) {
 							isStatusChanged = EKHandler.edgeStatus.manageReplica();
@@ -79,18 +81,18 @@ public class CoordinatorClient implements Terminable{
 					
 					if(!isTerminated && isStatusChanged) {
 						EKHandler.ekRecord.updateField(EKRecord.MASTER_GUID, EKHandler.edgeStatus.masterGUID);
-						logger.log(Level.ALL, "Trying to restart ZK server");
+						logger.trace( "Trying to restart ZK server");
 						EKHandler.getZKServerHandler().restart();
-						logger.log(Level.ALL, "Restarted ZK server");
+						logger.trace( "Restarted ZK server");
 						
-						logger.log(Level.ALL, "Trying to restart ZK client");
+						logger.trace( "Trying to restart ZK client");
 						EKHandler.getZKClientHandler().restartCurator(EKHandler.edgeStatus.getZKServerString());
-						logger.log(Level.ALL, "Restarted ZK client");
+						logger.trace( "Restarted ZK client");
 					}
 					if (!isTerminated && !EKHandler.getZKClientHandler().isConnected()) {
-						logger.log(Level.ALL, "Trying to restart ZK client");
+						logger.trace( "Trying to restart ZK client");
 						EKHandler.getZKClientHandler().restartCurator(EKHandler.edgeStatus.getZKServerString());
-						logger.log(Level.ALL, "Restarted ZK client");
+						logger.trace( "Restarted ZK client");
 					}
 				
 				}
@@ -117,7 +119,7 @@ public class CoordinatorClient implements Terminable{
 	}
 
     private void notifyReplicas() {
-    	logger.log(Level.ALL, "Trying to notify Replicas");
+    	logger.trace( "Trying to notify Replicas");
     	JSONObject reqJSON = null;
     	try {
 			reqJSON = new JSONObject();
@@ -141,7 +143,7 @@ public class CoordinatorClient implements Terminable{
 			public void run(){
 				try {
 					JSONObject repJSON = communicate(host, req);
-					logger.log(Level.ALL, "Notified edge status to replica "+host);
+					logger.trace( "Notified edge status to replica "+host);
 				} catch (Exception e) {
 					logger.debug("Problem in Notifying replica ",e);
 				}
@@ -176,7 +178,7 @@ public class CoordinatorClient implements Terminable{
 				logger.info("Fetched Status from master = "+eStatus.toJSONString());
 				return;
 			} catch (Exception e) {
-				logger.log(Level.DEBUG, "Communication with "+ hostName +" failed. Not updating the Edge Status");
+				logger.debug("Communication with "+ hostName +" failed. Not updating the Edge Status");
 			}
     	}
     }
@@ -194,7 +196,7 @@ public class CoordinatorClient implements Terminable{
             out.writeUTF(reqJSON.toString());
             String rep = in.readUTF().trim();
             
-            logger.log(Level.ALL,"Communication with "+hostName +" Request=> "+reqJSON.toString()+"Reply=> "+rep);
+            logger.trace("Communication with "+hostName +" Request=> "+reqJSON.toString()+"Reply=> "+rep);
             return new JSONObject(rep);
     	}catch(Exception e) {
     		logger.debug("Problem in communicating with "+hostName, e);
@@ -254,7 +256,7 @@ public class CoordinatorClient implements Terminable{
 				}
 
 				if (neighbors==null || neighbors.isEmpty()) {
-					logger.log(Level.ALL, "No edge neighbor found.");
+					logger.trace( "No edge neighbor found.");
 					return;
 				}
 				for(TopoNode n: neighbors) 
@@ -268,7 +270,7 @@ public class CoordinatorClient implements Terminable{
 			public void run(){
 
 				if (neighbors==null || neighbors.isEmpty()) {
-					logger.log(Level.ALL, "No edge neighbor found.");
+					logger.trace( "No edge neighbor found.");
 					return;
 				}
 				
@@ -288,7 +290,7 @@ public class CoordinatorClient implements Terminable{
 				}
 
 				if (neighbors==null || neighbors.isEmpty()) {
-					logger.log(Level.ALL, "No edge neighbor found.");
+					logger.trace("No edge neighbor found.");
 					return;
 				}
 				

@@ -13,8 +13,10 @@ import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Level;
+//import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -46,7 +48,8 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  */
 public class GNSClientHandler implements Terminable{
-    static final Logger logger = Logger.getLogger(GNSClientHandler.class);
+//    static final Logger logger = Logger.getLogger(GNSClientHandler.class);
+	static final Logger logger = LoggerFactory.getLogger(GNSClientHandler.class.getName());
     ReentrantLock concurrentLock;
 
     int		gnsServerPort = 2178;
@@ -201,14 +204,14 @@ public class GNSClientHandler implements Terminable{
         @Override
         public GNSClient call() throws IOException {
             try {
-                logger.log(Level.ALL,"[GNS] Trying to connect to GNS server: "+ targetAddr.toString());
+                logger.trace("[GNS] Trying to connect to GNS server: "+ targetAddr.toString());
                 target = new GNSClient(new InetSocketAddress(targetAddr, gnsServerPort));
                 target.setForcedTimeout(EKConstants.GNS_TIMEOUT);
                 target.checkConnectivity();
                 logger.info("[GNS] succesfully connected to GNS server: "+ targetAddr);
                 return target;
             } catch (IOException e) {
-                logger.log(Level.ALL, "Could not connect to GNS server"+targetAddr);
+                logger.trace("Could not connect to GNS server"+targetAddr);
                 if(target!=null)
                 	target.close();
                 throw e;
@@ -234,11 +237,11 @@ public class GNSClientHandler implements Terminable{
         try {
             //logger.debug("Checking Connectivity");
             this.client.checkConnectivity();
-            logger.log(Level.ALL,"GNS connectivity checked. Still connected with old GNS server");
+            logger.trace("GNS connectivity checked. Still connected with old GNS server");
             this.gnsConnected();
         } catch (IOException | NullPointerException e) {
 
-            //logger.log(Level.ALL,"Could not connect to the old GNS server", e);
+            //logger.trace("Could not connect to the old GNS server", e);
 
             logger.debug("Could not connect to old GNS server. Trying to find new GNS Server");
             
@@ -255,7 +258,7 @@ public class GNSClientHandler implements Terminable{
             THINGS TO DO: I could not stop the workers who are not connected. I think this should be tried later on.
         =========================================================
         */
-            logger.log(Level.ALL,"Now trying multithread for connecting GNS server");
+            logger.trace("Now trying multithread for connecting GNS server");
             
             List<ConnectSingleGNS> tasks = new ArrayList<ConnectSingleGNS>();
             for (String addr:gnsServerList)
@@ -291,7 +294,7 @@ public class GNSClientHandler implements Terminable{
     AtomicBoolean isUpdatorWaiting = new AtomicBoolean(false);
     
     public void update() {
-    	logger.log(Level.ALL, "Trying to update the record to GNS");
+    	logger.trace("Trying to update the record to GNS");
     	
     	if (!isUpdatorWaiting.get()) {
     		new Thread() {
@@ -314,7 +317,7 @@ public class GNSClientHandler implements Terminable{
 		    				}
 						}
 						else 
-							logger.log(Level.ALL, "GNS server is still not connected. shall try again");
+							logger.trace("GNS server is still not connected. shall try again");
 	    			}
 	    			isUpdatorWaiting.set(false);
 	    			
@@ -348,7 +351,7 @@ public class GNSClientHandler implements Terminable{
      */
     public String getGUIDbyAccountName(String AccountName) {
         if(this.connectionState != ConnectionState.CONNECTED) {
-        	logger.log(Level.ALL, "GNS Client is disconnected from GNS server");
+        	logger.trace("GNS Client is disconnected from GNS server");
         	return null;
         }
         String guid =null;
@@ -370,7 +373,7 @@ public class GNSClientHandler implements Terminable{
      */
     public String getAccountNamebyGUID(String targetGUID) {
     	if(this.connectionState != ConnectionState.CONNECTED) {
-        	logger.log(Level.ALL, "GNS Client is disconnected from GNS server");
+        	logger.trace("GNS Client is disconnected from GNS server");
         	return null;
         }
         String name = null;
@@ -395,7 +398,7 @@ public class GNSClientHandler implements Terminable{
      */
     public List<String> getIPsFromGuid (String targetGuid) {
     	if(this.connectionState != ConnectionState.CONNECTED) {
-        	logger.log(Level.ALL, "GNS Client is disconnected from GNS server");
+        	logger.trace("GNS Client is disconnected from GNS server");
         	return null;
         }
     	List<String> ipList = new ArrayList<String>();
@@ -406,7 +409,7 @@ public class GNSClientHandler implements Terminable{
 	        for (int i = 0; i < ipJsonArray.length(); i++) {
 	        	  ipList.add( ipJsonArray.getString(i) );
 	        	}
-	        logger.log(Level.ALL, "[GNS] Target node's IPs: "+ipList.toString());
+	        logger.trace("[GNS] Target node's IPs: "+ipList.toString());
     	} catch (ClientException | IOException | JSONException | NullPointerException e) {
 			logger.debug("Error in executing GNS command with server. "+targetGuid, e);
 			this.gnsDisconnected();
@@ -426,14 +429,14 @@ public class GNSClientHandler implements Terminable{
      */
     public List<String> getPeerGUIDs(String service, String duty)  {
     	if(this.connectionState != ConnectionState.CONNECTED) {
-        	logger.log(Level.ALL, "GNS Client is disconnected from GNS server");
+        	logger.trace("GNS Client is disconnected from GNS server");
         	return null;
         }
     	List<String> guidList = null;
     	String qur = "~"+service+" : \""+duty+"\"" ;
         try {
 			guidList = (List<String>) client.execute(GNSCommand.selectQuery(qur)).getResultList();
-	        logger.log(Level.ALL, "[GNS] GUID list:"+ guidList.toString());
+	        logger.trace("[GNS] GUID list:"+ guidList.toString());
 
 		} catch (ClientException | IOException | NullPointerException e) {
 			logger.debug("Error in executing GNS command with server. "+service+", "+duty, e);
@@ -456,13 +459,13 @@ public class GNSClientHandler implements Terminable{
      */
     public List<String> getGUIDbyIP(String ip) {
     	if(this.connectionState != ConnectionState.CONNECTED) {
-        	logger.log(Level.ALL, "GNS Client is disconnected from GNS server");
+        	logger.trace( "GNS Client is disconnected from GNS server");
         	return null;
         }
     	List<String> guidList = null;
     	try {
 	    	String qur = "~"+fieldIP+" : \""+ip+"\"" ;
-	        logger.log(Level.ALL,"Trying to execute query: "+qur);
+	        logger.trace("Trying to execute query: "+qur);
 	        guidList = (List<String>) client.execute(GNSCommand.selectQuery(qur)).getResultList();
 	        logger.debug("[GNS] GUID list:"+ guidList.toString());
     	}catch (ClientException | IOException | NullPointerException e) {
@@ -476,7 +479,7 @@ public class GNSClientHandler implements Terminable{
     
     public void run() {
     	while(!isTerminated) {
-    		logger.log(Level.ALL, "checking GNS client connection");
+    		logger.trace( "checking GNS client connection");
     		tryConnectingGNS();
     		try {
 				Thread.sleep(EKConstants.GNS_CONNECTION_CHECK_INTERVAL);

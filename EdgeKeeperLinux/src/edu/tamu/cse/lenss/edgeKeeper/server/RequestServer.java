@@ -1,6 +1,9 @@
 package edu.tamu.cse.lenss.edgeKeeper.server;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.tamu.cse.lenss.edgeKeeper.dns.DNSServer;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
@@ -32,7 +35,8 @@ public class RequestServer implements Terminable{
     ServerType serverType;
     ServerSocket serverSocket;
 
-	public static final Logger logger = Logger.getLogger(RequestServer.class);
+//	public static final Logger logger = Logger.getLogger(RequestServer.class);
+    public static final Logger logger = LoggerFactory.getLogger(RequestServer.class.getName());
     
     
     /**

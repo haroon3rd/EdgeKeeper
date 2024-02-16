@@ -95,7 +95,7 @@ public class EKProperties extends Properties{
 	 * @throws IllegalAccessException
 	 */
 	public boolean validate() throws IllegalArgumentException, IllegalAccessException {
-		EKUtils.logger.log(Level.ALL, "Validating all properties:");
+		EKUtils.logger.trace("Validating all properties:");
 		for(Field f:  EKProperties.class.getDeclaredFields()) {
 			String key;
 			key = (String) f.get(this);

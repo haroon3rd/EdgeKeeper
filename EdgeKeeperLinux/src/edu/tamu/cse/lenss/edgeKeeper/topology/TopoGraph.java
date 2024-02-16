@@ -511,7 +511,7 @@ public class TopoGraph extends WeightedMultigraph<TopoNode, TopoLink> implements
 		Logger logger = Logger.getLogger(TopoGraph.class);
 		
 		
-		EKUtils.initLogger("logs/test.log", Level.ALL);
+//		EKUtils.initLogger("logs/test.log", Level.ALL);
 		logger.debug("Something");
 
 		

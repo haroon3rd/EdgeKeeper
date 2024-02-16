@@ -8,24 +8,30 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+//import org.apache.log4j.Level;
+//import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.tamu.cse.lenss.edgeKeeper.clusterHealth.ClusterHealthClient;
-import edu.tamu.cse.lenss.edgeKeeper.dns.DNSServer;
 import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MetaDataHandler;
 import edu.tamu.cse.lenss.edgeKeeper.topology.TopoParser;
-import edu.tamu.cse.lenss.edgeKeeper.topology.TopoUtils;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
 import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
-
-import java.util.ArrayList;
-import java.util.concurrent.*;
 
 /**
  * This class is responsible for deling with the service request from the client.
@@ -35,7 +41,8 @@ import java.util.concurrent.*;
  */
 public class RequestTranslator implements Runnable,  Terminable{
 	
-	public static final Logger logger = Logger.getLogger(RequestTranslator.class);
+//	public static final Logger logger = Logger.getLogger(RequestTranslator.class);
+	public static final Logger logger = LoggerFactory.getLogger(RequestTranslator.class.getName());
 
 	
     public final static String commandSeparator = "\t";
@@ -176,7 +183,7 @@ public class RequestTranslator implements Runnable,  Terminable{
                 //logger.info("Reply message = "+rep);
                 out.writeUTF(rep+"\n\n");
                 
-                logger.log(Level.ALL, "Incoming message = "+inMessage
+                logger.trace("Incoming message = "+inMessage
                 			+"\nReply message = " + rep);
             }catch (IOException  e) {
                 logger.warn("Problem handelling client socket in RequestTranslator", e);

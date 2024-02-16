@@ -6,13 +6,13 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.logging.LogManager;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Level;
+//import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
@@ -58,7 +58,8 @@ public class EKMainLinux {
 	public static void main(String[] args)  {
 		
 		configLoggerWithPropertiesFile();
-		Logger logger = Logger.getLogger(EKMainLinux.class);
+//		Logger logger = Logger.getLogger(EKMainLinux.class);
+		Logger logger = LoggerFactory.getLogger(EKMainLinux.class.getName());
 		long millis = System.currentTimeMillis();
 		
 		
@@ -66,7 +67,7 @@ public class EKMainLinux {
 		try {
 			prop = EKProperties.loadFromFile(System.getProperty("user.dir")+"/ek.properties");
 		} catch (IllegalArgumentException | IOException | IllegalAccessException e) {
-			logger.fatal("Problem in loading properties file",e);
+			logger.error("Problem in loading properties file",e);
 			return;
 		}
 		
