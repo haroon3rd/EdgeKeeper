@@ -28,15 +28,17 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.curator.framework.state.ConnectionState;
-//import org.apache.log4j.ConsoleAppender;
-//import org.apache.log4j.Level;
-//import org.apache.log4j.Logger;
-//import org.apache.log4j.PatternLayout;
-//import org.apache.log4j.RollingFileAppender;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.PatternLayout;
+import org.apache.log4j.RollingFileAppender;
 import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
 import org.json.JSONObject;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 /**
  * This class contains miscleneous useful functionalities
@@ -47,6 +49,7 @@ import org.slf4j.LoggerFactory;
 public abstract class EKUtils {
 //	public static final Logger logger = Logger.getLogger(EKUtils.class);
 	public static final Logger logger = LoggerFactory.getLogger(EKUtils.class.getName());
+//	static final Logger logger = LoggerFactory.getLogger(GNSClientHandler.class.getName());
 	EKProperties ekProp;
 
 	public static final String availableJVMmemory = "availableJVMmemory";
@@ -155,7 +158,7 @@ public abstract class EKUtils {
 	public static String getRealIP() {
 		String ipAddress = null;
 		BufferedReader in = null;
-		long t1 = System.currentTimeMillis();
+		System.currentTimeMillis();
 		try {
 			URL whatismyip = new URL(EKConstants.REAL_ID_URL);
 			in = new BufferedReader(new InputStreamReader(whatismyip.openStream()));
@@ -171,7 +174,7 @@ public abstract class EKUtils {
 				}
 			}
 		}
-		long t2 = System.currentTimeMillis();
+		System.currentTimeMillis();
 		// logger.log(Level.ALL,"Real IP address: " + ipAddress+", msec lapsed:
 		// "+(t2-t1));
 		return ipAddress;
@@ -327,6 +330,32 @@ public abstract class EKUtils {
 //		rootLogger.info("\n\n======================== New Logger Initialized ============================");
 //		rootLogger.info("Logfile with level " + logLevel + " Stored at: " + loggerFilePath);
 //	}
+
+	public static void initLogger(String loggerFilePath, Level logLevel) throws IOException {
+        // Set the log level (DEBUG, INFO, WARN, ERROR)
+        org.apache.log4j.Logger rootLogger = org.apache.log4j.Logger.getRootLogger();
+		rootLogger.removeAllAppenders();
+		rootLogger.setLevel(logLevel);
+		rootLogger.addAppender(new ConsoleAppender(new PatternLayout("[%-5p] %d (%c{1}): %m%n"), "System.out"));
+        new ConsoleAppender(new PatternLayout("%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"));
+
+//        // Set appender threshold (optional)
+//        consoleAppender.setThreshold(Level.DEBUG);
+//
+//        // Add the appender to the root logger
+//        rootLogger.addAppender(consoleAppender);
+		logger.info("Trying to initialize logger with " + logLevel + " mode at " + loggerFilePath);
+		PatternLayout layout = new PatternLayout("[%-5p] %d (%c{1}): %m%n");
+		RollingFileAppender appender = new RollingFileAppender(layout, loggerFilePath);
+		appender.setName("myFirstLog");
+		appender.setMaxFileSize("100MB");
+		appender.activateOptions();
+		rootLogger.addAppender(appender);
+		rootLogger.info("\n\n======================== New Logger Initialized ============================");
+		rootLogger.info("Logfile with level " + logLevel + " Stored at: " + loggerFilePath);
+    }
+
+	
 
 	public static String sha256(byte[] message) {
 		try {

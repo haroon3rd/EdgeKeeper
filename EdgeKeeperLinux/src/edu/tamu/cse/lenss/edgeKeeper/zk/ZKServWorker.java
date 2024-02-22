@@ -7,21 +7,19 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.LoggerFactory;
 import org.apache.zookeeper.server.ServerConfig;
-import org.apache.zookeeper.server.ZooKeeperServerMain;
-import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
 import org.apache.zookeeper.server.quorum.QuorumPeerConfig;
 import org.apache.zookeeper.server.quorum.QuorumPeerConfig.ConfigException;
-import org.apache.zookeeper.server.quorum.QuorumPeerMain;
+//import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
 import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 
 public class ZKServWorker extends Thread implements Terminable{
-	static final Logger logger = Logger.getLogger(ZKServWorker.class);
+//	static final Logger logger = Logger.getLogger(ZKServWorker.class);
+	static final Logger logger = LoggerFactory.getLogger(ZKServWorker.class.getName());
     Properties cfg;
     EKHandler eventHandler;
     List<Terminable> shutdownHook = new ArrayList<Terminable>();
@@ -78,7 +76,7 @@ public class ZKServWorker extends Thread implements Terminable{
             }
 
         } catch ( NumberFormatException | ConfigException | IOException e) {
-            logger.fatal(currentSeq+" Problem in parsing the Quorum config or starting new servr", e);
+            logger.error(currentSeq+" Problem in parsing the Quorum config or starting new servr", e);
             this.terminate();
         }
     }

@@ -1,37 +1,32 @@
 package edu.tamu.cse.lenss.edgeKeeper.zk;
 
 
-import org.apache.curator.CuratorConnectionLossException;
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.recipes.cache.ChildData;
-import org.apache.curator.framework.recipes.cache.TreeCache;
-import org.apache.curator.framework.recipes.nodes.PersistentNode;
-import org.apache.curator.framework.recipes.nodes.PersistentTtlNode;
-import org.apache.curator.framework.state.ConnectionState;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
+import org.apache.curator.CuratorConnectionLossException;
+import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
+import org.apache.curator.framework.recipes.cache.ChildData;
+import org.apache.curator.framework.recipes.cache.TreeCache;
+import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.retry.RetryUntilElapsed;
 import org.apache.curator.utils.ZKPaths;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Level;
+//import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.ZooKeeper;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.tamu.cse.lenss.edgeKeeper.dns.DNSServer;
 import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
-import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKRecord;
 import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 
@@ -43,7 +38,7 @@ public class ZKClientHandler implements Terminable {
     public static final String nameRecordPath = ekClusterPath+"/guids";
 	//private static final String healthLeaderPath = ekClusterPath+"/healthLeader";
 
-	public static final Logger logger = Logger.getLogger(ZKClientHandler.class);
+	public static final Logger logger = LoggerFactory.getLogger(ZKClientHandler.class.getName());
 	CuratorFramework client;
 	TreeCache cache;
 
@@ -85,11 +80,11 @@ public class ZKClientHandler implements Terminable {
         
         client.getUnhandledErrorListenable().addListener((message, e) -> {
             //ekHandler.curatorError(message,e);
-        	logger.log(Level.ALL,"curator error=" + message, e);
+        	logger.info("curator error=" + message, e);
         	
         });
         client.getConnectionStateListenable().addListener((c, newState) -> {
-            logger.log(Level.ALL, "curator event state=" + newState);
+            logger.info("curator event state=" + newState);
             ekHandler.curatorStateChange(c, newState);
             
             switch(newState) {
@@ -104,7 +99,7 @@ public class ZKClientHandler implements Terminable {
 	            	
 	            	//EKHandler.getClusterLeaderHandler().initialize(this.client);
 				} catch (Exception e1) {
-					logger.fatal("Problem in creating own name record.", e1);
+					logger.error("Problem in creating own name record.", e1);
 				}
             	break;
             case LOST:
@@ -138,11 +133,11 @@ public class ZKClientHandler implements Terminable {
     @Override
 	public void terminate() {
 		if(cache!= null) {
-			logger.log(Level.ALL,"closing cache");
+			logger.info("closing cache");
 			this.cache.close();
 		}
 		if (client!=null) {
-			logger.log(Level.ALL,"closing Zookeeper client");
+			logger.info("closing Zookeeper client");
 			this.client.close();
 		}
 		ekHandler.curatorStateChange(client, ConnectionState.LOST);
@@ -192,14 +187,14 @@ public class ZKClientHandler implements Terminable {
     	this.cache = TreeCache.newBuilder(client, nameRecordPath).setCacheData(true).build();
         this.cache.getListenable().addListener((c, event) -> {
         	//ekHandler.treeCacheEvent(event.getType());
-        	logger.log(Level.ALL, "Cache client state change. New stat="+event.getType());
+        	logger.info( "Cache client state change. New stat="+event.getType());
         });
         
         try {
 			this.cache.start();
 			logger.info("Started caching the EK cluster updates");
 		} catch (Exception e) {
-			logger.fatal("Could not start the EK cashing through Treecaching ", e);
+			logger.error("Could not start the EK cashing through Treecaching ", e);
 		}
     }
 
@@ -212,7 +207,7 @@ public class ZKClientHandler implements Terminable {
 	public void checkIfConnected() throws Exception {
 		 if( (client == null) || client.getState()!=CuratorFrameworkState.STARTED 
 				 || !client.getZookeeperClient().isConnected()) {
-			 logger.log(Level.ALL, "Zookeeper Client is not connected");
+			 logger.info( "Zookeeper Client is not connected");
 			 throw new CuratorConnectionLossException();
 		 }
 	}
@@ -263,21 +258,21 @@ public class ZKClientHandler implements Terminable {
 	public JSONObject getRecordbyAccountName(String accountName) {
 		Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);
 		if(map == null) {
-			logger.log(Level.ALL,"Cache is not initialized");
+			logger.info("Cache is not initialized");
 			return null;
 		}
 		for (String guid : map.keySet()) {
 			try {
 				JSONObject guidData = parseBytetoJSON( map.get(guid).getData());
 				if (guidData.getString(EKRecord.ACCOUNTNAME_FIELD).equals(accountName)) {
-					logger.log(Level.ALL, "Found AccountName: "+accountName+" GUID record: "+guidData.toString());
+					logger.info("Found AccountName: "+accountName+" GUID record: "+guidData.toString());
 					return guidData;
 				}
 			} catch (JSONException | NullPointerException e) {
 				//logger.log(Level.ALL, "");
 			}
 		}
-		logger.log(Level.ALL, "Could not find accountName: "+accountName);
+		logger.info("Could not find accountName: "+accountName);
 		return null;
 	}
 	/************Naming*******************************************************************************/
@@ -288,7 +283,7 @@ public class ZKClientHandler implements Terminable {
 		try {
 			jobj=new JSONObject(dataStr);
 		} catch (JSONException e) {
-			logger.log(Level.ALL,"Problem in parsing GUID data from Zookeepr. Data:"+dataStr);
+			logger.info("Problem in parsing GUID data from Zookeepr. Data:"+dataStr);
 		}
 		return jobj;
 	}
@@ -306,9 +301,9 @@ public class ZKClientHandler implements Terminable {
 				}
 			}
 		}catch(NullPointerException e) {
-			logger.log(Level.ALL, "Problem in accessing the local records", e);
+			logger.info("Problem in accessing the local records", e);
 		}
-		logger.log(Level.ALL, "All GUIDS: " +guidJArray.toString());
+		logger.info("All GUIDS: " +guidJArray.toString());
 		return guidJArray;
 	}
 	
@@ -320,9 +315,9 @@ public class ZKClientHandler implements Terminable {
 				guidJArray.put(guid);
 			}
 		}catch(NullPointerException e) {
-			logger.log(Level.ALL, "Problem in accessing the local records", e);
+			logger.info("Problem in accessing the local records", e);
 		}
-		logger.log(Level.ALL, "All GUIDS: " +guidJArray.toString());
+		logger.info("All GUIDS: " +guidJArray.toString());
 		return guidJArray;
 	}
 
@@ -332,7 +327,7 @@ public class ZKClientHandler implements Terminable {
 		try {
 			Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);
 			for (String guid : map.keySet()) {
-				logger.log(Level.ALL,"Deleting :"+guid);
+				logger.info("Deleting :"+guid);
 				String target = ZKPaths.makePath(nameRecordPath, guid);
 				this.client.delete().forPath(target);
 			}
@@ -346,23 +341,23 @@ public class ZKClientHandler implements Terminable {
 	public JSONObject readGUID(String guid) {
 		Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);
 		if(map == null) {
-			logger.log(Level.ALL,"Cache is not initialized");
+			logger.info("Cache is not initialized");
 			return null;
 		}
 		JSONObject record = null;;
 		try {
 			record = parseBytetoJSON(map.get(guid).getData());			
 		} catch (NullPointerException e) {
-			logger.log(Level.ALL,"GUID "+ guid+ " could not be found");
+			logger.info("GUID "+ guid+ " could not be found");
 		}
-		logger.log(Level.ALL, "Record for guid "+guid+" is "+record.toString());
+		logger.info( "Record for guid "+guid+" is "+record.toString());
 		return record;
 	}
 	
 	public List<String> getPeerGUIDs(String service, String duty) {
 		Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);
 		if(map == null) {
-			logger.log(Level.ALL,"Cache is not initialized");
+			logger.info("Cache is not initialized");
 			return null;
 		}
 		List<String> peerGUIDs = new ArrayList<String>();
@@ -377,7 +372,7 @@ public class ZKClientHandler implements Terminable {
 				//logger.log(Level.ALL, "The "+service+" fild does not exist in "+guid, e);
 			}
 		}
-		logger.log(Level.ALL, "Service: "+service+", duty: "+duty+" matches for the GUIDS" +peerGUIDs);
+		logger.info( "Service: "+service+", duty: "+duty+" matches for the GUIDS" +peerGUIDs);
 		return peerGUIDs;
 	}
 
@@ -385,21 +380,21 @@ public class ZKClientHandler implements Terminable {
 	public String getGUIDbyAccountName(String accountName) {
 		Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);
 		if(map == null) {
-			logger.log(Level.ALL,"Cache is not initialized");
+			logger.info("Cache is not initialized");
 			return null;
 		}
 		for (String guid : map.keySet()) {
 			try {
 				JSONObject guidData = parseBytetoJSON( map.get(guid).getData());
 				if (guidData.getString(EKRecord.ACCOUNTNAME_FIELD).equals(accountName)) {
-					logger.log(Level.ALL, "GUID "+guid+" matches the account name "+accountName);
+					logger.info("GUID "+guid+" matches the account name "+accountName);
 					return guid;
 				}
 			} catch (JSONException | NullPointerException e) {
 				//logger.log(Level.ALL, "The accountname "+accountName+" does not match for GUID "+guid, e);
 			}
 		}
-		logger.log(Level.ALL, "The accountname not found. "+accountName);
+		logger.info("The accountname not found. "+accountName);
 		return null;
 	}
 		
@@ -408,7 +403,7 @@ public class ZKClientHandler implements Terminable {
 		try {
 			Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);
 			if(map == null) {
-				logger.log(Level.ALL,"Cache is not initialized");
+				logger.info("Cache is not initialized");
 				return null;
 			}
 			JSONObject jobj = parseBytetoJSON(map.get(guid).getData());
@@ -416,9 +411,9 @@ public class ZKClientHandler implements Terminable {
 			for (int i =0; i< jarr.length(); i++)
 				ipList.add(jarr.getString(i));
 		} catch (JSONException | NullPointerException e) {
-			logger.log(Level.ALL,"Can not find IP information for GUID: "+guid,e);
+			logger.info("Can not find IP information for GUID: "+guid,e);
 		}
-		logger.log(Level.ALL, "The IPs for guid: "+guid+" are: "+ipList);
+		logger.trace("The IPs for guid: "+guid+" are: "+ipList);
 		return ipList;
 	}
 
@@ -426,7 +421,7 @@ public class ZKClientHandler implements Terminable {
 	public String getAccountNamebyGUID(String guid) {
 		Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);
 		if(map == null) {
-			logger.log(Level.ALL,"Cache is not initialized");
+			logger.trace("Cache is not initialized");
 			return null;
 		}
 		String accountName = null;
@@ -436,16 +431,16 @@ public class ZKClientHandler implements Terminable {
 		} catch (JSONException | NullPointerException e) {
 			logger.warn("GUID "+ guid+ " does not contain account name field");
 		}
-		logger.log(Level.ALL, "Account name for guid "+guid+" is "+accountName);
+		logger.trace("Account name for guid "+guid+" is "+accountName);
 		return accountName;
 	}
 
 
 	public List<String> getGUIDbyIP(String ip) {
-		logger.log(Level.ALL, "Trying to fetch GUID for IP:"+ip);
+		logger.trace( "Trying to fetch GUID for IP:"+ip);
 		Map<String,ChildData> map =  cache.getCurrentChildren(nameRecordPath);
 		if(map == null) {
-			logger.log(Level.ALL,"Cache is not initialized");
+			logger.trace("Cache is not initialized");
 			return null;
 		}
 		List<String> peerGUIDs = new ArrayList<String>();
@@ -458,10 +453,10 @@ public class ZKClientHandler implements Terminable {
 						peerGUIDs.add(guid);
 				}		
 			} catch (JSONException | NullPointerException e) {
-				logger.log(Level.ALL, "Problem in parsing the GUID data for GUID "+guid, e);
+				logger.trace( "Problem in parsing the GUID data for GUID "+guid, e);
 			}
 		}
-		logger.log(Level.ALL, "IP: "+ip+" matches GUID: "+peerGUIDs);
+		logger.trace("IP: "+ip+" matches GUID: "+peerGUIDs);
 		return peerGUIDs;
 	}
 
@@ -480,7 +475,7 @@ public class ZKClientHandler implements Terminable {
 	}
 
 	public boolean updateCurrentRecord() {
-		logger.log(Level.ALL, "Trying to update current name record");
+		logger.trace( "Trying to update current name record");
 		return update(EKHandler.ekRecord.fetchRecord());
 	}
 	
@@ -532,12 +527,12 @@ public class ZKClientHandler implements Terminable {
 		checkandCreateMDFSRoot();
 		String metaDataPath = ZKPaths.makePath(fileMetaDataPath, id);
 		if (client.checkExists().forPath(metaDataPath) == null) {
-			logger.log(Level.ALL, "Creating metadata for path" + metaDataPath);
+			logger.trace( "Creating metadata for path" + metaDataPath);
 			client.create().forPath(metaDataPath, metaData);
-			logger.log(Level.ALL, "Created new MetaData" + metaDataPath);
+			logger.trace( "Created new MetaData" + metaDataPath);
 		} else {
 			client.setData().forPath(metaDataPath, metaData);
-			logger.log(Level.ALL, "Modified data for path: " + metaDataPath);
+			logger.trace("Modified data for path: " + metaDataPath);
 		}
 	}
 
@@ -605,12 +600,12 @@ public class ZKClientHandler implements Terminable {
 			return;
 		}
 		
-		logger.log(Level.ALL, "Merging GUID data from another edge"+guidMergeData.toString());
+		logger.trace( "Merging GUID data from another edge"+guidMergeData.toString());
 		Map<String,ChildData> map = null;
 		try {
 			map =  cache.getCurrentChildren(nameRecordPath);
 		} catch(Exception e) {
-			logger.log(Level.ALL, "Merger failed as the current cache is null due to ZK client not connected.");
+			logger.trace("Merger failed as the current cache is null due to ZK client not connected.");
 			return;
 		}
 		
@@ -630,7 +625,7 @@ public class ZKClientHandler implements Terminable {
 				nGuidRec.put(EKRecord.updateTime, System.currentTimeMillis());
 				nRec = nGuidRec.toString().getBytes();
 			} catch (JSONException e) {
-				logger.log(Level.DEBUG, "Error in fetching the GUID data from neighbor data info for GUID "+nGuid);
+				logger.debug("Error in fetching the GUID data from neighbor data info for GUID "+nGuid);
 				continue;
 			}
 			
@@ -649,27 +644,27 @@ public class ZKClientHandler implements Terminable {
 				try {
 					String nZPath = ZKPaths.makePath(nameRecordPath, nGuid);
 					client.create().orSetData().withMode(CreateMode.EPHEMERAL).forPath(nZPath, nRec);
-					logger.log(Level.ALL, "Updated neighbor to the local edge, GUID: "+nGuid);
+					logger.trace("Updated neighbor to the local edge, GUID: "+nGuid);
 				} catch (Exception e) {
 					logger.warn("Could not update the data");
 				}
 			}
 			else {
-				logger.log(Level.ALL, "The GUID "+nGuid+" belongs to local edge. Not updating the data.");
+				logger.trace("The GUID "+nGuid+" belongs to local edge. Not updating the data.");
 			}
 		}
 	}
 	
 	public JSONObject prepareMergeData() {
-		logger.log(Level.ALL, "Preparing GUID data record for edge merger");
+		logger.trace("Preparing GUID data record for edge merger");
 		Map<String,ChildData> map = null;
 		try {
 			map =  cache.getCurrentChildren(nameRecordPath);
 		} catch(Exception e) {
-			logger.log(Level.ALL, "Could not fetch GUID informations as the cache is null");
+			logger.trace("Could not fetch GUID informations as the cache is null");
 		}
 		if(map == null || map.isEmpty()) {
-			logger.log(Level.ALL,"Cache is not initialized returning null");
+			logger.trace("Cache is not initialized returning null");
 			return null;
 		}
 		JSONObject mergeJObj = new JSONObject();
@@ -690,7 +685,7 @@ public class ZKClientHandler implements Terminable {
 					}
 				}
 			} catch (Exception e) {
-				logger.log(Level.ALL, "Problem in creating merge information for "+guid, e);
+				logger.trace("Problem in creating merge information for "+guid, e);
 			}
 		}
 		return mergeJObj;

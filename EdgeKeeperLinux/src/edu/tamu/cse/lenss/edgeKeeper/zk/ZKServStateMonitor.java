@@ -2,17 +2,18 @@ package edu.tamu.cse.lenss.edgeKeeper.zk;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Level;
+//import org.apache.log4j.Logger;
 import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import edu.tamu.cse.lenss.edgeKeeper.dns.DNSServer;
 import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
 import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 
 public class ZKServStateMonitor extends Thread implements Terminable{
-	public static final Logger logger = Logger.getLogger(ZKServStateMonitor.class);
+	public static final Logger logger = LoggerFactory.getLogger(ZKServStateMonitor.class.getName());
     
     ZKServMulti qp;
     EKHandler eventHandler;
@@ -60,13 +61,13 @@ public class ZKServStateMonitor extends Thread implements Terminable{
     		}
     		
     		if(newServStatus!=null && oldservStatus!=newServStatus) {
-    			logger.log(Level.ALL, currentSeq+" the ZK server status has changed. new status: "+newServStatus);
+    			logger.info(currentSeq+" the ZK server status has changed. new status: "+newServStatus);
     			this.eventHandler.onZKServerStateChnage(newServStatus);
     			oldservStatus = newServStatus;
     			lookingepoch = 0;
     		}
     		else
-    			logger.log(Level.ALL,currentSeq+" the ZK server status remained same. Status: "+newServStatus);
+    			logger.info(currentSeq+" the ZK server status remained same. Status: "+newServStatus);
     		
 			try {
 				sleep(pertubationInterval);

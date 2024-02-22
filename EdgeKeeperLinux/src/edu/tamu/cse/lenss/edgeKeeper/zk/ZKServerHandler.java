@@ -1,28 +1,28 @@
 package edu.tamu.cse.lenss.edgeKeeper.zk;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import edu.tamu.cse.lenss.edgeKeeper.dns.DNSServer;
+//import org.apache.log4j.Level;
+//import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
 import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 
 public class ZKServerHandler implements Terminable{
-	public static final Logger logger = Logger.getLogger(ZKServerHandler.class);
+	public static final Logger logger = LoggerFactory.getLogger(ZKServerHandler.class.getName());
 
     //EKProperties ekProperties;
     EKHandler eventHandler;
@@ -62,7 +62,7 @@ public class ZKServerHandler implements Terminable{
         
         Collection<String> replicaIps = EKHandler.edgeStatus.replicaMap.values();
 
-        logger.log(Level.ALL, "Potential ZK replicas: "+replicaIps);
+        logger.info("Potential ZK replicas: "+replicaIps);
         for (String ip: replicaIps){
             //logger.log(Level.ALL, "Potential EK master: "+ip);
             if( ip==null || ip.isEmpty() || getReplicaID(ip)==null){
@@ -141,7 +141,7 @@ public class ZKServerHandler implements Terminable{
     public void run(){}
     
 	public void restart() {
-		logger.log(Level.ALL,"Trying to restart ZKServer ");
+		logger.info("Trying to restart ZKServer ");
 			this.terminate();
 			Properties zkProp = prepareZKProperties();
 			try {
@@ -158,7 +158,7 @@ public class ZKServerHandler implements Terminable{
 					logger.info("This node not acting as EK master. Working in client mode");
 				}
 			} catch (NullPointerException | IOException /*| InterruptedException */ e) {
-				logger.fatal("Problem in preparing Zookeeper configuration", e);
+				logger.error("Problem in preparing Zookeeper configuration", e);
 			}
 		}
 

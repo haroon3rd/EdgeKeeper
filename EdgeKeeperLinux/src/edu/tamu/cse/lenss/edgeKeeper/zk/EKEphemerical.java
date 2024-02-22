@@ -1,22 +1,13 @@
 package edu.tamu.cse.lenss.edgeKeeper.zk;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.Scanner;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.CuratorFrameworkFactory.Builder;
 import org.apache.curator.framework.api.CreateBuilder;
-import org.apache.curator.framework.recipes.nodes.PersistentNode;
 import org.apache.curator.retry.RetryUntilElapsed;
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.ZooDefs;
-import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.data.ACL;
-import org.apache.zookeeper.data.Id;
 import org.apache.zookeeper.server.auth.DigestAuthenticationProvider;
 
 public class EKEphemerical {
