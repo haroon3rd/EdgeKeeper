@@ -12,7 +12,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
@@ -31,7 +34,7 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
  * @version 1.0
  */
 public class DNSServer implements Terminable {
-	public static final Logger logger = Logger.getLogger(DNSServer.class);
+	public static final Logger logger = LoggerFactory.getLogger(DNSServer.class);
 	
 	public static final short UDP_SIZE = 512;
 	ExecutorService executor = Executors.newFixedThreadPool(50);
@@ -43,7 +46,7 @@ public class DNSServer implements Terminable {
 			logger.info("Starting DNS server at UDP port no. "+EKConstants.DNS_UDP_PORT);
 			udpSocket = new DatagramSocket(EKConstants.DNS_UDP_PORT);
 		} catch (SocketException e) {
-			logger.fatal("Could not start DNS server. Try running with sudo previledge. ",e);
+			logger.error("Could not start DNS server. Try running with sudo previledge. ",e);
 			return;
 		}
 		
@@ -90,7 +93,7 @@ public class DNSServer implements Terminable {
 		try {
 			prop = EKProperties.loadFromFile(System.getProperty("user.dir")+"/ek.properties");
 		} catch (IllegalArgumentException | IOException | IllegalAccessException e) {
-			logger.fatal("Problem in loading properties file",e);
+			logger.error("Problem in loading properties file",e);
 			return;
 		}
 

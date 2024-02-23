@@ -12,8 +12,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import android.telephony.NeighboringCellInfo;
 import edu.tamu.cse.lenss.edgeKeeper.dns.DNSServer;
@@ -30,7 +32,7 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
  *
  */
 public class TopoSender {
-	public static final Logger logger = Logger.getLogger(TopoSender.class);
+	public static final Logger logger = LoggerFactory.getLogger(TopoSender.class);
 	static Map<String, DatagramSocket>  sockMap;
 	private TopoGraph ekGraph;
 	private boolean isTerminated;
@@ -70,7 +72,7 @@ public class TopoSender {
 					InetAddress.getByName(destIP), EKConstants.TOPOLOGY_DISCOVERY_PORT);
 			//logger.log(Level.ALL, "Packet created for : " + destIP + " | " +  EKConstants.TOPOLOGY_DISCOVERY_PORT);
 			ownSocket.send(packet);
-			logger.log(Level.ALL, message.messageType +" sent to " +destIP  
+			logger.trace( message.messageType +" sent to " +destIP  
 						+" through "+ownSocket.getLocalAddress().getHostAddress()+", length="+packet.getLength());
 		} catch (IOException e) {
 			logger.warn("Problem in sending "+message.messageType +" to " +destIP  
@@ -96,7 +98,7 @@ public class TopoSender {
 			Set<String> brodDests = new HashSet<String>();
 			
 			if (EKHandler.edgeStatus.getMasterIps()==null || EKHandler.edgeStatus.getMasterIps().isEmpty()) {
-				logger.log(Level.ALL, "Could not retrieve the IPs of the master. Not sending any ping.");
+				logger.trace("Could not retrieve the IPs of the master. Not sending any ping.");
 				return;
 			}
 			

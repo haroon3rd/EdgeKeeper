@@ -1,25 +1,28 @@
 package edu.tamu.cse.lenss.edgeKeeper.server;
 
-import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.SocketException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.NoRouteToHostException;
+import java.net.SocketException;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 
-//import org.apache.log4j.Level;
-//import org.apache.log4j.Logger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+//import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKProperties;
@@ -28,19 +31,11 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
 import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSCommand;
-import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.GNSException;
-import java.security.KeyStoreException;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.locks.ReentrantLock;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
 /**
  * This class maintains communication with GNS server, update the GUID, run query, etc.
@@ -48,8 +43,8 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  */
 public class GNSClientHandler implements Terminable{
-//    static final Logger logger = Logger.getLogger(GNSClientHandler.class);
-	static final Logger logger = LoggerFactory.getLogger(GNSClientHandler.class.getName());
+//    static final Logger logger = LoggerFactory.getLogger(GNSClientHandler.class);
+	static final Logger logger = LoggerFactory.getLogger(GNSClientHandler.class);
     ReentrantLock concurrentLock;
 
     int		gnsServerPort = 2178;

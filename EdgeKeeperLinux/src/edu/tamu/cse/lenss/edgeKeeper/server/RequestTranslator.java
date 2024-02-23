@@ -21,8 +21,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-//import org.apache.log4j.Level;
-//import org.apache.log4j.Logger;
+//import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,8 +43,8 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
  */
 public class RequestTranslator implements Runnable,  Terminable{
 	
-//	public static final Logger logger = Logger.getLogger(RequestTranslator.class);
-	public static final Logger logger = LoggerFactory.getLogger(RequestTranslator.class.getName());
+//	public static final Logger logger = LoggerFactory.getLogger(RequestTranslator.class);
+	public static final Logger logger = LoggerFactory.getLogger(RequestTranslator.class);
 
 	
     public final static String commandSeparator = "\t";

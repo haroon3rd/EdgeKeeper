@@ -7,9 +7,9 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
@@ -23,7 +23,7 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
  *
  */
 public class CloudLinkMonitor implements Terminable{
-    static final Logger logger = Logger.getLogger(CloudLinkMonitor.class);
+    static final Logger logger = LoggerFactory.getLogger(CloudLinkMonitor.class);
 
     String[] gnsAddresses;
     ExecutorService executor;
@@ -64,11 +64,11 @@ public class CloudLinkMonitor implements Terminable{
 				if( InetAddress.getByName(ip).isReachable(EKConstants.PING_TIMEOUT)) {
 					long t2 = System.currentTimeMillis();
 					rttMap.put(ip, t2-t1);
-					logger.log(Level.ALL, "Ping RTT to ip "+ip+" is "+(t2-t1));
+					logger.trace("Ping RTT to ip "+ip+" is "+(t2-t1));
 					return;
 				}
 			} catch (IOException e) {
-				logger.log(Level.ALL, "Exception occured in pinging "+ip);
+				logger.trace("Exception occured in pinging "+ip);
 			}
 			rttMap.put(ip, (long) EKConstants.PING_TIMEOUT);
 		}

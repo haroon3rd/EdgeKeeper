@@ -8,8 +8,10 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.tamu.cse.lenss.edgeKeeper.utils.Base64;
 
@@ -18,7 +20,7 @@ public class TopoMessage implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 5591979432520885024L;
-//	public static final Logger logger = Logger.getLogger(TopoMessage.class);
+//	public static final Logger logger = LoggerFactory.getLogger(TopoMessage.class);
 //	
 	enum MessageType {
 		TOPO_BROADCAST, 

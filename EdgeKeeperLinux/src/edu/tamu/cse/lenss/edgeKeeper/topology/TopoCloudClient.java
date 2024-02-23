@@ -7,8 +7,8 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
@@ -16,7 +16,7 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
 import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 
 public class TopoCloudClient extends Thread implements Terminable{
-	public static final Logger logger = Logger.getLogger(TopoCloudClient.class);
+	public static final Logger logger = LoggerFactory.getLogger(TopoCloudClient.class);
 	//public static String startIP = "";
 	private TopoGraph ekGraph;
 	private TopoNode ownNode;
@@ -61,21 +61,21 @@ public class TopoCloudClient extends Thread implements Terminable{
 			in = new DataInputStream (new BufferedInputStream(cSocket.getInputStream()));
 			out = new DataOutputStream(cSocket.getOutputStream());
 			long t1 = System.currentTimeMillis();
-			TopoHandler.logger.log(Level.ALL, "Request sent to cloud IP: " + destIP + " seccessfully.");
+			TopoHandler.logger.trace("Request sent to cloud IP: " + destIP + " seccessfully.");
 			out.writeUTF(prepareCloudMsg(destIP) +"\n\n");
 			TopoMessage reply = TopoMessage.getMessage(in.readUTF());
 			//startIP = reply.destinationIP;
 			long t2 = System.currentTimeMillis();
 			long cloudRTT = t2-t1;
 			if(reply.destinationIP!=null) {
-				TopoHandler.logger.log(Level.ALL,"Reply from cloud recieved at " +cSocket.getLocalAddress().getHostAddress());
+				TopoHandler.logger.trace("Reply from cloud recieved at " +cSocket.getLocalAddress().getHostAddress());
 //				ekGraph.updateCloudNode(ownNode,reply.sender, reply.destinationIP, cSocket.getInetAddress().getHostAddress(),cloudRTT, reply.sessionID, reply.BroadcastSeq);
 				ekGraph.updateEdge(ownNode,reply.sender, reply.destinationIP, cSocket.getInetAddress().getHostAddress(),1.0, reply.sessionID, reply.BroadcastSeq, reply.sessionID, reply.BroadcastSeq,1.0 );
 				ekGraph.updateRTT(ownNode, reply.sender, reply.destinationIP, cSocket.getInetAddress().getHostAddress(),cloudRTT );
 			}
 			//logger.log(Level.ALL, "Successfully communicated with Cloud IP "+destIP);
 		}catch(Exception e) {
-			TopoHandler.logger.log(Level.ALL,"Could not communicate with cloud IP: " + destIP);
+			TopoHandler.logger.trace("Could not communicate with cloud IP: " + destIP);
 		}finally {
 			try {
 				in.close();

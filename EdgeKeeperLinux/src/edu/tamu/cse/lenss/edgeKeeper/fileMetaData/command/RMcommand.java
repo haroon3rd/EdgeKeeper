@@ -2,7 +2,8 @@ package edu.tamu.cse.lenss.edgeKeeper.fileMetaData.command;
 
 import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MDFSMetadata;
 import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
-import org.apache.log4j.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,7 +33,7 @@ public class RMcommand {
 
     private static String rm_file(String filePathMDFS) {
 
-        MDFSMetadata.logger.log(Level.ALL, "EdgeKeeper local start to process rm_file command.");
+        MDFSMetadata.logger.trace( "EdgeKeeper local start to process rm_file command.");
 
         //tokenize the filepath
         //tokens contains folder names as elements but the last element is the filename
@@ -46,7 +47,7 @@ public class RMcommand {
         try {
             metadataRootInode = retrieveMetadata(uuid_root);
         } catch (Exception e) {
-            MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local rm return -> Could not load root directory.");
+            MDFSMetadata.logger.debug("EdgeKeeper local rm return -> Could not load root directory.");
             try {
                 return RequestTranslator.errorJSON("Could not load root directory.").toString();
             } catch (JSONException e1) {
@@ -78,7 +79,7 @@ public class RMcommand {
                             candidateInode = retrieveMetadata(candidateUUID);
                         } catch (Exception e) {
                             try {
-                                MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local rm return -> Could not load directory.");
+                                MDFSMetadata.logger.debug("EdgeKeeper local rm return -> Could not load directory.");
                                 return RequestTranslator.errorJSON("Could not load directory.").toString();
                             } catch (JSONException e1) {
                                 return null;
@@ -114,7 +115,7 @@ public class RMcommand {
             //check if filepath already exists
             if(!pathExists){
                 try {
-                    MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local rm return -> Directory doesnt exist.");
+                    MDFSMetadata.logger.debug("EdgeKeeper local rm return -> Directory doesnt exist.");
                     return RequestTranslator.errorJSON("Directory doesnt exist.").toString();
                 } catch (JSONException e) {
                     return null;
@@ -136,7 +137,7 @@ public class RMcommand {
                         storeMetaData(candidateInode);
                     } catch (Exception e) {
                         try {
-                            MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local rm return -> Could not modify file directory.");
+                            MDFSMetadata.logger.debug("EdgeKeeper local rm return -> Could not modify file directory.");
                             return RequestTranslator.errorJSON("Could not modify file directory.").toString();
                         } catch (JSONException e1) {
                             return null;
@@ -148,7 +149,7 @@ public class RMcommand {
                     try {
                         fileMetadataInode = retrieveAndDelete(fileUUID);
                     } catch (Exception e) {
-                        MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local rm return -> Could not retrieve file metadata before deletion.");
+                        MDFSMetadata.logger.debug("EdgeKeeper local rm return -> Could not retrieve file metadata before deletion.");
                         try {
                             return RequestTranslator.errorJSON("Could not retrieve file metadata before deletion.").toString();
                         } catch (JSONException e1) {
@@ -167,7 +168,7 @@ public class RMcommand {
 
                             //return success with metadata
                             try {
-                                MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local rm return -> successfully handled rm(file) command.");
+                                MDFSMetadata.logger.debug("EdgeKeeper local rm return -> successfully handled rm(file) command.");
                                 return RequestTranslator.successJSON().put(RequestTranslator.MDFSmetadataField, fileMetadataString).toString();
                             } catch (JSONException e) {
                                 return null;
@@ -175,7 +176,7 @@ public class RMcommand {
 
                         }else{
                             try {
-                                MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local rm return -> Gson Exception on file inode.");
+                                MDFSMetadata.logger.debug("EdgeKeeper local rm return -> Gson Exception on file inode.");
                                 return RequestTranslator.errorJSON("System error").toString();
                             } catch (JSONException e) {
                                 return null;
@@ -186,7 +187,7 @@ public class RMcommand {
 
                 }else{
                     try {
-                        MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local rm return -> File doesnt exist in directory.");
+                        MDFSMetadata.logger.debug("EdgeKeeper local rm return -> File doesnt exist in directory.");
                         return RequestTranslator.errorJSON("File doesnt exist in directory.").toString();
                     } catch (JSONException e) {
                         return null;
@@ -216,7 +217,7 @@ public class RMcommand {
     //that means removing all the files in all the subDirectories the given filePathMDFS may have.
     private static String rm_direcotry(String folderPathMDFS){
 
-        MDFSMetadata.logger.log(Level.ALL, "EdgeKeeper local start to process rm_directory command.");
+        MDFSMetadata.logger.trace( "EdgeKeeper local start to process rm_directory command.");
 
         //tokenize the filepath
         //tokens contains folder names only
@@ -231,7 +232,7 @@ public class RMcommand {
             metadataRootInode = retrieveMetadata(uuid_root);
         } catch (Exception e) {
             try {
-                MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local rm return -> Could not load root directory.");
+                MDFSMetadata.logger.debug( "EdgeKeeper local rm return -> Could not load root directory.");
                 return RequestTranslator.errorJSON("Could not load root directory.").toString();
             } catch (JSONException e1) {
                 return null;
@@ -267,7 +268,7 @@ public class RMcommand {
                             candidateInode = retrieveMetadata(candidateUUID);
                         } catch (Exception e) {
                             try {
-                                MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local rm return -> Could not load directory.");
+                                MDFSMetadata.logger.debug("EdgeKeeper local rm return -> Could not load directory.");
                                 return RequestTranslator.errorJSON("Could not load directory.").toString();
                             } catch (JSONException e1) {
                                 return null;
@@ -310,7 +311,7 @@ public class RMcommand {
             //check if filepath already exists
             if(!pathExists){
                 try {
-                    MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local rm return -> Directory doesnt exist.");
+                    MDFSMetadata.logger.debug( "EdgeKeeper local rm return -> Directory doesnt exist.");
                     return RequestTranslator.errorJSON("Directory doesnt exist.").toString();
                 } catch (JSONException e) {
                     return null;
@@ -341,7 +342,7 @@ public class RMcommand {
                     }
                 }catch(Exception e){
                     try {
-                        MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local rm return -> Could not recursively fetch all folders.");
+                        MDFSMetadata.logger.debug("EdgeKeeper local rm return -> Could not recursively fetch all folders.");
                         return RequestTranslator.errorJSON("Could not fetch all child folders.").toString();
                     } catch (JSONException e1) {
                         return null;
@@ -363,7 +364,7 @@ public class RMcommand {
                     }
                 }catch(Exception e){
                     try {
-                        MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local rm return -> Could not recursively delete all files in subdirectories.");
+                        MDFSMetadata.logger.debug("EdgeKeeper local rm return -> Could not recursively delete all files in subdirectories.");
                         return RequestTranslator.errorJSON("Could not recursively delete all files in subdirectories.").toString();
                     } catch (JSONException e1) {
                         return null;
@@ -377,7 +378,7 @@ public class RMcommand {
                     }
                 }catch(Exception e){
                     try {
-                        MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local rm return -> Could not recursively delete all sub-directories.");
+                        MDFSMetadata.logger.debug("EdgeKeeper local rm return -> Could not recursively delete all sub-directories.");
                         return RequestTranslator.errorJSON("Could not recursively delete all sub-directories.").toString();
                     } catch (JSONException e1) {
                         return null;
@@ -389,7 +390,7 @@ public class RMcommand {
                     deleteMetaData(candidateInode.getUUID());
                 } catch (Exception e) {
                     try {
-                        MDFSMetadata.logger.log(Level.ALL, "Edgekeeper local -rm return -> Recursively removed all children under folder " + folderPathMDFS + " but could not remove the folder itself.");
+                        MDFSMetadata.logger.trace( "Edgekeeper local -rm return -> Recursively removed all children under folder " + folderPathMDFS + " but could not remove the folder itself.");
                         return RequestTranslator.errorJSON("Could not recursively delete all folders.").toString();
                     } catch (JSONException e1) {
                         return null;
@@ -404,7 +405,7 @@ public class RMcommand {
                     storeMetaData(parentOfLastFolderInode);
                 } catch (Exception e) {
                     try {
-                        MDFSMetadata.logger.log(Level.ALL, "Edgekeeper local -rm return -> Removed all children under folder " + folderPathMDFS + " including the folder itself but could not update its parent.");
+                        MDFSMetadata.logger.trace( "Edgekeeper local -rm return -> Removed all children under folder " + folderPathMDFS + " including the folder itself but could not update its parent.");
                         return RequestTranslator.errorJSON("Could not recursively delete all folders. " + " parent uuid: " + parentOfLastFolderInodeUUID).toString();
                     } catch (JSONException e1) {
                         return null;
@@ -419,7 +420,7 @@ public class RMcommand {
                     return successJson.toString();
 
                 } catch (JSONException e) {
-                    MDFSMetadata.logger.log(Level.ERROR, "Directory deletion succeeded but could not generate success message.");
+                    MDFSMetadata.logger.error("Directory deletion succeeded but could not generate success message.");
                 }
 
             }

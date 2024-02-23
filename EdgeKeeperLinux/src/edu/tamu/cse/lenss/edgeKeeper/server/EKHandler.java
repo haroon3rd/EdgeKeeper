@@ -12,8 +12,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
-//import org.apache.log4j.Level;
-//import org.apache.log4j.Logger;
+//import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,8 +44,8 @@ import edu.tamu.cse.lenss.edgeKeeper.zk.ZKServerHandler;
  *
  */
 public class EKHandler extends Thread implements Terminable {
-//	public static final Logger logger = Logger.getLogger(EKHandler.class);
-	public static final Logger logger = LoggerFactory.getLogger(EKHandler.class.getName());
+//	public static final Logger logger = LoggerFactory.getLogger(EKHandler.class);
+	public static final Logger logger = LoggerFactory.getLogger(EKHandler.class);
 
 	boolean isTerminated;
 	/// JmDNS jmdns;

@@ -1,15 +1,16 @@
 package edu.tamu.cse.lenss.edgeKeeper.jmmDNSPlus;
 
-import org.apache.log4j.Logger;
-//import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.LoggerFactory;
 
 import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 import javax.jmdns.*;
 
 public class JmmDNSPlusHandler implements Terminable  {
 	
-//	static org.slf4j.Logger logger = LoggerFactory.getLogger(JmmDNSPlusHandler.class.getName());
-	public static final Logger logger = Logger.getLogger(JmmDNSPlusHandler.class);
+	static org.slf4j.Logger logger = LoggerFactory.getLogger(JmmDNSPlusHandler.class.getName());
+//	public static final Logger logger = LoggerFactory.getLogger(JmmDNSPlusHandler.class);
 
 	//service variables
     private String serviceType = "_http._tcp.local.";

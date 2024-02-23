@@ -5,8 +5,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -15,14 +16,29 @@ import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
 import net.minidev.json.JSONArray;
 
+
+//package edu.tamu.cse.lenss.edgeKeeper.client;
+//
+//import java.io.IOException;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
+//import org.json.JSONException;
+//import org.json.JSONObject;
+//
+//import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
+
+
+
 public class UnitTest {
-	static  Logger logger = Logger.getLogger(UnitTest.class);
+	static  Logger logger = LoggerFactory.getLogger(UnitTest.class);
 	
 	public static EdgeKeeperAPI mEKClient;
 	
 	public static void main(String[] args) {
 
-//		Logger logger = Logger.getLogger(UnitTest.class);
+//		Logger logger = LoggerFactory.getLogger(UnitTest.class);
 //		try {
 //			System.setProperty("log4j.configuration", new File(".", File.separatorChar+
 //					"client_log4j.properties").toURL().toString());
@@ -57,7 +73,7 @@ public class UnitTest {
 		}
 		
 		
-		logger.log(Level.ALL, "----------------------------" + obj.toString());
+		logger.trace( "----------------------------" + obj.toString());
 				
 		
 		
@@ -201,26 +217,17 @@ public class UnitTest {
 	}
 
 
-
 }
 
 
-//package edu.tamu.cse.lenss.edgeKeeper.client;
-//
-//import java.io.IOException;
-//import org.apache.log4j.Level;
-//import org.apache.log4j.Logger;
-//import org.json.JSONException;
-//import org.json.JSONObject;
-//
-//import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
+
 //
 //public class UnitTest {
-//	static  Logger logger = Logger.getLogger(UnitTest.class);
+//	static  Logger logger = LoggerFactory.getLogger(UnitTest.class);
 //
 //	public static void main(String[] args) {
 //
-////		Logger logger = Logger.getLogger(UnitTest.class);
+////		Logger logger = LoggerFactory.getLogger(UnitTest.class);
 ////		try {
 ////			System.setProperty("log4j.configuration", new File(".", File.separatorChar+
 ////					"client_log4j.properties").toURL().toString());

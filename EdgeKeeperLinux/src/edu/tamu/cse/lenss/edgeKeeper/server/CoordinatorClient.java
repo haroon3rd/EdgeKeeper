@@ -11,8 +11,10 @@ import java.util.Set;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-//import org.apache.log4j.Level;
-//import org.apache.log4j.Logger;
+//import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,8 +30,8 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils;
 import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 
 public class CoordinatorClient implements Terminable{
-//    static final Logger logger = Logger.getLogger(CoordinatorClient.class);
-	static final Logger logger = LoggerFactory.getLogger(CoordinatorClient.class.getName());
+//    static final Logger logger = LoggerFactory.getLogger(CoordinatorClient.class);
+	static final Logger logger = LoggerFactory.getLogger(CoordinatorClient.class);
 	boolean isTerminated;
     
 	private long GUID_MERGE_INTERVAL;

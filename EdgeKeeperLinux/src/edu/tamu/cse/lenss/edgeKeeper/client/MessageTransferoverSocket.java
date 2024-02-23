@@ -8,7 +8,8 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.concurrent.Callable;
 
-import org.apache.log4j.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -41,12 +42,12 @@ class MessageTransferoverSocket implements Callable<JSONObject>{
             in = new DataInputStream (new BufferedInputStream(cSocket.getInputStream()));
             out = new DataOutputStream(cSocket.getOutputStream());
 
-            EKClient.logger.log(Level.ALL,"Request to server: "+reqJSON.toString());
+            EKClient.logger.trace("Request to server: "+reqJSON.toString());
 
             out.writeUTF(reqJSON.toString());
             String rep = in.readUTF().trim();
             
-            EKClient.logger.log(Level.ALL,"Reply from Server: "+rep);
+            EKClient.logger.trace("Reply from Server: "+rep);
             return new JSONObject(rep);
     	}catch(Exception e) {
     		EKClient.logger.debug("Could not communicate with EdgeKeeper.");

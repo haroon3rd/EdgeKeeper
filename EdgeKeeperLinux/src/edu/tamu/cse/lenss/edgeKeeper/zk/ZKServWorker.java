@@ -10,7 +10,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.zookeeper.server.ServerConfig;
 import org.apache.zookeeper.server.quorum.QuorumPeerConfig;
 import org.apache.zookeeper.server.quorum.QuorumPeerConfig.ConfigException;
-//import org.apache.log4j.Logger;
+//import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +19,7 @@ import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
 import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 
 public class ZKServWorker extends Thread implements Terminable{
-//	static final Logger logger = Logger.getLogger(ZKServWorker.class);
+//	static final Logger logger = LoggerFactory.getLogger(ZKServWorker.class);
 	static final Logger logger = LoggerFactory.getLogger(ZKServWorker.class.getName());
     Properties cfg;
     EKHandler eventHandler;

@@ -8,7 +8,8 @@ import java.util.UUID;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -19,7 +20,7 @@ import org.json.JSONObject;
 //UUID and inodeUUID are synonymous.
 public class MDFSMetadata {
 
-	public static final Logger logger = Logger.getLogger(MDFSMetadata.class);
+	public static final Logger logger = LoggerFactory.getLogger(MDFSMetadata.class);
 
 	//mdfs file/directory variables
 	private String fileID;										//fileID: always unique | Replacement of fileName so that we can handle two files of same name;

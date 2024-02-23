@@ -4,7 +4,8 @@ package edu.tamu.cse.lenss.edgeKeeper.fileMetaData.command;
 import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MDFSMetadata;
 import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MetaDataHandler;
 import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
-import org.apache.log4j.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.bouncycastle.cert.ocsp.Req;
 import org.json.JSONException;
 
@@ -23,7 +24,7 @@ public class PUTcommand {
     //output: success or error message
     public static String put(String metadataStr){
 
-        MDFSMetadata.logger.log(Level.ALL, "EdgeKeeper local start to process put command.");
+        MDFSMetadata.logger.trace("EdgeKeeper local start to process put command.");
 
         //convert metadataStr into metadataNewInode
         MDFSMetadata metadataNewInode = MDFSMetadata.createMetadataFromBytes(metadataStr.getBytes());
@@ -31,7 +32,7 @@ public class PUTcommand {
         //check if Gson failed
         if(metadataNewInode==null){
             try {
-                MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local put return -> Gson error on root inode.");
+                MDFSMetadata.logger.debug("EdgeKeeper local put return -> Gson error on root inode.");
                 return RequestTranslator.errorJSON("System error.").toString();
             } catch (JSONException e) {
                 return null;
@@ -48,7 +49,7 @@ public class PUTcommand {
                 metadataAlreadyExists = true;
             }
         } catch (Exception e) {
-            MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local info -> Check for old existing metadata failed.");
+            MDFSMetadata.logger.debug("EdgeKeeper local info -> Check for old existing metadata failed.");
         }
 
         //metadata already exists, that means this is a put request by one of the fragment receiver.
@@ -61,7 +62,7 @@ public class PUTcommand {
                 metadataOldInode = retrieveMetadata(uuid);
             } catch (Exception e) {
                 try {
-                    MDFSMetadata.logger.log(Level.DEBUG, "Edgekeepr local put return -> Failed to fetch old metadata.");
+                    MDFSMetadata.logger.debug("Edgekeepr local put return -> Failed to fetch old metadata.");
                     return RequestTranslator.errorJSON("Failed to fetch old metadata.").toString();
                 } catch (JSONException e1) {
                     return null;
@@ -77,11 +78,11 @@ public class PUTcommand {
                 //store back old metadata obj
                 try {
                     storeMetaData(metadataOldInode);
-                    MDFSMetadata.logger.log(Level.ALL, "EdgeKeeper local put return -> successfully handled put command and updated metadata.");
+                    MDFSMetadata.logger.trace("EdgeKeeper local put return -> successfully handled put command and updated metadata.");
                     return RequestTranslator.successJSON().toString();
                 } catch (Exception e) {
                     try {
-                        MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local put return -> Could not add additional file metadata to the existing metadata.");
+                        MDFSMetadata.logger.debug("EdgeKeeper local put return -> Could not add additional file metadata to the existing metadata.");
                         return RequestTranslator.errorJSON("Could not add additional file metadata to the existing metadata.").toString();
                     } catch (JSONException e1) {
                         return null;
@@ -90,7 +91,7 @@ public class PUTcommand {
 
             } else {
                 try {
-                    MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local put return -> Failed to fetch old metadata");
+                    MDFSMetadata.logger.debug("EdgeKeeper local put return -> Failed to fetch old metadata");
                     return RequestTranslator.errorJSON("Failed to fetch old metadata.").toString();
                 } catch (JSONException e) {
                     return null;
@@ -149,7 +150,7 @@ public class PUTcommand {
                     lastFolderInodePushed = true;
                 } catch (Exception e) {
                     try {
-                        MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local put return -> Failed to add file as a child to the final directory folder.");
+                        MDFSMetadata.logger.debug("EdgeKeeper local put return -> Failed to add file as a child to the final directory folder.");
                         return RequestTranslator.errorJSON("Failed to add file as a child to the final directory folder.").toString();
                     } catch (JSONException e1) {
                         return null;
@@ -161,11 +162,11 @@ public class PUTcommand {
                 if(lastFolderInodePushed) {
                     try {
                         storeMetaData(metadataNewInode);
-                        MDFSMetadata.logger.log(Level.ALL, "EdgeKeeper local put return ->   successfully handled put command and created new file metadata.");
+                        MDFSMetadata.logger.trace("EdgeKeeper local put return ->   successfully handled put command and created new file metadata.");
                         return RequestTranslator.successJSON().toString();
                     } catch (Exception e) {
                         try {
-                            MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local put return ->  Failed to push file metadata but directory was created." + e);
+                            MDFSMetadata.logger.debug("EdgeKeeper local put return ->  Failed to push file metadata but directory was created." + e);
                             return RequestTranslator.errorJSON("Failed to push file metadata (last folder directory may contain filename as a child)").toString();
                         } catch (JSONException e1) {
                             return null;
@@ -175,7 +176,7 @@ public class PUTcommand {
 
             }else{
                 try {
-                    MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local put return ->  Could not load/create directory path.");
+                    MDFSMetadata.logger.debug("EdgeKeeper local put return ->  Could not load/create directory path.");
                     return RequestTranslator.errorJSON("Could not load/create directory path.").toString();
                 } catch (JSONException e) {
                     return null;

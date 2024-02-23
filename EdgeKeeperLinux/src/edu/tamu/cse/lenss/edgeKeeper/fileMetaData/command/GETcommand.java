@@ -2,7 +2,8 @@ package edu.tamu.cse.lenss.edgeKeeper.fileMetaData.command;
 
 import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MDFSMetadata;
 import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
-import org.apache.log4j.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.json.JSONException;
 
 import java.io.File;
@@ -19,7 +20,7 @@ public class GETcommand {
     //output: Json string that contains success+metadata or error messages
     public static String get(String filepathMDFS){
 
-        MDFSMetadata.logger.log(Level.ALL, "EdgeKeeper local start to process get command.");
+        MDFSMetadata.logger.trace("EdgeKeeper local start to process get command.");
 
         //tokenize the filePathMDFS
         //tokens contains folder names as elements but the last element is the fileName itself
@@ -34,7 +35,7 @@ public class GETcommand {
             metadataRootInode = retrieveMetadata(uuid_root);
         } catch (Exception e) {
             try {
-                MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local -get return -> Root inode retrieve error.", e);
+                MDFSMetadata.logger.debug("EdgeKeeper local -get return -> Root inode retrieve error.", e);
                 return RequestTranslator.errorJSON("Root inode retrieve error.").toString();
             } catch (JSONException e1) {
                 return null;
@@ -71,7 +72,7 @@ public class GETcommand {
 
                             }else{
                                 try {
-                                    MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local -get return -> Could not load directory.");
+                                    MDFSMetadata.logger.debug("EdgeKeeper local -get return -> Could not load directory.");
                                     return RequestTranslator.errorJSON("Could not load directory.").toString();
                                 } catch (JSONException e) {
                                     return null;
@@ -86,7 +87,7 @@ public class GETcommand {
                         }
                     }else{
                         try {
-                            MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local -get return -> Directory doesnt exist.");
+                            MDFSMetadata.logger.debug("EdgeKeeper local -get return -> Directory doesnt exist.");
                             return RequestTranslator.errorJSON("Directory doesnt exist.").toString();
                         } catch (JSONException e) {
                             return null;
@@ -115,12 +116,12 @@ public class GETcommand {
                         String FileMetadataStr = fileMetadataInode.fromClassObjecttoJSONString(fileMetadataInode);
 
                         //return success Json with file metadata string in it
-                        MDFSMetadata.logger.log(Level.ALL, "EdgeKeeper local -get return -> Successfully handled get command.");
+                        MDFSMetadata.logger.trace("EdgeKeeper local -get return -> Successfully handled get command.");
                         return RequestTranslator.successJSON().put(RequestTranslator.MDFSmetadataField, FileMetadataStr).toString();
 
                     }else{
                         try {
-                            MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local -get return -> Could not retrieve file metadata.");
+                            MDFSMetadata.logger.debug("EdgeKeeper local -get return -> Could not retrieve file metadata.");
                             return RequestTranslator.errorJSON("Could not retrieve file metadata.").toString();
                         } catch (JSONException ee) {
                             return null;
@@ -136,7 +137,7 @@ public class GETcommand {
 
             }else{
                 try {
-                    MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local -get return -> file doesnt exist in directory.");
+                    MDFSMetadata.logger.debug("EdgeKeeper local -get return -> file doesnt exist in directory.");
                     return RequestTranslator.errorJSON("File doesnt exist in directory.").toString();
                 } catch (JSONException e) {
                     return null;
@@ -144,7 +145,7 @@ public class GETcommand {
             }
         }else{
             try {
-                MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local -get return -> Could not load root directory.");
+                MDFSMetadata.logger.debug("EdgeKeeper local -get return -> Could not load root directory.");
                 return RequestTranslator.errorJSON("Could not load root directory.").toString();
             } catch (JSONException e) {
                 return null;

@@ -9,11 +9,12 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Deployment {
 	
-	static final Logger logger = Logger.getLogger(Deployment.class);	
+	static final Logger logger = LoggerFactory.getLogger(Deployment.class);	
 	
 	
 	public Deployment() {

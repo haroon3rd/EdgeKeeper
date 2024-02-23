@@ -2,7 +2,8 @@ package edu.tamu.cse.lenss.edgeKeeper.fileMetaData.command;
 
 import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MDFSMetadata;
 import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
-import org.apache.log4j.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.json.JSONException;
 
 import java.io.File;
@@ -24,12 +25,12 @@ public class MKDIRcommand {
     //this function returns error if the directory already exists.
     public static String mkdir(String creatorGUID, String folderPathMDFS, String isGlobal){
 
-        MDFSMetadata.logger.log(Level.ALL, "EdgeKeeper local start to process mkdir command.");
+        MDFSMetadata.logger.trace("EdgeKeeper local start to process mkdir command.");
 
         //check for root
         if(folderPathMDFS.equals(File.separator)){
             try {
-                MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local mkdir return -> Root directory already exists.");
+                MDFSMetadata.logger.debug("EdgeKeeper local mkdir return -> Root directory already exists.");
                 return RequestTranslator.errorJSON("Root directory already exists.").toString();
             } catch (JSONException e) {
                 return null;
@@ -50,14 +51,14 @@ public class MKDIRcommand {
             //check if SUCCESS
             if(mkdirRet.getMessage().equals(SUCCESS)){
                 try {
-                    MDFSMetadata.logger.log(Level.ALL, "EdgeKeeper local mkdir return -> successfully handled mkdir command");
+                    MDFSMetadata.logger.trace("EdgeKeeper local mkdir return -> successfully handled mkdir command");
                     return RequestTranslator.successJSON().toString();
                 } catch (JSONException e) {
                     return null;
                 }
             }else if(mkdirRet.getMessage().equals(DIRALREADYEXISTS)){
                 try {
-                    MDFSMetadata.logger.log(Level.ALL, "EdgeKeeper local mkdir return -> Directory already exists.");
+                    MDFSMetadata.logger.trace("EdgeKeeper local mkdir return -> Directory already exists.");
                     return RequestTranslator.errorJSON("Directory already exists.").toString();
                 } catch (JSONException e) {
                     return null;
@@ -65,7 +66,7 @@ public class MKDIRcommand {
             }
         }else{
             try {
-                MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local mkdir return -> Failed to create Directory.");
+                MDFSMetadata.logger.debug("EdgeKeeper local mkdir return -> Failed to create Directory.");
                 return RequestTranslator.errorJSON("Failed to create Directory.").toString();
             } catch (JSONException e) {
                 e.printStackTrace();

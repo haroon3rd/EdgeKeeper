@@ -4,8 +4,10 @@ package edu.tamu.cse.lenss.edgeKeeper.clusterHealth;
 import java.util.*;
 import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.json.JSONObject;
 
 //this class contains all the health information that the ClusterHealthServer.java receives.
@@ -42,7 +44,7 @@ public class DataStore {
         try {
             status.put(RequestTranslator.UPDATE_TIME, System.currentTimeMillis());
         } catch (Exception e) {
-            logger.log(Level.DEBUG,"DataStore could not add timestamp on app status");
+            logger.debug("DataStore could not add timestamp on app status");
         }
 
         //now push the new app status
@@ -60,7 +62,7 @@ public class DataStore {
         try {
             status.put(RequestTranslator.UPDATE_TIME, System.currentTimeMillis());
         } catch (Exception e) {
-            logger.log(Level.DEBUG,"DataStore could not add timestamp on device status", e);
+            logger.debug("DataStore could not add timestamp on device status", e);
         }
         //create new entry or replace the old entry
         deviceStatus.put(GUID, status);
@@ -87,7 +89,7 @@ public class DataStore {
                             return aa;
                         }
                     } catch (Exception e) {
-                        logger.log(Level.DEBUG,"DataStore could not getEdgeStatus long value from app status json object.");
+                        logger.debug("DataStore could not getEdgeStatus long value from app status json object.");
                     }
                 }
             }
@@ -114,7 +116,7 @@ public class DataStore {
                         return dd;
                     }
                 }catch(Exception e){
-                    logger.log(Level.DEBUG,"DataStore could not getEdgeStatus long value from device status json object.");
+                    logger.debug("DataStore could not getEdgeStatus long value from device status json object.");
                 }
             }
         }
@@ -199,7 +201,7 @@ public class DataStore {
             return repJSON;
 
         }catch(Exception e){
-        	logger.log(Level.DEBUG,"Problem in getEdgeStatus function",e);
+        	logger.debug("Problem in getEdgeStatus function",e);
         }
 
         return null;

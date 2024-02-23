@@ -6,7 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A Container Monitoring Class, written by Amran Haroon.
@@ -21,7 +22,7 @@ import org.apache.log4j.Logger;
 
 public class Monitor {
 
-	static final Logger logger = Logger.getLogger(Monitor.class);
+	static final Logger logger = LoggerFactory.getLogger(Monitor.class);
 
 	Map<String, FifoQCustomSize<Double>> mapCPUFifoList = new HashMap<>();
 	Map<String, FifoQCustomSize<Double>> mapMEMFifoList = new HashMap<>();

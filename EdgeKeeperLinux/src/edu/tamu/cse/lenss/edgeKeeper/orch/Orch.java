@@ -7,13 +7,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 
 public class Orch extends Thread implements Terminable{
     
-	static final Logger logger = Logger.getLogger(Orch.class);
+	static final Logger logger = LoggerFactory.getLogger(Orch.class);
 	
 	@Override
 	public void run() {

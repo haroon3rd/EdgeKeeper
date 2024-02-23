@@ -5,7 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -19,7 +20,7 @@ import org.apache.log4j.Logger;
 
 
 public class AutoPilot {
-	static final Logger logger = Logger.getLogger(AutoPilot.class);
+	static final Logger logger = LoggerFactory.getLogger(AutoPilot.class);
 
 	
 	public void autoScale(String container, double memory, double cpu)

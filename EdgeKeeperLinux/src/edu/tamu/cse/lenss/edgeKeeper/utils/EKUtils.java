@@ -1,9 +1,6 @@
 package edu.tamu.cse.lenss.edgeKeeper.utils;
 
 import java.io.BufferedReader;
-import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
-import edu.tamu.cse.lenss.edgeKeeper.server.GNSClientHandler;
-
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -34,10 +31,11 @@ import org.apache.log4j.PatternLayout;
 import org.apache.log4j.RollingFileAppender;
 import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
 import org.json.JSONObject;
-
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
+import edu.tamu.cse.lenss.edgeKeeper.server.GNSClientHandler;
 
 
 /**
@@ -47,8 +45,8 @@ import org.slf4j.LoggerFactory;
  *
  */
 public abstract class EKUtils {
-//	public static final Logger logger = Logger.getLogger(EKUtils.class);
-	public static final Logger logger = LoggerFactory.getLogger(EKUtils.class.getName());
+//	public static final Logger logger = LoggerFactory.getLogger(EKUtils.class);
+	public static final Logger logger = LoggerFactory.getLogger(EKUtils.class);
 //	static final Logger logger = LoggerFactory.getLogger(GNSClientHandler.class.getName());
 	EKProperties ekProp;
 

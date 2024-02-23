@@ -4,8 +4,10 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,7 +29,7 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 
 public class DNSLookupLocal implements Callable<Message>, Terminable{
 
-	public static final Logger logger = Logger.getLogger(DNSFallback.class);
+	public static final Logger logger = LoggerFactory.getLogger(DNSFallback.class);
 	private Message query;
 
 	public DNSLookupLocal(Message query) {
@@ -40,7 +42,7 @@ public class DNSLookupLocal implements Callable<Message>, Terminable{
 		// check for queries we can't handle
 		// Was the query legitimate or implemented?
 		if ((Type.string(queryType) == null) ||(!Type.isRR(queryType) && queryType != Type.ANY)) {
-			logger.log(Level.ALL, "Wrong query type: "+ Type.string(queryType));
+			logger.trace( "Wrong query type: "+ Type.string(queryType));
 			throw new IllegalArgumentException("Wrong query type");
 		}
 
@@ -54,11 +56,11 @@ public class DNSLookupLocal implements Callable<Message>, Terminable{
 		String domainName = requestedName.toString();
 		
 		if(domainName == null || ! domainName.endsWith(".") ) {
-			logger.log(Level.ALL,"The domain name " + domainName + " is not an absolute name!");
+			logger.trace("The domain name " + domainName + " is not an absolute name!");
 			throw new IllegalArgumentException("Unsupported Name");
 		}
 		
-		//logger.log(Level.ALL, "Looking at local EK cluster for "+domainName);
+		//logger.trace( "Looking at local EK cluster for "+domainName);
 		
 		/*
 		 * This is a hack for EK. In the EK, we did not store the alias name separately. We
@@ -97,7 +99,7 @@ public class DNSLookupLocal implements Callable<Message>, Terminable{
 		
 		JSONObject guidRecord = EKHandler.getZKClientHandler().getRecordbyAccountName(accountName);
 		if(guidRecord == null) {
-			logger.log(Level.ALL, "Could not find "+accountName+" in local EK. raising Exception");
+			logger.trace( "Could not find "+accountName+" in local EK. raising Exception");
 			throw new UnknownHostException();
 		}
 		
@@ -145,7 +147,7 @@ public class DNSLookupLocal implements Callable<Message>, Terminable{
 					//logger.debug("Record: "+record);
 					response.addRecord( record, Section.ANSWER);
 				}
-				//logger.log(Level.ALL, "DNSLookupLocal finds the record. Legitimate response: "+response.toString());
+				//logger.trace( "DNSLookupLocal finds the record. Legitimate response: "+response.toString());
 				//return response;
 
 			} catch (JSONException | TextParseException | NullPointerException  e) {
@@ -174,10 +176,10 @@ public class DNSLookupLocal implements Callable<Message>, Terminable{
 			}
 			break;
 		default:
-			logger.log(Level.ALL, "Unsupported query type. DNSLookupLocal can not resolve it.");
+			logger.trace( "Unsupported query type. DNSLookupLocal can not resolve it.");
 			throw new IllegalArgumentException("Unsupported query type");
 		}
-		logger.log(Level.ALL, "DNSLookupLocal finds the Hostname"+ accountName+" in local EK Cluster.");
+		logger.trace( "DNSLookupLocal finds the Hostname"+ accountName+" in local EK Cluster.");
 		return response;
 	}
 

@@ -1,8 +1,10 @@
 package edu.tamu.cse.lenss.edgeKeeper.client;
 
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,7 +34,7 @@ import java.util.concurrent.Executors;
  *
  */
 public class EKClientOld {
-    static final Logger logger = Logger.getLogger(EKClientOld.class);
+    static final Logger logger = LoggerFactory.getLogger(EKClientOld.class);
 	public static String SERVER_IP = "127.0.0.1";
 	//private static ExecutorService executorService = Executors.newFixedThreadPool(EKConstants.MAX_EKCLIENT_THREAD);
 	
@@ -569,7 +571,7 @@ public class EKClientOld {
 				logger.debug("GUIDs :" +guidList);
 			}
 			else
-				logger.log(Level.ALL, "Got error reply from EdgeKeeper");
+				logger.trace( "Got error reply from EdgeKeeper");
 		} catch (Exception e) {
 			logger.error("Communication with GNS-service failed", e);
 		}
@@ -591,7 +593,7 @@ public class EKClientOld {
 				logger.debug("GUIDs :" +guidList);
 			}
 			else
-				logger.log(Level.ALL, "Got error reply from EdgeKeeper");
+				logger.trace( "Got error reply from EdgeKeeper");
 		} catch (Exception e) {
 			logger.error("Communication with GNS-service failed", e);
 		}
@@ -612,7 +614,7 @@ public class EKClientOld {
 				logger.debug("GUIDs :" +record);
 			}
 			else
-				logger.log(Level.ALL, "Got error reply from EdgeKeeper");
+				logger.trace( "Got error reply from EdgeKeeper");
 		} catch (Exception e) {
 			logger.error("Communication with GNS-service failed", e);
 		}
@@ -631,7 +633,7 @@ public class EKClientOld {
 	 */
     public static boolean putAppStatus(String AppName, JSONObject reqJSON){
     	try {
-    		logger.log(Level.ALL, "Request to server putAppStatus: " + reqJSON.toString() );
+    		logger.trace( "Request to server putAppStatus: " + reqJSON.toString() );
     		//put request fields in the json object
     		reqJSON.put(RequestTranslator.requestField, RequestTranslator.putAppStatus);
     		reqJSON.put(RequestTranslator.fieldAppName, AppName);
@@ -642,7 +644,7 @@ public class EKClientOld {
     		//getEdgeStatus resultField as string from returning json object
     		String repResult = repJSON.getString(RequestTranslator.resultField);
     		
-    		logger.log(Level.ALL, "Reply from server putAppStatus: " + repResult);
+    		logger.trace( "Reply from server putAppStatus: " + repResult);
     		
     		//check result
     		if (repResult.equals(RequestTranslator.successMessage)) {
@@ -675,12 +677,12 @@ public class EKClientOld {
 			reqJSON.put(RequestTranslator.fieldGUID, targetGUID);
 			reqJSON.put(RequestTranslator.fieldAppName, appName);
 			
-    		logger.log(Level.ALL, "Request to server getAppStatus: " + reqJSON.toString());
+    		logger.trace( "Request to server getAppStatus: " + reqJSON.toString());
     		//send and receive reply
     		JSONObject repJSON = getResponseFromEK(reqJSON);
 		
 			if(repJSON!=null && repJSON.getString(RequestTranslator.resultField).equals(RequestTranslator.successMessage)) {
-	    		logger.log(Level.ALL, "Reply from server getAppStatus: " + repJSON.toString());
+	    		logger.trace( "Reply from server getAppStatus: " + repJSON.toString());
 	    		repJSON.remove(RequestTranslator.resultField);
 	    		return repJSON;
 			}
@@ -689,7 +691,7 @@ public class EKClientOld {
     	}
     	
     	//dummy return
-		logger.log(Level.DEBUG, "Reply from server getAppStatus returned null.");
+		logger.debug( "Reply from server getAppStatus returned null.");
     	return null;
     	
     }
@@ -708,14 +710,14 @@ public class EKClientOld {
 			reqJSON.put(RequestTranslator.requestField, RequestTranslator.getDeviceStatus);
 			reqJSON.put(RequestTranslator.fieldGUID, targetGUID);
 			
-			logger.log(Level.ALL, "Request to server getDeviceStatus: " + reqJSON.toString());
+			logger.trace( "Request to server getDeviceStatus: " + reqJSON.toString());
     		
 			//send and receive reply
 			JSONObject repJSON = getResponseFromEK(reqJSON);
 	    		
 			//check result
 			if (repJSON!=null && repJSON.getString(RequestTranslator.resultField).equals(RequestTranslator.successMessage)) {
-	    		logger.log(Level.ALL, "Reply from server getDeviceStatus: " + repJSON.toString());
+	    		logger.trace( "Reply from server getDeviceStatus: " + repJSON.toString());
 	    		repJSON.remove(RequestTranslator.resultField);
 	    		return repJSON;
 			}
@@ -724,7 +726,7 @@ public class EKClientOld {
 		}
 		
 		//dummy return 	
-		logger.log(Level.DEBUG, "Reply from server getDeviceStatus returned null.");
+		logger.debug( "Reply from server getDeviceStatus returned null.");
 		return null;
 	}
 
@@ -741,14 +743,14 @@ public class EKClientOld {
 			//put request fields in the json object
 			reqJSON.put(RequestTranslator.requestField, RequestTranslator.getEdgeStatus);
 
-			logger.log(Level.ALL, "Request to server getEdgeStatus: " + reqJSON.toString());
+			logger.trace( "Request to server getEdgeStatus: " + reqJSON.toString());
 
 			//send and receive reply
 			JSONObject repJSON = getResponseFromEK(reqJSON);
 
 			//check result
 			if(repJSON!=null && repJSON.getString(RequestTranslator.resultField).equals(RequestTranslator.successMessage)){
-				logger.log(Level.ALL, "Reply from server getEdgeStatus: " + repJSON.toString());
+				logger.trace( "Reply from server getEdgeStatus: " + repJSON.toString());
 				repJSON.remove(RequestTranslator.resultField);
 				return repJSON;
 			}
@@ -757,7 +759,7 @@ public class EKClientOld {
 		}
 
 		//dummy return
-		logger.log(Level.DEBUG, "Reply from server getEdgeStatus returned null.");
+		logger.debug( "Reply from server getEdgeStatus returned null.");
 		return null;
 	}
 

@@ -11,13 +11,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.nd4j.shade.jackson.core.JsonParseException;
 import org.nd4j.shade.jackson.databind.JsonMappingException;
 import org.yaml.snakeyaml.Yaml;
 
 public class YamlParser {
-	static final Logger logger = Logger.getLogger(YamlParser.class);
+	static final Logger logger = LoggerFactory.getLogger(YamlParser.class);
 
 	public boolean isValidYaml(File deployPath, String list) {
 		Yaml yaml = new Yaml();

@@ -2,7 +2,8 @@ package edu.tamu.cse.lenss.edgeKeeper.topology;
 
 import java.io.Serializable;
 import java.util.Map;
-import org.apache.log4j.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils.NetworkInterfaceType;
 
 public class TopoNode implements Serializable{
@@ -51,7 +52,7 @@ public class TopoNode implements Serializable{
     
     boolean checkStaleness(String destSession, Integer destSeq){
     	if (this.lastSessionID == null || !destSession.equals(this.lastSessionID)) {
-    		TopoHandler.logger.log(Level.ALL, "New session for "+this.guid+" " +destSession+ " "+ destSeq);
+    		TopoHandler.logger.trace( "New session for "+this.guid+" " +destSession+ " "+ destSeq);
 			this.lastSessionID = destSession;
 			this.lastSeqRcvd = destSeq;
 			this.expectedSeq = destSeq;

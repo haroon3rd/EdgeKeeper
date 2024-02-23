@@ -21,8 +21,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.interfaces.KShortestPathAlgorithm;
 import org.jgrapht.alg.interfaces.ShortestPathAlgorithm.SingleSourcePaths;
@@ -179,7 +181,7 @@ public class TopoGraph extends WeightedMultigraph<TopoNode, TopoLink> implements
 				ns.nextHopGuid=shortestPaths.getPath(v).getVertexList().get(1).guid;
 				//TopoHandler.logger.log(Level.ALL,"Next hop for "+v.guid +" is "+ ns.nextHopGuid);
 				}catch(Exception e) {
-					TopoHandler.logger.log(Level.ALL,"Exception in retrieving next hop for"+v.guid, e);
+					TopoHandler.logger.trace("Exception in retrieving next hop for"+v.guid, e);
 				}
 				v.expectedSeq++; // THis will make sure of some expire
 			}
@@ -231,7 +233,7 @@ public class TopoGraph extends WeightedMultigraph<TopoNode, TopoLink> implements
 		}
 		
 		if( v.checkStaleness(destSession, destSeq)) {
-			TopoHandler.logger.log(Level.ALL, "Stale update for "+dest.guid+" disguarding the update. "+destSession+" "+destSeq );
+			TopoHandler.logger.trace( "Stale update for "+dest.guid+" disguarding the update. "+destSession+" "+destSeq );
 			return;
 		}
 		
@@ -246,7 +248,7 @@ public class TopoGraph extends WeightedMultigraph<TopoNode, TopoLink> implements
 		//For two hop links, the IP address of the interfaces are unknown.
 		if(startIP !=null && destIP != null)
 			if(startIP.equals(EKConstants.TOPO_BROADCAST_IP) || destIP.equals(EKConstants.TOPO_BROADCAST_IP)) {
-				TopoHandler.logger.log(Level.ALL, "This message was received at"+EKConstants.TOPO_BROADCAST_IP+". Not addting the link to the graph");
+				TopoHandler.logger.trace("This message was received at"+EKConstants.TOPO_BROADCAST_IP+". Not addting the link to the graph");
 				return;
 			}
 		
@@ -323,7 +325,7 @@ public class TopoGraph extends WeightedMultigraph<TopoNode, TopoLink> implements
 				}
 			for(TopoLink e: tobeDeletedLink) {
 				this.removeEdge(e);
-				TopoHandler.logger.log(Level.ALL,"Removed Edge: " + e);
+				TopoHandler.logger.trace("Removed Edge: " + e);
 			}
 			
 			Set<TopoNode> tobeDeletedNode = new HashSet<>();
@@ -430,12 +432,12 @@ public class TopoGraph extends WeightedMultigraph<TopoNode, TopoLink> implements
 	         out = new BufferedWriter(new FileWriter(dir+File.separatorChar+"EKgraph"));
 	         out.write(data);
 	      } catch (Exception e) {
-	    	  TopoHandler.logger.log(Level.WARN,"Error writing graph data to file",e);
+	    	  TopoHandler.logger.warn("Error writing graph data to file",e);
 	      }finally {
 	    	  try {
 	    		  out.close();  
 	    	  }catch(Exception e) {
-	    		  TopoHandler.logger.log(Level.WARN,"Error closing the bufferreader.",e);
+	    		  TopoHandler.logger.warn("Error closing the bufferreader.",e);
 	    	  }
 	    	  
 	      }
@@ -508,7 +510,7 @@ public class TopoGraph extends WeightedMultigraph<TopoNode, TopoLink> implements
 	
 	public static void main(String[] args) throws IOException {
 		
-		Logger logger = Logger.getLogger(TopoGraph.class);
+		Logger logger = LoggerFactory.getLogger(TopoGraph.class);
 		
 		
 //		EKUtils.initLogger("logs/test.log", Level.ALL);
@@ -536,7 +538,7 @@ public class TopoGraph extends WeightedMultigraph<TopoNode, TopoLink> implements
 		// path.ge
 		 
 		
-		logger.debug(paths);
+		logger.debug(paths.toString());
 		
 		
 		//TopoUtils.toPng(dummyGraph());

@@ -7,8 +7,10 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-//import org.apache.log4j.Level;
-//import org.apache.log4j.Logger;
+//import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,8 +22,8 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
 import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 
 public class CoordinatorServer implements Runnable, Terminable{
-//    static final Logger logger = Logger.getLogger(CoordinatorServer.class);
-	static final Logger logger = LoggerFactory.getLogger(CoordinatorServer.class.getName());
+//    static final Logger logger = LoggerFactory.getLogger(CoordinatorServer.class);
+	static final Logger logger = LoggerFactory.getLogger(CoordinatorServer.class);
 	private ServerSocket serverSocket = null;
 	
 	public CoordinatorServer() throws IOException {

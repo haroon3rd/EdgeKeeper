@@ -2,8 +2,10 @@ package edu.tamu.cse.lenss.edgeKeeper.topology;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.tamu.cse.lenss.edgeKeeper.dns.DNSServer;
 import edu.tamu.cse.lenss.edgeKeeper.topology.TopoNode.NodeType;
@@ -16,7 +18,7 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
  */
 
 public class TopoReceiver extends Thread {
-	public static final Logger logger = Logger.getLogger(TopoReceiver.class);
+	public static final Logger logger = LoggerFactory.getLogger(TopoReceiver.class);
 	DatagramSocket serverSock;
 	private TopoGraph ekGraph;
 	private TopoNode ownNode;
@@ -33,7 +35,7 @@ public class TopoReceiver extends Thread {
 	 */
 	@Override
 	public void run() {
-		logger.log(Level.DEBUG, "Started receiver thread for "+this.serverSock.getLocalAddress().getHostAddress());
+		logger.debug( "Started receiver thread for "+this.serverSock.getLocalAddress().getHostAddress());
 		while (!serverSock.isClosed()) {
 			try {
 				byte[] recvBuf = new byte[EKConstants.TOPO_BUFFER_SIZE];
@@ -64,12 +66,12 @@ public class TopoReceiver extends Thread {
 	        TopoMessage inMsg = TopoMessage.getMessage(packet.getData());
 	        
 	        if (ownNode.equals(inMsg.sender)) {
-	        	logger.log(Level.ALL, "The packet is from own node. Discarding it.");
+	        	logger.trace("The packet is from own node. Discarding it.");
 	        	return;
 	        }
 	        
 	        if(!inMsg.destinationIP.equals(this.serverSock.getLocalAddress().getHostAddress())) {
-	        	logger.log(Level.ALL, "Message received on wrong interface. "
+	        	logger.trace( "Message received on wrong interface. "
 	        			+ "actual = "+ serverSock.getLocalAddress().getHostAddress()
 	        			+" destined = "+inMsg.destinationIP);
 	        	return;
@@ -106,7 +108,7 @@ public class TopoReceiver extends Thread {
 	private void onReplyReceived(TopoMessage inMsg, String senderIP) {
         long rtt = TopoSender.getRTT(inMsg.sessionID,inMsg.BroadcastSeq);
 		//logger.log(Level.ALL, "Reply received for link "+senderIP+"-"+inMsg.destinationIP+" RTT="+rtt);
-		logger.log(Level.ALL, inMsg.messageType+" received for "+senderIP+"-"+inMsg.destinationIP +" RTT="+rtt);
+		logger.trace(inMsg.messageType+" received for "+senderIP+"-"+inMsg.destinationIP +" RTT="+rtt);
 		ekGraph.updateRTT(ownNode, inMsg.sender, inMsg.destinationIP, senderIP,	rtt );
  	}
 	
@@ -117,11 +119,11 @@ public class TopoReceiver extends Thread {
 	private void onBroadcastReceived(TopoMessage inMsg, String senderIP) {
 		
 		if (! inMsg.sender.masterGUID.equals(ownNode.masterGUID)) {
-			logger.log(Level.ALL, inMsg.messageType+" received from another edge. Sender IP="+senderIP+"Not updating ");
+			logger.trace(inMsg.messageType+" received from another edge. Sender IP="+senderIP+"Not updating ");
 			return;
 		}
 		
-		logger.log(Level.ALL, inMsg.messageType+" received from "+senderIP+" through "+inMsg.destinationIP);
+		logger.trace(inMsg.messageType+" received from "+senderIP+" through "+inMsg.destinationIP);
 
 		//First send a reply for calculating RTT
 		TopoMessage outMessage = TopoMessage.newReplyMessage(inMsg.sessionID, inMsg.BroadcastSeq, senderIP);
@@ -140,7 +142,7 @@ public class TopoReceiver extends Thread {
 					NeighborStatus thStatus = inMsg.neighborStatus.get(twoHop);
 					
 					if(thStatus.nextHopGuid.equals(ownNode.guid)) {
-						logger.log(Level.ALL, "Discarding the link to "+twoHop.guid +" as it goes through the resident node");
+						logger.trace("Discarding the link to "+twoHop.guid +" as it goes through the resident node");
 						continue;
 					}
 					else
@@ -151,7 +153,7 @@ public class TopoReceiver extends Thread {
 	}
 	
 	private void onNeighMessage(TopoMessage inMsg, String senderIP) {
-		logger.log(Level.ALL, inMsg.messageType+" received from "+senderIP+" through "+inMsg.destinationIP);
+		logger.trace(inMsg.messageType+" received from "+senderIP+" through "+inMsg.destinationIP);
 
 		// Now send a reply in response to the neighbor
 		TopoMessage outMessage = TopoMessage.neighborReply(inMsg.sessionID, inMsg.BroadcastSeq, senderIP);
@@ -171,7 +173,7 @@ public class TopoReceiver extends Thread {
 					NeighborStatus thStatus = inMsg.neighborStatus.get(twoHop);
 					
 					if(thStatus.nextHopGuid.equals(ownNode.guid)) {
-						logger.log(Level.ALL, "Discarding the link to "+twoHop.guid +" as it goes through the resident node");
+						logger.trace("Discarding the link to "+twoHop.guid +" as it goes through the resident node");
 						continue;
 					}
 					else
@@ -184,7 +186,7 @@ public class TopoReceiver extends Thread {
 	private void onNeighbourReply(TopoMessage inMsg, String senderIP) {
         long rtt = TopoSender.getRTT(inMsg.sessionID,inMsg.BroadcastSeq);
 		//logger.log(Level.ALL, "Reply received for Neighbor link "+senderIP+" - rtt="+rtt);
-		logger.log(Level.ALL, inMsg.messageType+" received for "+senderIP+"-"+inMsg.destinationIP +" RTT="+rtt);
+        logger.trace(inMsg.messageType+" received for "+senderIP+"-"+inMsg.destinationIP +" RTT="+rtt);
 		ekGraph.updateRTT(ownNode, inMsg.sender, inMsg.destinationIP, senderIP,	rtt );
 	}
 }

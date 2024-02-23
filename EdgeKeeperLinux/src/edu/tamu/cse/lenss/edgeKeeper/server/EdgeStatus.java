@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jgrapht.Graphs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +28,7 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils.NetworkInterfaceType;
 
 public class EdgeStatus {
 	
-	public static final Logger logger = LoggerFactory.getLogger(EdgeStatus.class.getName());
+	public static final Logger logger = LoggerFactory.getLogger(EdgeStatus.class);
 	
 	enum ReplicaStatus{
 		FORMED,

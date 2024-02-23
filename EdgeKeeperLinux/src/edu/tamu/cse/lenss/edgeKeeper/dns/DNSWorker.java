@@ -12,8 +12,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xbill.DNS.Flags;
 import org.xbill.DNS.Header;
 import org.xbill.DNS.Message;
@@ -30,7 +32,7 @@ public class DNSWorker implements  Terminable{
 	private DatagramSocket udpSocket;
 	private DatagramPacket incomingPacket;
 
-	public static final Logger logger = Logger.getLogger(DNSWorker.class);
+	public static final Logger logger = LoggerFactory.getLogger(DNSWorker.class);
 	//private EKProperties ekProperties;
 	ExecutorService executor;
 	private long requestArrivalTime;
@@ -61,15 +63,15 @@ public class DNSWorker implements  Terminable{
 	    Header header = query.getHeader();
 		// If it's not a query we just ignore it. It indicates that this is a response message.
 		if (header.getFlag(Flags.QR)) {
-			logger.log(Level.DEBUG, "Query header QR set. Nothing to be done. Incoming query: "+query.toString());
+			logger.debug("Query header QR set. Nothing to be done. Incoming query: "+query.toString());
 			return ;
 		}
 		else if (header.getRcode() != Rcode.NOERROR) { // Check if there is any error in the query
-			logger.log(Level.DEBUG, "There is error in the query. Incoming query: "+query.toString());
+			logger.debug("There is error in the query. Incoming query: "+query.toString());
 			response = errorMessage(query, Rcode.FORMERR);
 		}
 		else if (header.getOpcode() != Opcode.QUERY) {  // Check if it is really a query message
-			logger.log(Level.DEBUG, "Incoming message OPTCode is not a Query. Incoming query: "+query.toString());
+			logger.debug("Incoming message OPTCode is not a Query. Incoming query: "+query.toString());
 			response = errorMessage(query, Rcode.NOTIMP);
 		}
 		else {
@@ -92,7 +94,7 @@ public class DNSWorker implements  Terminable{
 			try {
 				response = executor.invokeAny(taskList, EKConstants.DNS_TIMEOUT, TimeUnit.SECONDS);
 			} catch (InterruptedException | ExecutionException | TimeoutException e) {
-				logger.log(Level.DEBUG, "Error in Resolving Name. Returning NXDOMAIN");
+				logger.debug("Error in Resolving Name. Returning NXDOMAIN");
 				response =  errorMessage(query, Rcode.NXDOMAIN);
 			} finally {
 				executor.shutdownNow();
@@ -130,7 +132,7 @@ public class DNSWorker implements  Terminable{
 	 */
 	private void sendResponse(Message query, Message response) {
 		if (response == null) { // means we don't need to do anything
-	    	logger.log(Level.DEBUG, "Generated Response message is null. Not replying anything");
+	    	logger.debug("Generated Response message is null. Not replying anything");
 	    	return;
 	    }
 	    
@@ -149,7 +151,7 @@ public class DNSWorker implements  Terminable{
 		
 	    this.endTime = System.currentTimeMillis();
 
-	    DNSServer.logger.log(Level.ALL, "Response sent to "+ incomingPacket.getAddress().getHostAddress() +":"+incomingPacket.getPort()
+	    DNSServer.logger.trace("Response sent to "+ incomingPacket.getAddress().getHostAddress() +":"+incomingPacket.getPort()
 	    	+"\n DNS Query: "+query.toString()+"\n DNS Response: " +response.toString());
 	    DNSServer.logger.debug("DNS Processing Time (ms) = "+(endTime-startTime)+" Total Delay (ms) = " + (endTime-requestArrivalTime));
 		

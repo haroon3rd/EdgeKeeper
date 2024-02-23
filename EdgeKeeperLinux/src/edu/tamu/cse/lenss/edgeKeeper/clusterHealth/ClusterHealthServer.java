@@ -11,8 +11,10 @@ import java.net.Socket;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.Date;
@@ -31,7 +33,7 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
  */
 public class ClusterHealthServer implements Terminable{
 
-	static final Logger logger = Logger.getLogger(ClusterHealthServer.class);
+	static final Logger logger = LoggerFactory.getLogger(ClusterHealthServer.class);
 
 	//tcp variables
 	public ServerSocket serverSocket;
@@ -41,7 +43,7 @@ public class ClusterHealthServer implements Terminable{
 	//constructor
 	public ClusterHealthServer(){
 
-		logger.log(Level.ALL, "CHS CluserHealthServer initializing DatStore.");
+		logger.trace( "CHS CluserHealthServer initializing DatStore.");
 
 		//initialize the dataStore
 		datastore = new DataStore();
@@ -52,7 +54,7 @@ public class ClusterHealthServer implements Terminable{
 
 	@Override
 	public void run(){
-		logger.log(Level.ALL, "CHS CluserHealthServer initializing ServerSocket.");
+		logger.trace( "CHS CluserHealthServer initializing ServerSocket.");
 		long t1 = 0;
 		long t2 = 0;
 		
@@ -60,13 +62,13 @@ public class ClusterHealthServer implements Terminable{
 		try { 
 			serverSocket = new ServerSocket(EKConstants.CLUSTER_MONITOR_SERVER_PORT);
 		} catch (IOException e) { 
-			logger.fatal("CHS Could not start Cluster Health Monitor server", e);
+			logger.error("CHS Could not start Cluster Health Monitor server", e);
 			return;
 		}
               
 		//update boolean
 		isRunning = true;
-		logger.log(Level.ALL, "CHS  Cluster Health Monitor server running....");
+		logger.trace( "CHS  Cluster Health Monitor server running....");
 		while(isRunning){
 
 			Socket cSocket = null;
@@ -76,7 +78,7 @@ public class ClusterHealthServer implements Terminable{
 			try{
 				//accept a new client
 				cSocket = serverSocket.accept();
-				//logger.log(Level.ALL, "CHS Cluster Health Monitor accepted a new client");
+				//logger.trace( "CHS Cluster Health Monitor accepted a new client");
 				t1 = new Date().getTime();
 				
 				//initialize input and output streams
@@ -87,13 +89,13 @@ public class ClusterHealthServer implements Terminable{
 				String inMessage = in.readUTF();
               
 				//process request
-				//logger.log(Level.ALL, "	CHS Cluster Health Monitor start to process client request");
+				//logger.trace( "	CHS Cluster Health Monitor start to process client request");
 				String rep = processRequestJava(inMessage);
 			  
 				out.writeUTF(rep+"\n\n");
 				
 				t2 = new Date().getTime();
-				logger.log(Level.DEBUG, "CHS Cluster Monitor Server handled a request from "+cSocket.getInetAddress().getHostAddress()
+				logger.debug( "CHS Cluster Monitor Server handled a request from "+cSocket.getInetAddress().getHostAddress()
 					+" in " + (t2-t1) + " milli seconds.");
 			}catch(Exception e){
 				logger.debug("Exception occured for accepting client request ", e);
@@ -128,24 +130,24 @@ public class ClusterHealthServer implements Terminable{
 					datastore.putAppStatus(GUID, appName, reqJSON);
                   	
                  	//return success json
-    				//logger.log(Level.ALL, "CHS Cluster Health Monitor processed the request succesfully");
+    				//logger.trace( "CHS Cluster Health Monitor processed the request succesfully");
     				return successJSON().toString();
                  	
     	  		}else if(command.equals(RequestTranslator.putDeviceStatus)) {
 
-					//logger.log(Level.ALL, "CHS Cluster Health Monitor start to process putDeviceStatus");
+					//logger.trace( "CHS Cluster Health Monitor start to process putDeviceStatus");
 
     	  			//store data
     	  			String GUID = reqJSON.getString(RequestTranslator.fieldGUID);
 					datastore.putDeviceStatus(GUID, reqJSON);
 
                  	//return success json
-    	  			//logger.log(Level.ALL, "CHS Cluster Health Monitor processed the request succesfully");
+    	  			//logger.trace( "CHS Cluster Health Monitor processed the request succesfully");
     	  			return successJSON().toString();
                  	
     	  		}else if(command.equals(RequestTranslator.getAppStatus)) {
 
-					//logger.log(Level.ALL, "CHS Cluster Health Monitor start to process getAppStatus");
+					//logger.trace( "CHS Cluster Health Monitor start to process getAppStatus");
 
 					//getEdgeStatus parameters
     	  			String GUID = reqJSON.getString(RequestTranslator.fieldGUID);
@@ -163,13 +165,13 @@ public class ClusterHealthServer implements Terminable{
 
 
     	  				//return
-    	  				//logger.log(Level.ALL, "CHS Cluster Health Monitor processed the request succesfully");
+    	  				//logger.trace( "CHS Cluster Health Monitor processed the request succesfully");
 						return reply.toString();
     	  			}
               	
     	  		}else if(command.equals(RequestTranslator.getDeviceStatus)) {
 
-					//logger.log(Level.ALL, "CHS Cluster Health Monitor start to process getDeviceStatus");
+					//logger.trace( "CHS Cluster Health Monitor start to process getDeviceStatus");
 
 
 					//getEdgeStatus parameters
@@ -186,14 +188,14 @@ public class ClusterHealthServer implements Terminable{
 						reply.put(RequestTranslator.resultField, RequestTranslator.successMessage);
 
     	  				//return
-    	  				//logger.log(Level.ALL, "CHS Cluster Health Monitor processed the request succesfully");
+    	  				//logger.trace( "CHS Cluster Health Monitor processed the request succesfully");
 						return reply.toString();
     	  			}
     	  		}
     	  		
     	  		else if(command.equals(RequestTranslator.getEdgeStatus)){
 
-					//logger.log(Level.ALL, "CHS Cluster Health Monitor start to process getEdgeStatus");
+					//logger.trace( "CHS Cluster Health Monitor start to process getEdgeStatus");
 
 					//getEdgeStatus edge status json
 					JSONObject repJSON = datastore.getEdgeStatus();
@@ -206,13 +208,13 @@ public class ClusterHealthServer implements Terminable{
 						reply.put(RequestTranslator.resultField, RequestTranslator.successMessage);
 
 						//return
-						//logger.log(Level.ALL, "CHS Cluster Health Monitor processed the request succesfully " + repJSON.toString(4));
+						//logger.trace( "CHS Cluster Health Monitor processed the request succesfully " + repJSON.toString(4));
 						return reply.toString();
 					}
 				}
     	  	}
 		}catch(Exception e){
-			logger.log(Level.DEBUG, "CHS Cluster Health Monitor failed to process the client request", e);
+			logger.debug( "CHS Cluster Health Monitor failed to process the client request", e);
 		}
 		//dummy error return 
 		return errorJSON("CHS request failed").toString();
@@ -220,14 +222,14 @@ public class ClusterHealthServer implements Terminable{
 
 	//@Override
 	public void terminate() {
-		logger.log(Level.ALL, "CHS terminate function called.");
+		logger.trace( "CHS terminate function called.");
 		isRunning = false;
 		Thread.currentThread().interrupt();
 		if(serverSocket!=null) {
 			try {
 				serverSocket.close();
 			} catch (IOException e) {
-				logger.log(Level.ALL, "CHS terminate() call failed");
+				logger.trace( "CHS terminate() call failed");
 			}
 		}
 		logger.info("CHS Terminated "+this.getClass().getName());

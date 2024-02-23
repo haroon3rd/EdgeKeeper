@@ -6,7 +6,8 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Properties;
 
-import org.apache.log4j.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EKProperties extends Properties{
 

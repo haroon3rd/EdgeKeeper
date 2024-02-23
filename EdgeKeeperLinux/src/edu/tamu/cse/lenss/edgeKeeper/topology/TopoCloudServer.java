@@ -10,8 +10,10 @@ import java.util.UUID;
 
 import javax.lang.model.element.ElementKind;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
 import edu.tamu.cse.lenss.edgeKeeper.utils.EKConstants;
@@ -21,7 +23,7 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.EKUtils.NetworkInterfaceType;
 import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 
 public class TopoCloudServer extends Thread implements Terminable{
-	public static final Logger logger = Logger.getLogger(TopoCloudServer.class);
+	public static final Logger logger = LoggerFactory.getLogger(TopoCloudServer.class);
 	private TopoNode ownNode;
 	private ServerSocket server = null;
 	private String sessionID;
@@ -38,12 +40,12 @@ public class TopoCloudServer extends Thread implements Terminable{
 		this.sessionID = UUID.randomUUID().toString(); // generate separate Session ID
 		this.t0 = System.currentTimeMillis();
 
-		TopoHandler.logger.log(Level.ALL,"The resident node is running on cloud.");
+		TopoHandler.logger.trace("The resident node is running on cloud.");
 		try {
 			server = new ServerSocket(EKConstants.TOPOCLOUD_DISCOVERY_PORT);
-			TopoHandler.logger.log(Level.ALL,"Server socket on cloud successfull.");
+			TopoHandler.logger.trace("Server socket on cloud successfull.");
 		} catch (IOException e) {
-			TopoHandler.logger.log(Level.FATAL,"Cannot create server socket on cloud.", e);
+			TopoHandler.logger.trace("Cannot create server socket on cloud.", e);
 		}
 		while (!server.isClosed()) {
 			Socket cSocket = null;

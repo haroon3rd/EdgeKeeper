@@ -10,7 +10,10 @@ import java.util.Calendar;
 import java.util.List;
 
 import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A Container Orchestration Class, written by Amran Haroon.
@@ -45,7 +48,7 @@ public class OrchMain {
 		}
 	}
 
-	//	static final Logger logger = Logger.getLogger(OrchMain.class);
+	//	static final Logger logger = LoggerFactory.getLogger(OrchMain.class);
 	static Deployment deployments = new Deployment();
 	static YamlParser ymlparser = new YamlParser();
 	static Monitor monitor = new Monitor();
@@ -62,7 +65,7 @@ public class OrchMain {
 	public static void main(String[] args) {
 		BasicConfigurator.configure();
 		configLoggerWithPropertiesFile();
-		Logger logger = Logger.getLogger(OrchMain.class);
+		Logger logger = LoggerFactory.getLogger(OrchMain.class);
 		// Declare yesterday date with format as yyyyMMdd
 		DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 		// Calendar yesterdayCal = Calendar.getInstance();

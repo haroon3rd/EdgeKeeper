@@ -3,7 +3,8 @@ package edu.tamu.cse.lenss.edgeKeeper.fileMetaData.command;
 
 import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.MDFSMetadata;
 import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
-import org.apache.log4j.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -202,7 +203,7 @@ public class LScommand {
 
 
                         //log
-                        MDFSMetadata.logger.log(Level.ALL, "returned data for ls_for_all_directoryies_of_all_neighborEdges successfully.");
+                        MDFSMetadata.logger.trace("returned data for ls_for_all_directoryies_of_all_neighborEdges successfully.");
 
                         //return result
                         return result;
@@ -213,7 +214,7 @@ public class LScommand {
 
         }catch (Exception E){
             //log
-            MDFSMetadata.logger.log(Level.ALL, "failed to process ls_for_all_directoryies_of_all_neighborEdges.");        }
+            MDFSMetadata.logger.trace("failed to process ls_for_all_directoryies_of_all_neighborEdges.");        }
 
         return null;
     }
@@ -278,7 +279,7 @@ public class LScommand {
 
 
                         //log
-                        MDFSMetadata.logger.log(Level.ALL, "returned data for ls_neighbor_directory successfully.");
+                        MDFSMetadata.logger.trace("returned data for ls_neighbor_directory successfully.");
 
                         //return
                         return result;
@@ -289,7 +290,7 @@ public class LScommand {
         }catch(Exception e){
             try {
 
-                MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local ls return -> Could not fetch mergeData inode.", e);
+                MDFSMetadata.logger.debug("EdgeKeeper local ls return -> Could not fetch mergeData inode.", e);
                 return RequestTranslator.errorJSON("Could not fetch mergeData inode.");
             } catch (JSONException e1) {
                 return null;
@@ -310,7 +311,7 @@ public class LScommand {
     //or, null if something really bad happened.
     public static JSONObject ls_own_edge_directory(String folderPathMDFS){
 
-        MDFSMetadata.logger.log(Level.ALL, "EdgeKeeper local start to process ls command.");
+        MDFSMetadata.logger.trace("EdgeKeeper local start to process ls command.");
 
         //tokenize the filepath
         //tokens contains only folder names as elements
@@ -326,7 +327,7 @@ public class LScommand {
 
         } catch (Exception e) {
             try {
-                MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local ls return -> Could not load root directory.", e);
+                MDFSMetadata.logger.debug("EdgeKeeper local ls return -> Could not load root directory.", e);
                 return RequestTranslator.errorJSON("Could not load root directory.");
             } catch (JSONException e1) {
                 return null;
@@ -358,7 +359,7 @@ public class LScommand {
                             candidateInode = retrieveMetadata(candidateUUID);
                         } catch (Exception e) {
                             try {
-                                MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local ls return -> Could not load directory.", e);
+                                MDFSMetadata.logger.debug("EdgeKeeper local ls return -> Could not load directory.", e);
                                 return RequestTranslator.errorJSON("Could not load directory.");
                             } catch (JSONException e1) {
                                 return null;
@@ -373,7 +374,7 @@ public class LScommand {
 
                         } else {
                             try {
-                                MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local ls return -> Could not load directory.");
+                                MDFSMetadata.logger.debug("EdgeKeeper local ls return -> Could not load directory.");
                                 return RequestTranslator.errorJSON("Could not load directory.");
                             } catch (JSONException e) {
                                 return null;
@@ -402,7 +403,7 @@ public class LScommand {
 
                 //return error since the given path doesnt exist to begin with
                 try {
-                    MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local ls return -> Directory doesnt exist.");
+                    MDFSMetadata.logger.debug("EdgeKeeper local ls return -> Directory doesnt exist.");
                     return RequestTranslator.errorJSON("Directory doesnt exist.");
                 } catch (JSONException e) {
                     return null;
@@ -444,14 +445,14 @@ public class LScommand {
                     return OwnEdgeDir;
 
                 }catch (JSONException e){
-                    MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local ls return -> Fetched files and folders names but could not make JSONObject to send back.", e);
+                    MDFSMetadata.logger.debug("EdgeKeeper local ls return -> Fetched files and folders names but could not make JSONObject to send back.", e);
                     return null;
                 }
             }
 
         }else{
             try {
-                MDFSMetadata.logger.log(Level.DEBUG, "EdgeKeeper local ls return -> Could not load root directory.");
+                MDFSMetadata.logger.debug("EdgeKeeper local ls return -> Could not load root directory.");
                 return RequestTranslator.errorJSON("Could not load root directory.");
             } catch (JSONException e) {
                 return null;

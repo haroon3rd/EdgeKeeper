@@ -7,8 +7,10 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Date;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -22,7 +24,7 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
 public class ClusterHealthClient implements Terminable {
 
 	//logger
-	static final Logger logger = Logger.getLogger(ClusterHealthClient.class);
+	static final Logger logger = LoggerFactory.getLogger(ClusterHealthClient.class);
 	long CLUSTER_MONITOR_DEVICE_STATUS_SUBMISSION_INTERVAL;
 
 	//global variable
@@ -43,7 +45,7 @@ public class ClusterHealthClient implements Terminable {
 		try {
 			//leaderIP = EKHandler.getZKClientHandler().getHealthLeader();
 			leaderIP = EKHandler.edgeStatus.getMasterIps().iterator().next();
-			//logger.log(Level.ALL, "Cluster health leader: "+leaderIP);
+			//logger.trace( "Cluster health leader: "+leaderIP);
 		} catch (Exception e1) {
 			logger.debug("Could not obtain the IP of EK master. Aborting communication", e1);
 			return null;
@@ -65,11 +67,11 @@ public class ClusterHealthClient implements Terminable {
 			//receive
 			String rep = in.readUTF().trim();
 			if(rep!=null){
-				logger.log(Level.DEBUG, "CHS client successfully communicated with master with master IP "+cSocket.getInetAddress().getHostAddress()
+				logger.debug( "CHS client successfully communicated with master with master IP "+cSocket.getInetAddress().getHostAddress()
 					+" in " + (new Date().getTime()-t1) + " milli seconds.");
 				return new JSONObject(rep);
 			} else {
-				logger.log(Level.DEBUG, "CHS client got null in return from master "+cSocket.getInetAddress().getHostAddress()
+				logger.debug( "CHS client got null in return from master "+cSocket.getInetAddress().getHostAddress()
 						+" in " + (new Date().getTime()-t1) + " milli seconds.");
 					return null;
 			}
@@ -111,7 +113,7 @@ public class ClusterHealthClient implements Terminable {
 
 	//@Override
 	public void terminate() {
-		logger.log(Level.ALL, "CHS terminate function called.");
+		logger.trace( "CHS terminate function called.");
 
 		isRunning = false;
 		Thread.currentThread().interrupt();
@@ -121,13 +123,13 @@ public class ClusterHealthClient implements Terminable {
 	//static function to fetch device status
 	public static void reportDeviceStatus() {
 
-		//logger.log(Level.ALL, "Trying to update device status");
+		//logger.trace( "Trying to update device status");
 		try {
 			//fetch device status
 			JSONObject deviceStatusData = EKHandler.getEKUtils().getDeviceStatus();
 
 			if(deviceStatusData!=null) {
-				//logger.log(Level.ALL, "fetched valid device status from getDeviceStatus()");
+				//logger.trace( "fetched valid device status from getDeviceStatus()");
 
 				//add my ownGUID
 				deviceStatusData.put(RequestTranslator.fieldGUID, EKHandler.getGNSClientHandler().getOwnGUID());
@@ -137,15 +139,15 @@ public class ClusterHealthClient implements Terminable {
 
 				//check reply
 				if(repJSON!=null && repJSON.getString(RequestTranslator.resultField).equals(RequestTranslator.successMessage)) {
-					logger.log(Level.ALL, "device status pushed to server succesfully");
+					logger.trace( "device status pushed to server succesfully");
 				}else {
-					logger.log(Level.ALL, "failed to push device status to server");
+					logger.trace( "failed to push device status to server");
 				}
 			}
 			else
 				logger.warn("Can not fetch Device status using EKUtils. Not reporting to Master.");
 		}catch(JSONException e) {
-			logger.log(Level.DEBUG, "Problem with adding GUID field to device status JSON.", e);
+			logger.debug( "Problem with adding GUID field to device status JSON.", e);
 		}
 
 	}

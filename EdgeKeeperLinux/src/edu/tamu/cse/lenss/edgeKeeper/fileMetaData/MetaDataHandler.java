@@ -4,8 +4,10 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.Callable;
 import edu.tamu.cse.lenss.edgeKeeper.server.RequestTranslator;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.command.GETcommand;
 import edu.tamu.cse.lenss.edgeKeeper.fileMetaData.command.LScommand;
@@ -27,7 +29,7 @@ public class MetaDataHandler implements Callable<String>{
 		this.reqJSON=reqJSON;
 	}
 	
-	public static Logger logger = Logger.getLogger( MetaDataHandler.class );
+	public static Logger logger = LoggerFactory.getLogger( MetaDataHandler.class );
 	public static final String uuid_root = "MDFS_abcdefghijklmnopqrstuvwxyz";
 	public static final String uuid_mergeData = "MDFS_MERGEDATA_abcdefghijklmnopqrstuvwxyz";
 	public static final String MASTERGUID = "MASTERGUID";
@@ -116,7 +118,7 @@ public class MetaDataHandler implements Callable<String>{
 			}
 			return rep;
 		} catch (Exception e){
-			logger.log(Level.ALL, "MetadataHandler Exception: ",e);
+			logger.trace("MetadataHandler Exception: ",e);
 			throw e;
 		}
 	}
@@ -189,16 +191,16 @@ public class MetaDataHandler implements Callable<String>{
 					//push back mergeDataInode
 					storeMetaData(mergeDataInode);
 
-					logger.log(Level.ALL, "Received mergeData from master: " + masterGUID + " successfully.");
+					logger.trace("Received mergeData from master: " + masterGUID + " successfully.");
 
 				}else{
 
 					//logger: merge data pushing failed
-					logger.log(Level.DEBUG, "Failed to merge mdfs directory data for master: " + masterGUID);
+					logger.debug("Failed to merge mdfs directory data for master: " + masterGUID);
 				}
 
 			} catch (Exception e) {
-				logger.log(Level.ERROR, "Failed to merge mdfs directory data for master: " + masterGUID);
+				logger.error("Failed to merge mdfs directory data for master: " + masterGUID);
 				e.printStackTrace();
 			}
 
@@ -224,7 +226,7 @@ public class MetaDataHandler implements Callable<String>{
 				metadataRootInode = retrieveMetadata(uuid_root);
 
 			} catch (Exception e) {
-				logger.log(Level.ERROR, "Could not prepare mergeData to send to other edge.");
+				logger.error("Could not prepare mergeData to send to other edge.");
 				return null;
 			}
 
@@ -251,13 +253,13 @@ public class MetaDataHandler implements Callable<String>{
 
 
 			//log
-			logger.log(Level.ALL, "Prepared mergeData for own edge dir upon request.");
+			logger.trace("Prepared mergeData for own edge dir upon request.");
 
 			//return result
 			return preparedMergeData;
 
 		} catch(Exception e) {
-			logger.log(Level.ERROR, "Failed to prepare mergeData for own edge dir.", e);
+			logger.error("Failed to prepare mergeData for own edge dir.", e);
 			return null;
 		}
 	}
@@ -311,7 +313,7 @@ public class MetaDataHandler implements Callable<String>{
 				}
 			}
 		}catch(Exception e){
-			logger.log(Level.ERROR, "Could not prepare mergeData, Recursive function call failed. ");
+			logger.error("Could not prepare mergeData, Recursive function call failed. ");
 		}
 	}
 	

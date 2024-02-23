@@ -12,8 +12,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.tamu.cse.lenss.edgeKeeper.server.EKHandler;
 import edu.tamu.cse.lenss.edgeKeeper.topology.TopoNode.NodeType;
@@ -30,7 +32,7 @@ import edu.tamu.cse.lenss.edgeKeeper.utils.Terminable;
  *
  */
 public class TopoHandler extends Thread implements Terminable {
-	public static final Logger logger = Logger.getLogger(TopoHandler.class);
+	public static final Logger logger = LoggerFactory.getLogger(TopoHandler.class);
 	
 	private TopoSender topoSender;
 	private TopoCloudServer topoCloudServer;
@@ -72,7 +74,7 @@ public class TopoHandler extends Thread implements Terminable {
 			sock.setBroadcast(true);
 			this.sockMap.put(ip, sock);
 			new TopoReceiver(sock, this.ekGraph, this.ownNode).start();
-			logger.log(Level.ALL, "Created UDP socket for "+sock.getLocalAddress().getHostAddress()+":"+sock.getLocalPort());
+			logger.trace("Created UDP socket for "+sock.getLocalAddress().getHostAddress()+":"+sock.getLocalPort());
 		} catch (IOException e) {
 			logger.warn("Problem in opening DataGram socket for "+ip + " : "+EKConstants.TOPOLOGY_DISCOVERY_PORT, e);
 		}
@@ -87,7 +89,7 @@ public class TopoHandler extends Thread implements Terminable {
 		else {
 			this.topoCloudClient.start();
 			//this.topoSender.start();
-			logger.log(Level.ALL, "Started cloud client");
+			logger.trace("Started cloud client");
 			
 			Set<String> ownIPs = new HashSet<>();
 			while(!this.terminated) {
@@ -98,7 +100,7 @@ public class TopoHandler extends Thread implements Terminable {
 					Set<String> newIPs = ownNode.ipMaps.keySet();
 					
 					if (ownIPs.equals(newIPs) ) {
-						logger.log(Level.ALL,"Own device IP addresses remains same. No need to update" + newIPs.toString());
+						logger.trace("Own device IP addresses remains same. No need to update" + newIPs.toString());
 					}
 					else {
 						/* 
@@ -117,7 +119,7 @@ public class TopoHandler extends Thread implements Terminable {
 						
 						for(String ip: newIPs) 
 							if(!sockMap.containsKey(ip)) {
-								logger.log(Level.ALL,"Opening Datagram Socket for ip : " + ip);
+								logger.trace("Opening Datagram Socket for ip : " + ip);
 								openNewSocket(ip);
 							}
 						// Stop the respective socket
@@ -142,10 +144,10 @@ public class TopoHandler extends Thread implements Terminable {
 					 * Now send the periodic UDP ping messages
 					*/
 					topoSender.sendPeriodicPing();
-					logger.log(Level.DEBUG, "Current Graph | "+this.ekGraph.printToString());
+					logger.debug("Current Graph | "+this.ekGraph.printToString());
 					//this.ekGraph.printToFile();
 					TopoGraph g = TopoParser.importGraph(TopoParser.exportGraph(this.ekGraph));
-					logger.log(Level.ALL, "Exported graph "+g.printToString());
+					logger.trace("Exported graph "+g.printToString());
 
 				}catch(Exception e) {
 					logger.error("Problem in sending periodic messages", e);

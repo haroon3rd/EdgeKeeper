@@ -7,10 +7,13 @@ import java.net.MalformedURLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.LogManager;
 
-//import org.apache.log4j.Level;
-//import org.apache.log4j.Logger;
+//import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +45,8 @@ public class EKMainLinux {
 			// TODO Auto-generated catch block
 			e2.printStackTrace();
 		}
-
+		
+		
 		// Now configure Java Util Log configure
 		try {
 		    //FileInputStream configFile = new //FileInputStream("/path/to/app.properties");
@@ -58,8 +62,7 @@ public class EKMainLinux {
 	public static void main(String[] args)  {
 		
 		configLoggerWithPropertiesFile();
-//		Logger logger = Logger.getLogger(EKMainLinux.class);
-		Logger logger = LoggerFactory.getLogger(EKMainLinux.class.getName());
+		Logger logger = LoggerFactory.getLogger(EKMainLinux.class);
 		long millis = System.currentTimeMillis();
 		
 		
